@@ -100,7 +100,7 @@
   .shr{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #3a2a18}.shr span{flex:1;display:flex;flex-direction:column;font-size:13px;color:#efd9a0}.shr small{color:#a8946a;font-size:11.5px}
   .saveTxt{width:100%;box-sizing:border-box;background:#120c07;color:#c9b27a;border:1px solid #4a3420;border-radius:4px;font:10px monospace;padding:6px}
   .tabBet{display:block;font-size:10px;color:#9ccf6a;font-weight:600}
-  .loanB{display:flex;align-items:center;gap:8px;margin:8px 0;padding:8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:13px;color:#efd9a0}.loanB span{flex:1;display:flex;flex-direction:column}.loanB small{color:#a8946a;font-size:11.5px}
+  .loanB{display:flex;align-items:center;gap:8px;margin:8px 0;padding:8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:13px;color:#efd9a0}.loanB>span{flex:1;display:block;line-height:1.4}.loanB small{display:block;color:#a8946a;font-size:11.5px}.loanO .chip small{display:block}
   .loanO{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.loanO .chip{display:flex;flex-direction:column;align-items:center;padding:5px 9px}.loanO .chip small{font-size:10px;color:#a8946a}.loanB.debt{border-color:#b05a3a;background:rgba(176,90,58,.14)}.divd.warn{border-color:#b05a3a;background:rgba(176,90,58,.14)}
   .onball{font-size:11.5px;color:#efd9a0;margin-bottom:2px}.onball small{color:#a8946a}
   .divd{margin:6px 0;padding:5px 8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:12.5px;color:#efd9a0}
@@ -2399,17 +2399,29 @@ function testRumble(){const el=$('rumbleMsg');let msg='';const framed=(()=>{try{
   if(el)el.textContent=msg}
 const _saveBox12=saveBoxHtml;saveBoxHtml=function(){return'<div class="whT">Rumble <small>goals, lance hits</small></div><div class="loanB"><span><span id="rumbleMsg">Check your phone buzzes on big moments.</span></span><button class="chip" onclick="testRumble()">Test rumble</button></div>'+_saveBox12()};
 
+// ----- play-test helper: start fresh with 100 crowns and no debts
+function resetPurse(){G.purse=100;G.debt=0;G.debtAge=0;save();coins(4);refreshLoanViews()}
+const _saveBox13=saveBoxHtml;saveBoxHtml=function(){return'<div class="whT">Play-test <small>for testing only</small></div><div class="loanB"><span>Reset your purse to 100 crowns and clear any debt.</span><button class="chip" onclick="resetPurse()">Reset to 100</button></div>'+_saveBox13()};
+
+// ----- in debt and broke: Aldous extends the loan, at a steeper price, up to a ceiling
+function debtCeiling(){return 300+[0,150,400,900,2000,5000][G.estate||0]}
+function extendLoan(){if(G.purse>=10||!debt())return;const add=50,owe=Math.round(add*1.35);if(debt()+owe>debtCeiling())return;G.purse+=add;G.debt+=owe;G.borrowed=(G.borrowed||0)+add;G.loans=(G.loans||0)+1;G.extended=(G.extended||0)+1;save();coins(4);refreshLoanViews()}
+const _loanHtml14=loanHtml;loanHtml=function(){const d=debt();if(d&&G.purse<10){const can=d+68<=debtCeiling();
+    return'<div class="loanB debt"><span>You owe Aldous <b>'+d+'</b> and your purse is empty.<small>'+(can?'He\'ll extend the loan: 50 more now, 68 added to what you owe (35%). He still takes half of every win.':'He won\'t lend you another crown until you pay something back. Sell a horse or shares, or reset below.')+'</small><span class="loanO">'+(can?'<button class="chip" onclick="extendLoan()">Borrow 50<small>owe +68</small></button>':'')+'<button class="chip" onclick="resetPurse()">Reset to 100<small>play-test</small></button></span></span></div>'}
+  if(!d&&G.purse<10)return _loanHtml14().replace('</span></span></div>','<button class="chip" onclick="resetPurse()">Reset to 100<small>play-test</small></button></span></span></div>');
+  return _loanHtml14()};
+
 // ===================== the photo finish: a tight, crisp shot of the two horses on the line =====================
-snapPhoto=function(){try{const R=rankNow().filter(h=>!h.fallen),A=R[0],B=R[1]||R[0];if(!A)return;
-  const a=scr(A.x,A.y),b=scr(B.x,B.y),{C,NM}=T,lat=insg*(HALFW+.3),post=scr(C[0][0]+NM[0][0]*lat,C[0][1]+NM[0][1]*lat);
-  // centre on the pair, pulled a little toward the post so the line is in shot
-  const cx=(a[0]*.6+b[0]*.4),cy=(a[1]*.6+b[1]*.4)-9,w=Math.min(AW,128),h=Math.min(AH,84),x0=Math.round(clamp(cx-w/2,0,AW-w)),y0=Math.round(clamp(cy-h/2,0,AH-h));
+function renderAt(cx,cy){gl.useProgram(prog);gl.viewport(0,0,AW,AH);gl.uniform2f(U.uMapSize,N,N);gl.uniform2f(U.uCam,Math.round(cx),Math.round(cy));gl.uniform2f(U.uRes,AW,AH);gl.uniform1f(U.uTime,now);gl.drawArrays(gl.TRIANGLES,0,3);draw()}
+snapPhoto=function(){const ox=cam.x,oy=cam.y;try{const R=rankNow().filter(h=>!h.fallen),A=R[0],B=R[1]||R[0];if(!A)return;
+  // re-shoot the frame centred on the two leaders, wherever the TV camera happened to be
+  const wx=A.x*.55+B.x*.45,wy=A.y*.55+B.y*.45;cam.x=isoX(wx,wy)-AW/2;cam.y=isoY(wx,wy)-AH/2-hz(wx,wy);renderAt(cam.x,cam.y);
+  const w=Math.min(AW,128),h=Math.min(AH,84),x0=Math.round((AW-w)/2),y0=Math.round(AH/2-9-h/2);
   const S=3,c=document.createElement('canvas');c.width=w*S;c.height=h*S;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
   g.drawImage(glc,x0,y0,w,h,0,0,w*S,h*S);g.drawImage(fxc,x0,y0,w,h,0,0,w*S,h*S);
   const im=g.getImageData(0,0,c.width,c.height),d=im.data;for(let i=0;i<d.length;i+=4){const l=d[i]*.3+d[i+1]*.59+d[i+2]*.11;d[i]=Math.min(255,l*1.1+16);d[i+1]=Math.min(255,l*1.0+9);d[i+2]=l*.82}g.putImageData(im,0,0);
-  // the judge's hairline through the post, and the frame stamp
   g.fillStyle='rgba(20,14,8,.7)';g.fillRect(0,c.height-22,c.width,22);g.fillStyle='#efe6d0';g.font='bold 13px monospace';g.fillText('PHOTO · '+(race.rc.name||'').toUpperCase(),8,c.height-7);
-  race.photoImg=c.toDataURL('image/png')}catch(e){}};
+  race.photoImg=c.toDataURL('image/png')}catch(e){console.warn('photo',e)}cam.x=ox;cam.y=oy;try{renderAt(ox,oy)}catch(e){}};
 // make sure the TV camera is on the post for any close finish, whichever camera mode you're in
 const _director11=director;director=function(dt){const R=rankNow().filter(h=>!h.fallen),L=R[0],S2=R[1];
   if(race&&race.state==='run'&&L&&S2&&!L.finished&&race.D-L.dist<1.6&&L.dist-S2.dist<.35&&race.dir&&!['post'].includes(race.dir.shot))cutTo('post');return _director11(dt)};
