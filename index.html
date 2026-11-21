@@ -894,11 +894,11 @@ function pubModel(rc){const avg=rc.field.reduce((a,e)=>a+e.h.or,0)/rc.field.leng
   const ex=sc.map(s=>Math.exp(s)),t=ex.reduce((a,b)=>a+b,0);return ex.map(x=>x/t)}
 const norm=a=>{const t=a.reduce((x,y)=>x+y,0);return a.map(x=>x/t)};
 function toLadder(dec){const fv=dec-1;let best=LADDER[0];for(const L of LADDER)if(oval(L)<=fv)best=L;return best}
-function bookify(p){const q=norm(p.map(x=>Math.pow(Math.max(x,.002),.96)));return q.map(x=>toLadder(1/(x*1.17)))}
+function bookify(p){const q=norm(p.map(x=>Math.pow(Math.max(x,.002),.92)));return q.map(x=>toLadder(1/(x*1.17)))}
 function openMarket(rc){paceMap(rc);const s=(Math.random()*1e9)|0,I=mc(rc,false,2400,s),S=mc(rc,true,2400,s+7),pub=pubModel(rc);
-  rc.simI=simsFor(rc,false,1500,s+11);rc.simS=simsFor(rc,true,1500,s+11);rc.pInfo=I.w;rc.pIn=S.w;rc.pInP=S.p;rc.fc=S.fc;rc.open=norm(rc.field.map((e,k)=>.45*pub[k]+.55*I.w[k]));rc.mt=0;
+  rc.simI=simsFor(rc,false,1500,s+11);rc.simS=simsFor(rc,true,1500,s+11);rc.pInfo=I.w;rc.pIn=S.w;rc.pInP=S.p;rc.fc=S.fc;rc.open=norm(rc.field.map((e,k)=>.72*pub[k]+.28*I.w[k]));rc.mt=0;
   const o=bookify(rc.open);rc.field.forEach((e,k)=>{e.odds=o[k];e.openOdds=o[k];e.prev=o[k];e.pw=1/(oval(o[k])+1);e.mv=0});boardFor(rc)}
-function marketMix(rc,t,noise){const tgt=norm(rc.field.map((e,k)=>.3*rc.pInfo[k]+.7*rc.pIn[k]));return norm(rc.open.map((p,k)=>Math.max(.002,lerp(p,tgt[k],Math.pow(t,.8))*(1+(noise?gauss(Math.random)*.035:0)))))}
+function marketMix(rc,t,noise){const tgt=norm(rc.field.map((e,k)=>.45*rc.pInfo[k]+.55*rc.pIn[k]));return norm(rc.open.map((p,k)=>Math.max(.002,lerp(p,tgt[k],.42*Math.pow(t,.8))*(1+(noise?gauss(Math.random)*.035:0)))))}
 function marketTick(){if(!card||race||card.mt>=.85)return;const rc=card;rc.mt=Math.min(.85,rc.mt+.06);const o=bookify(marketMix(rc,rc.mt,true));
   rc.field.forEach((e,k)=>{const old=oval(e.odds),nw=oval(o[k]);e.mv=nw<old-1e-9?-1:nw>old+1e-9?1:0;e.prev=e.odds;e.odds=o[k];e.pw=1/(nw+1)});updateOdds()}
 function goSP(rc){rc.mt=1;const o=bookify(marketMix(rc,1,false));rc.field.forEach((e,k)=>{e.sp=o[k];e.odds=o[k]});rc.spP=norm(rc.field.map(e=>1/(oval(e.sp)+1)))}
@@ -2459,6 +2459,14 @@ const _director11=director;director=function(dt){const R=rankNow().filter(h=>!h.
 function drawFinishLine(){if(!T||!T.C||(race&&race.sport))return;const{C,NM}=T,i=0,a=scr(C[i][0]+NM[i][0]*(-HALFW),C[i][1]+NM[i][1]*(-HALFW)),b=scr(C[i][0]+NM[i][0]*HALFW,C[i][1]+NM[i][1]*HALFW);
   for(const[dy,c]of[[0,'rgba(246,242,230,.92)'],[1,'rgba(246,242,230,.92)'],[2,'rgba(40,30,20,.25)']])pxl(fx,a[0],a[1]+dy,b[0],b[1]+dy,c)}
 const _buildObjs11=buildObjs;buildObjs=function(){_buildObjs11.apply(this,arguments);objs.push({kind:'sport',key:-1e9,draw:drawFinishLine})};
+// ----- the paddock: a free look at the runners before the off. Right more often than not.
+function paddockNotes(rc){if(rc.paddock)return rc.paddock;const r=mulberry32(rc.no*131+7),F=rc.field,notes=[];
+  const q=F.map((e,i)=>({e,s:(rc.pIn[i]+.003)/(rc.pInfo[i]+.003)*(1+gauss(r)*.5)})).sort((a,b)=>b.s-a.s);
+  const good=['looks bright-eyed and on its toes','is striding out beautifully','has a glossy coat and looks ready','is pulling its lad around, full of beans'],bad=['is sweating up badly','looks dull and lifeless','is walking stiffly','keeps tossing its head, unsettled'];
+  if(q[0].s>1.12)notes.push('<b class="g">'+q[0].e.h.name+'</b> '+good[(r()*4)|0]);if(q[1]&&q[1].s>1.2&&r()<.5)notes.push('<b class="g">'+q[1].e.h.name+'</b> '+good[(r()*4)|0]);
+  const w=q[q.length-1];if(w.s<.88)notes.push('<b class="r">'+w.e.h.name+'</b> '+bad[(r()*4)|0]);
+  return rc.paddock=notes.length?notes.join('; ')+'.':'Nothing stands out in the paddock today.'}
+const _renderCard22=renderCard;renderCard=function(){_renderCard22.apply(this,arguments);if(!card||card.sport&&card.sport!=='race'||!card.pIn)return;const t=$('card').querySelector('.tip');if(t&&!$('card').querySelector('.paddock'))t.insertAdjacentHTML('afterend','<div class="tip paddock"><b>In the paddock:</b> '+paddockNotes(card)+'</div>')};
 
 // ===================== more life in the air and on the ground =====================
 function groundDust(){if(WX&&WX.snowG>.25)return['#f2f5f8','#dfe6ee'];if(T&&T.th&&T.th.desert)return['#dcc48c','#c8ac70'];if(WX&&WX.rain>.3)return['#6a5a3e','#584a32'];return['#a8986a','#c2b282']}
@@ -2626,11 +2634,11 @@ function newGame(){const r=mulberry32((Math.random()*1e9)|0),used=new Set(),rost
   for(const h of roster)h.runs.sort((a,b)=>a.day-b.day);save()}
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(G))}catch(e){}}
 function load(){try{const s=localStorage.getItem(SAVE);if(s){G=JSON.parse(s);return true}}catch(e){}return false}
-const sigOf=h=>.035+.07*(1-h.cons);
+const sigOf=h=>.085+.13*(1-h.cons);
 // the true running model: what a horse can do over a trip, before traffic and luck in running
 function paceAt(h,rc,f,dn,wt,jsk){
   // horses are close in speed: every edge is a percent or two, which is why races are tight and odds matter
-  let b=(h.abil-80)*.028-(wt-126)*.009+jsk*.12-Math.abs(rc.g-h.gp)*.05+h.hp*rc.hilly*.1+dn+(G?fitAdj(h):0)+(rc.course?courseAff(h,rc.course):0);
+  let b=(h.abil-80)*.019-(wt-126)*.009+jsk*.12-Math.abs(rc.g-h.gp)*.05+h.hp*rc.hilly*.1+dn+(G?fitAdj(h):0)+(rc.course?courseAff(h,rc.course):0);
   const fr=rc.fr??2;
   // the shape of the race: a crowded lead burns front-runners out and sets it up for the closers
   if(h.style==='front')b+=f<.55?.3:f>.72?-.14-Math.max(0,fr-2)*.1+(fr===1?.12:0):0;
