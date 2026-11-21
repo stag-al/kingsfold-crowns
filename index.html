@@ -165,6 +165,7 @@
 </style>
 </head>
 <body>
+<div id="splash" style="position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(ellipse at 50% 45%,#2a1e12 0%,#1a120a 55%,#0d0905 100%)"></div>
 <canvas id="gl" class="view"></canvas>
 <canvas id="fx" class="view"></canvas>
 <canvas id="sky" class="view"></canvas>
@@ -2076,8 +2077,13 @@ findPitch=function(){const best={s:-1e9},bad=(x,y)=>{const i=idx(x,y);if(T.water
 // the pitch is the course's own grass: no painted lawn, just the lines
 
 // ----- broke? the Crown's steward will stake you
-function stewardLoan(){if(G.purse>=10)return;G.purse+=50;G.loans=(G.loans||0)+1;save();coins(5);renderCard()}
-const _renderCard9=renderCard;renderCard=function(){_renderCard9.apply(this,arguments);if(G.purse<10&&card&&!(card.bets||[]).length){const c=$('card'),p=c.querySelector('.panel');if(p&&!p.querySelector('.loanB'))p.querySelector('.cTop').insertAdjacentHTML('afterend','<div class="loanB"><span>Your purse is nearly empty.<small>Aldous, the Crown\'s steward, will stake you 50 crowns.'+(G.loans?' He has helped you '+G.loans+' time'+(G.loans>1?'s':'')+' before.':'')+'</small></span><button class="chip" onclick="stewardLoan()">Take 50</button></div>')}};
+function stewardLoan(){if(G.purse>=10)return;G.purse+=50;G.loans=(G.loans||0)+1;save();coins(5);if($('card').style.display!=='none')renderCard()}
+const _renderCard9=renderCard;renderCard=function(){_renderCard9.apply(this,arguments);if(G.purse<10&&card){const c=$('card'),p=c.querySelector('.panel');if(p&&!p.querySelector('.loanB'))p.querySelector('.cTop').insertAdjacentHTML('afterend','<div class="loanB"><span>Your purse is nearly empty.<small>Aldous, the Crown\'s steward, will stake you 50 crowns.'+(G.loans?' He has helped you '+G.loans+' time'+(G.loans>1?'s':'')+' before.':'')+'</small></span><button class="chip" onclick="stewardLoan()">Take 50</button></div>')}};
+
+// the steward is also on hand on the results screen and in the accounts
+function loanHtml(){return G.purse<10?'<div class="loanB"><span>Your purse is nearly empty.<small>Aldous, the Crown\'s steward, will stake you 50 crowns.</small></span><button class="chip" onclick="stewardLoan();this.parentNode.remove();const p=document.querySelector(\'.purse2 b\');if(p)p.textContent=G.purse">Take 50</button></div>':''}
+for(const fn of['settle','sportSettle']){const o=window[fn];if(typeof o!=='function')continue;window[fn]=function(){const r=o.apply(this,arguments);try{const el=$('results').querySelector('.purse2');if(el&&G.purse<10&&!$('results').querySelector('.loanB'))el.insertAdjacentHTML('afterend',loanHtml())}catch(e){}return r}}
+const _saveBox9=saveBoxHtml;saveBoxHtml=function(){return loanHtml()+_saveBox9()};
 
 // ===================== jousting you can see: couched lances that really strike, close camera, hit-stop =====================
 const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
@@ -2903,6 +2909,42 @@ function musicTick(){if(!AC||muted||AC.state!=='running'||!bus())return;MUS.gain
     musT+=Math.max(t,12*E8);musI++}}
 setInterval(musicTick,150);
 addEventListener('pointerdown',()=>{if(!muted){audioStart();if(AC&&AC.state==='suspended')AC.resume()}},{passive:true});
+
+// ===================== STAGAL splash: shown once as the game opens =====================
+(function(){
+  const L={S:['.#####','##....','##....','.####.','....##','....##','#####.'],T:['######','..##..','..##..','..##..','..##..','..##..','..##..'],
+    A:['..##..','.####.','##..##','##..##','######','##..##','##..##'],G:['.#####','##....','##....','##.###','##..##','##..##','.####.'],L:['##....','##....','##....','##....','##....','##....','######']};
+  const word='STAGAL',W=word.length*7-1+4,H=7+4;
+  const ov=document.getElementById('splash');if(!ov)return;
+  const cv=document.createElement('canvas');cv.width=W*2;cv.height=H*2;cv.style.cssText='width:min(78vw,420px);image-rendering:pixelated;image-rendering:crisp-edges;transform:scale(.92);transition:transform .55s cubic-bezier(.2,1.4,.4,1)';
+  const sub=document.createElement('div');sub.textContent='presents';sub.style.cssText='font:600 15px "Pixelify Sans",monospace;letter-spacing:4px;color:#a8946a;opacity:0;transition:opacity .4s ease .35s';
+  ov.appendChild(cv);ov.appendChild(sub);cv.style.opacity='0';cv.style.transition+=',opacity .3s ease';
+  const g=cv.getContext('2d'),S=2,GO=['#fff6d2','#f6dc86','#e8c45a','#d4aa44','#b08a36','#8a6a2c'];
+  // the letters as a pixel mask
+  const M=[];for(let y=0;y<H;y++)M.push(new Array(W).fill(0));
+  [...word].forEach((ch,i)=>{const gl=L[ch];for(let y=0;y<7;y++)for(let x=0;x<6;x++)if(gl[y][x]==='#')M[y+1][x+1+i*7]=1});
+  const on=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&M[y][x];
+  function draw(glint){g.clearRect(0,0,cv.width,cv.height);
+    // soft drop shadow, no outline
+    g.fillStyle='rgba(0,0,0,.55)';for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(on(x-1,y-1)&&!on(x,y))g.fillRect(x*S,y*S,S,S);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(!on(x,y))continue;const top=!on(x,y-1),bot=!on(x,y+1),lft=!on(x-1,y);let c=GO[2];
+      const rgt=!on(x+1,y);if(top)c=GO[0];else if(bot)c=GO[5];else if(rgt)c=GO[4];else if(lft)c=GO[1];else c=((x+y)%2&&y>4)?GO[3]:y<4?GO[1]:GO[2];
+      if(glint!=null){const d=Math.abs((x-y*.6)-glint);if(d<1.2)c='#ffffff';else if(d<2.4)c=GO[0]}
+      g.fillStyle=c;g.fillRect(x*S,y*S,S,S)}}
+  draw(null);
+  // the sound: a whoosh that swells in and fades out inside a second, a bell at its peak
+  function sting(){try{audioStart();if(!AC||muted)return;const go=()=>{const B=bus();if(!B)return;const t=AC.currentTime+.02,s=AC.createBufferSource();s.buffer=nbuf();
+      const f=AC.createBiquadFilter(),q=AC.createGain();f.type='bandpass';f.Q.value=1.4;f.frequency.setValueAtTime(380,t);f.frequency.exponentialRampToValueAtTime(2600,t+.45);f.frequency.exponentialRampToValueAtTime(700,t+.9);
+      q.gain.setValueAtTime(0,t);q.gain.linearRampToValueAtTime(.16,t+.42);q.gain.linearRampToValueAtTime(0,t+.92);s.connect(f);f.connect(q);q.connect(B);s.start(t);s.stop(t+.95);
+      bell(1174.7,1.1,.05,.42);pluck(587.3,.9,.05,.42);pluck(880,.8,.04,.46);pluck(1174.7,.7,.035,.5)};
+    if(AC.state==='suspended')AC.resume().then(go).catch(()=>{});else go()}catch(e){}}
+  let done=false;function finish(){if(done)return;done=true;ov.style.transition='opacity .4s ease';ov.style.opacity='0';setTimeout(()=>ov.remove(),420)}
+  ov.addEventListener('pointerdown',finish);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{cv.style.opacity='1';cv.style.transform='scale(1)';sub.style.opacity='1'}));
+  setTimeout(sting,120);
+  const t0=performance.now();(function glint(){const t=(performance.now()-t0)/1000;if(done)return;if(t>.55&&t<1.15){draw((t-.55)/.6*(W+10)-6)}else if(t>=1.15)draw(null);if(t<1.2)requestAnimationFrame(glint)})();
+  if(!window.__holdSplash)setTimeout(finish,1750);
+})();
 
 </script>
 <script>
