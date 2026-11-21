@@ -105,6 +105,8 @@
   .onball{font-size:11.5px;color:#efd9a0;margin-bottom:2px}.onball small{color:#a8946a}
   #soundP{z-index:9;background:rgba(8,10,14,.6)}.sndP{max-width:420px}.sndR{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #3a2a18}.sndR span{flex:1;display:block}.sndR b{display:block;font-size:15px;color:#efd9a0}.sndR small{display:block;font-size:11.5px;color:#a8946a}.sndR input{width:42%;accent-color:#e8c45a}.sndR i{width:28px;text-align:right;font-style:normal;color:#e8c45a;font-size:13px}
   .sndB{margin-left:6px;width:34px;height:34px;font-size:17px;color:#e8d39a;background:#2a1e12;border:2px solid #8a6a32;border-radius:4px;flex:none}
+  .tagL,.tagP{display:inline-block;font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.5px;padding:0 4px;margin-right:5px;border-radius:2px;vertical-align:1px}.tagL{background:#b8322a;color:#fff3e8}.tagP{background:#3a2a18;color:#c9b27a;border:1px solid #5a4026}
+  .lvN{display:inline-block;max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
   .divd{margin:6px 0;padding:5px 8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:12.5px;color:#efd9a0}
 
   .pace{margin:6px 0 4px;font-size:12px;color:#c9b27a;line-height:1.35}.pace b{color:#e8c45a}
@@ -1005,7 +1007,7 @@ function renderCard(){const rc=card;if(!rc)return;if(rc.sport&&rc.sport!=='race'
     h+=grp('Winner\'s stall draw',[[{m:'draw',side:0},'1–4 inside'],[{m:'draw',side:1},'5–8 outside']]);
     if(rc.hurdle)h+=grp('Any faller?',[[{m:'fall',side:1},'Yes'],[{m:'fall',side:0},'No']])}
   const bets=rc.bets;
-  h+='<div class="betsum">'+(bets.length?'<b>Your bets</b>'+bets.map((b,k)=>'<span>'+b.cost+' · '+b.label+(b.legs.length===1?' <i>'+amer(b.dec)+'</i>':' <i>'+amer(b.dec)+'</i><small>'+b.legs.map(L=>legLabel(L,rc)).join(' + ')+'</small>')+' <a onclick="cancelBet('+k+')">✕</a></span>').join(''):'Tap any price to add it to your bet slip. Tap a horse for its full record.')+'</div>';
+  h+='<div class="betsum">'+(bets.length?'<b>Your bets</b>'+bets.map((b,k)=>'<span>'+betTag(b)+b.cost+' · '+b.label+(b.legs.length===1?' <i>'+amer(b.dec)+'</i>':' <i>'+amer(b.dec)+'</i><small>'+b.legs.map(L=>legLabel(L,rc)).join(' + ')+'</small>')+' <a onclick="cancelBet('+k+')">✕</a></span>').join(''):'Tap any price to add it to your bet slip. Tap a horse for its full record.')+'</div>';
   h+='<div class="mkt">Prices move as money comes in: ▼ shortening (being backed), ▲ drifting. Same Race Parlays are priced from thousands of simulated runnings of this exact race, so linked picks (a winner and a big margin, say) are priced together, not multiplied.</div>';
   h+='<button class="go" onclick="startRace()">'+(bets.length?'Lock it in. Off to the post!':'Just watch this one')+'</button>';
   h+='<div class="stats">'+(G.stats.clvN?'Beat the starting price on '+(G.stats.beat||0)+' of '+G.stats.clvN+' win bets (avg '+(G.stats.clv/G.stats.clvN*100>=0?'+':'')+Math.round(G.stats.clv/G.stats.clvN*100)+'%). ':'')+'ROI '+(G.stats.staked?Math.round((G.stats.returned-G.stats.staked)/G.stats.staked*100)+'%':'–')+' · '+G.stats.bets+' bets · '+G.stats.won+' won'+(G.loans?' · owed '+G.loans*50:'')+' <a onclick="resetGame()">New season</a></div></div>';
@@ -1029,14 +1031,14 @@ function settleBets(rc){const res=rc.sport&&rc.sport!=='race'?race.res:realResul
     if(b.legs.length===1&&b.legs[0].m==='win'&&!b.live&&!b.legs[0].boost){const e=rc.field[b.legs[0].a],clv=b.dec/winDec({odds:e.sp})-1;G.stats.clvN=(G.stats.clvN||0)+1;G.stats.clv=(G.stats.clv||0)+clv;if(clv>0)G.stats.beat=(G.stats.beat||0)+1}
     w=Math.floor(w);ret+=w;lines.push({b,w,ok})}
   return{lines,ret}}
-function betLinesHtml(lines,rc){return'<div class="bets">'+lines.map(l=>'<div class="'+(l.cash?'cash':l.w?'won':'lost')+'"><span>'+l.b.cost+' · '+l.b.label+' <small>'+amer(l.b.dec)+(l.b.live?' in-running':'')+'</small>'+(l.b.legs.length>1?'<small class="legs">'+l.b.legs.map((L,k)=>(l.ok[k]===false?'✗ ':l.ok[k]===null?'– ':'✓ ')+legLabel(L,rc)).join('<br>')+'</small>':'')+'</span><b>'+(l.cash?'cashed '+l.w:l.w?'+'+l.w:'lost')+'</b></div>').join('')+'</div>'}
+function betLinesHtml(lines,rc){return'<div class="bets">'+lines.map(l=>'<div class="'+(l.cash?'cash':l.w?'won':'lost')+'"><span>'+betTag(l.b)+l.b.cost+' · '+l.b.label+' <small>'+amer(l.b.dec)+'</small>'+(l.b.legs.length>1?'<small class="legs">'+l.b.legs.map((L,k)=>(l.ok[k]===false?'✗ ':l.ok[k]===null?'– ':'✓ ')+legLabel(L,rc)).join('<br>')+'</small>':'')+'</span><b>'+(l.cash?'cashed '+l.w:l.w?'+'+l.w:'lost')+'</b></div>').join('')+'</div>'}
 // ----- in-running, sportsbook style
 function cashValue(b){if(!race||b.legs.some(L=>L.m!=='win'&&L.m!=='top3'))return 0;let p=1;for(const L of b.legs){const h=horses[L.a];if(!h||h.pw==null||h.fallen)return 0;p*=L.m==='win'?h.pw:h.pp}return Math.floor(b.stake*b.dec*p*.9)}
 function liveBet(no){const cap=Math.max(20,Math.round(G.purse*liveCapPct())),used=card.bets.filter(b=>b.live).reduce((a,b)=>a+b.cost,0);if(suspended()||G.purse<liveStake)return;if(used+liveStake>cap){say('The bookmaker shakes his head: no more in-running bets from you this race.');return}computeLive();const h=horses.find(o=>o.no===no);if(!h||!h.lo)return;G.purse-=liveStake;const d=oval(h.lo)+1;
   card.bets.push({legs:[{m:'win',a:no-1}],stake:liveStake,cost:liveStake,dec:d,live:1,label:'#'+no+' '+h.H.name+' to win'});h.liab=(h.liab||0)+liveStake;G.stats.bets++;G.stats.staked+=liveStake;save();blip(1320,.06,'square',.05);say('Bet placed: '+liveStake+' on '+h.H.name+' at '+amer(d)+'.');buildLive()}
 function buildLive(){if($('live').style.display!=='block')return;const sus=suspended();let h='<div class="lvH"><b class="bl">Live</b><span>'+coin()+G.purse+'</span><button class="x" onclick="toggleLive()">✕</button></div>';
   const open=card.bets.filter(b=>!b.cashed);
-  if(open.length){h+='<div class="lvS">Your bets</div>';for(const b of open){const v=cashValue(b);h+='<div class="lvB"><span>'+b.cost+' · '+b.label+' <small>'+amer(b.dec)+'</small></span><button class="chip" '+(sus||!v?'disabled':'')+' onclick="cashOut('+card.bets.indexOf(b)+')">'+(v?'Cash out '+v:'No cash out')+'</button></div>'}}
+  if(open.length){h+='<div class="lvS">Your bets</div>';for(const b of open){const v=cashValue(b);h+='<div class="lvB"><span>'+betTag(b)+b.cost+' · '+b.label+' <small>'+amer(b.dec)+'</small></span><button class="chip" '+(sus||!v?'disabled':'')+' onclick="cashOut('+card.bets.indexOf(b)+')">'+(v?'Cash out '+v:'No cash out')+'</button></div>'}}
   h+='<div class="lvS">'+(sus?'Betting suspended':'Live win odds · stake '+[5,10,25,50].map(v=>'<a class="'+(liveStake===v?'on':'')+'" onclick="liveStake='+v+';buildLive()">'+v+'</a>').join(''))+'</div><div class="lvO">';
   for(const x of rankNow()){h+='<button '+(sus||x.fallen||x.finished||G.purse<liveStake?'disabled':'')+' onclick="liveBet('+x.no+')"><i class="silk sm" style="'+silkCss(x.H.silk)+'"></i>'+x.no+'. '+x.H.name.split(' ')[0]+' <b>'+(x.fallen?'F':x.lo?amer(oval(x.lo)+1):'–')+'</b></button>'}
   h+='</div>';const RL=(race.rlive||[]).slice(-4).reverse();if(RL.length)h+='<div class="lvS">The ring</div>'+RL.map(b=>{const D=rivDef(b.id);return'<div class="lvB"><span style="color:'+D.c+'">'+D.name+'</span><span>'+b.s+' on #'+b.no+' at '+amer(b.d)+'</span></div>'}).join('');h+='<div class="kvn">In-running limit: '+Math.max(20,Math.round(G.purse*.15))+' a race. Betting closes two furlongs out.</div>';$('live').innerHTML=h}
@@ -1167,7 +1169,7 @@ function openHist(){ensureRivals();const H=G.hist;let rows=H.slice();
   h+='<div class="hf">Show '+[['all','All'],['W','Wins'],['L','Losses'],['parlay','Parlays']].map(([k,n])=>'<button class="chip'+(histFilter===k?' on':'')+'" onclick="histFilter=\''+k+'\';openHist()">'+n+'</button>').join('')+'</div>';
   h+='<div class="hf">Sort '+[['recent','Recent'],['won','Most won'],['lost','Most lost'],['odds','Longest odds'],['stake','Biggest stake']].map(([k,n])=>'<button class="chip'+(histSort===k?' on':'')+'" onclick="histSort=\''+k+'\';openHist()">'+n+'</button>').join('')+'</div>';
   if(!rows.length)h+='<div class="legend">Nothing here yet. Place a bet and watch it run.</div>';
-  for(const x of rows.slice(0,150)){const n=net(x);h+='<div class="hr '+(x.res==='W'||x.res==='P'?'w':x.res==='C'?'c':'l')+'"><div><b>'+x.label+'</b><small>Race '+x.no+' · '+x.name+' · '+THEMES[x.c].name+' · '+x.se+', year '+x.yr+(x.live?' · in-running':'')+'</small></div><div class="hn"><i>'+amer(x.dec)+'</i><span>'+x.stake+' → '+x.ret+'</span><b>'+(n>=0?'+':'')+n+'</b></div></div>'}
+  for(const x of rows.slice(0,150)){const n=net(x);h+='<div class="hr '+(x.res==='W'||x.res==='P'?'w':x.res==='C'?'c':'l')+'"><div><b>'+betTag(x)+x.label+'</b><small>Race '+x.no+' · '+x.name+' · '+THEMES[x.c].name+' · '+x.se+', year '+x.yr+(x.live?' · in-running':'')+'</small></div><div class="hn"><i>'+amer(x.dec)+'</i><span>'+x.stake+' → '+x.ret+'</span><b>'+(n>=0?'+':'')+n+'</b></div></div>'}
   h+='</div>';$('hist').innerHTML=h;$('hist').style.display='flex'}
 
 // ===================== weather and the little wonders: rain, storms, snow, mist, wind, rainbows, petals, leaves, fireflies, birds =====================
@@ -1557,7 +1559,7 @@ function renderSportCard(){if(card.sport==='polo')return renderPoloCard();const 
   else{const grp=(t,arr)=>'<div class="spG"><div class="spT">'+t+'</div><div class="spB">'+arr.map(([L,txt])=>oddBtn(L,txt)).join('')+'</div></div>';
     if(J){h+=grp('Will any knight be unhorsed?',[[{m:'unh',side:1},'Yes'],[{m:'unh',side:0},'No']]);h+=grp('Lances broken ('+rc.brkLine+')',[[{m:'brk',side:1,line:rc.brkLine},'Over'],[{m:'brk',side:0,line:rc.brkLine},'Under']]);h+=grp('Does the final go to a third pass?',[[{m:'f3',side:1},'Yes'],[{m:'f3',side:0},'No']])}
     else{h+=grp('Winning score ('+rc.topLine+')',[[{m:'atop',side:1,line:rc.topLine},'Over'],[{m:'atop',side:0,line:rc.topLine},'Under']]);h+=grp('Total bullseyes ('+rc.bullLine+')',[[{m:'abull',side:1,line:rc.bullLine},'Over'],[{m:'abull',side:0,line:rc.bullLine},'Under']]);h+=grp('A perfect five bullseyes?',[[{m:'aperf',side:1},'Yes'],[{m:'aperf',side:0},'No']])}}
-  const bets=rc.bets;h+='<div class="betsum">'+(bets.length?'<b>Your bets</b>'+bets.map((b,k)=>'<span>'+b.cost+' · '+b.label+' <i>'+amer(b.dec)+'</i>'+(b.legs.length>1?'<small>'+b.legs.map(L=>legLabel(L,rc)).join(' + ')+'</small>':'')+' <a onclick="cancelBet('+k+')">✕</a></span>').join(''):'Tap any price to add it to your bet slip.')+'</div>';
+  const bets=rc.bets;h+='<div class="betsum">'+(bets.length?'<b>Your bets</b>'+bets.map((b,k)=>'<span>'+betTag(b)+b.cost+' · '+b.label+' <i>'+amer(b.dec)+'</i>'+(b.legs.length>1?'<small>'+b.legs.map(L=>legLabel(L,rc)).join(' + ')+'</small>':'')+' <a onclick="cancelBet('+k+')">✕</a></span>').join(''):'Tap any price to add it to your bet slip.')+'</div>';
   h+='<button class="go" onclick="startRace()">'+(bets.length?'Lock it in. Sound the trumpets!':'Just watch this one')+'</button></div>';
   $('card').innerHTML=h;$('card').scrollTop=sc}
 // ----- staging the event in the world
@@ -1711,7 +1713,7 @@ function renderPoloCard(){const rc=card,th=THEMES[rc.course],SE=seasonOf(rc.no),
   if(cardTab==='win'){h+=grp('Total goals ('+rc.totLine+')',[[{m:'ptot',side:1,line:rc.totLine},'Over'],[{m:'ptot',side:0,line:rc.totLine},'Under']]);h+=grp('Half-time leader',[[{m:'pht',side:0},A.short],[{m:'pht',side:1},'Level'],[{m:'pht',side:2},B.short]]);h+=grp('First goal',[[{m:'pfirst',a:0},A.short],[{m:'pfirst',a:1},B.short]])}
   else if(cardTab==='h2h'){h+='<div class="tHead"><span>Tap a player for props and form</span><span>Anytime</span></div>';rc.teams.forEach((T0,t)=>T0.players.forEach((p,j)=>{h+=playerRow(rc,t,j)}))}
   else h+=grp('Level after four chukkas? (sudden death)',[[{m:'pgg',side:1},'Yes'],[{m:'pgg',side:0},'No']]);
-  const bets=rc.bets;h+='<div class="betsum">'+(bets.length?'<b>Your bets</b>'+bets.map((b,k)=>'<span>'+b.cost+' · '+b.label+' <i>'+amer(b.dec)+'</i>'+(b.legs.length>1?'<small>'+b.legs.map(L=>legLabel(L,rc)).join(' + ')+'</small>':'')+' <a onclick="cancelBet('+k+')">✕</a></span>').join(''):'Tap any price to add it to your bet slip.')+'</div>';
+  const bets=rc.bets;h+='<div class="betsum">'+(bets.length?'<b>Your bets</b>'+bets.map((b,k)=>'<span>'+betTag(b)+b.cost+' · '+b.label+' <i>'+amer(b.dec)+'</i>'+(b.legs.length>1?'<small>'+b.legs.map(L=>legLabel(L,rc)).join(' + ')+'</small>':'')+' <a onclick="cancelBet('+k+')">✕</a></span>').join(''):'Tap any price to add it to your bet slip.')+'</div>';
   h+='<button class="go" onclick="startRace()">'+(bets.length?'Lock it in. Ring the bell!':'Just watch this one')+'</button></div>';$('card').innerHTML=h;$('card').scrollTop=sc}
 // ----- finding a flat, clear field
 function findPitch(){const best={s:-1e9};for(const[Lx,Ly]of[[15,9],[13,8],[11,7]]){for(let cy=4;cy<N-4-Ly;cy+=2)for(let cx=4;cx<N-4-Lx;cx+=2){let ok=true,h0=0,n=0;
@@ -2454,7 +2456,7 @@ snapPhoto=function(){const ox=cam.x,oy=cam.y;try{const R=rankNow().filter(h=>!h.
 const _director11=director;director=function(dt){const R=rankNow().filter(h=>!h.fallen),L=R[0],S2=R[1];
   if(race&&race.state==='run'&&L&&S2&&!L.finished&&race.D-L.dist<1.6&&L.dist-S2.dist<.35&&race.dir&&!['post'].includes(race.dir.shot))cutTo('post');return _director11(dt)};
 // a crisp painted finish line across the track (the old chequer smeared into blobs at this angle)
-function drawFinishLine(){if(!T||!T.C)return;const{C,NM}=T,i=0,a=scr(C[i][0]+NM[i][0]*(-HALFW),C[i][1]+NM[i][1]*(-HALFW)),b=scr(C[i][0]+NM[i][0]*HALFW,C[i][1]+NM[i][1]*HALFW);
+function drawFinishLine(){if(!T||!T.C||(race&&race.sport))return;const{C,NM}=T,i=0,a=scr(C[i][0]+NM[i][0]*(-HALFW),C[i][1]+NM[i][1]*(-HALFW)),b=scr(C[i][0]+NM[i][0]*HALFW,C[i][1]+NM[i][1]*HALFW);
   for(const[dy,c]of[[0,'rgba(246,242,230,.92)'],[1,'rgba(246,242,230,.92)'],[2,'rgba(40,30,20,.25)']])pxl(fx,a[0],a[1]+dy,b[0],b[1]+dy,c)}
 const _buildObjs11=buildObjs;buildObjs=function(){_buildObjs11.apply(this,arguments);objs.push({kind:'sport',key:-1e9,draw:drawFinishLine})};
 
@@ -2483,6 +2485,108 @@ const _drawAmb17=drawAmb;drawAmb=function(){_drawAmb17();if(typeof fx==='undefin
     if(a.k==='seed'){fx.globalAlpha=.85*fade;fx.fillStyle=a.c;fx.fillRect(x,y,1,1);fx.globalAlpha=.35*fade;fx.fillRect(x-1,y,1,1);fx.fillRect(x+1,y,1,1);fx.fillRect(x,y-1,1,1)}
     else{const tw=.35+.35*Math.sin(a.ph*4);fx.globalAlpha=tw*fade;fx.fillStyle='#ffe9a8';fx.fillRect(x,y,1,1)}}
   fx.globalAlpha=1};
+
+// ===================== grandstands that face the action =====================
+// The stand art only faced one way; build it in all four facings and turn each stand toward the nearest action.
+const STR=[(u,v)=>[u,v],(u,v)=>[1-u,v],(u,v)=>[v,u],(u,v)=>[v,1-u]];// faces +x, -x, +y, -y
+function standSprR(rot){const T0=STR[rot],rng=mulberry32(401),s=newSpr(64,72,32,46);
+  const bx=(u0,v0,u1,v1,z0,z1,c)=>{const a=T0(u0,v0),b=T0(u1,v1);box(s,Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1]),z0,z1,c)};
+  const P3=([u,v,z])=>{const[a,b]=T0(u,v);return[a,b,z]};
+  bx(.1,.1,.9,.9,0,6,'#6b4a2e');bx(.1,.1,.62,.9,6,12,'#7a5636');bx(.1,.1,.36,.9,12,18,'#8a6440');
+  for(const[u,z]of[[.9,6],[.62,12],[.36,18]])pl(s,P3([u,.1,z]),P3([u,.9,z]),'#a8804e');
+  bx(.06,.06,.14,.14,0,30,'#3a2616');bx(.06,.86,.14,.94,0,30,'#3a2616');
+  fpoly(s,[[.02,.02,30],[.5,.02,30],[.5,.98,30],[.02,.98,30]].map(P3),'#8a2e24');
+  for(let k=0;k<6;k++){const v=.02+k*.16;fpoly(s,[[.5,v,30],[.5,v+.08,30],[.5,v+.08,26],[.5,v,26]].map(P3),k%2?'#e2d6b6':'#8a2e24')}
+  finish(s,rng,.1);return s}
+function facingRot(x,y,tx,ty){const fx_=tx-x,fy_=ty-y;return Math.abs(fx_)>Math.abs(fy_)?(fx_>0?0:1):(fy_>0?2:3)}
+const _buildObjs18=buildObjs;buildObjs=function(){_buildObjs18.apply(this,arguments);if(!SPR.standR)SPR.standR=[0,1,2,3].map(standSprR);
+  for(const o of objs){if(o.kind!=='stand')continue;let best=null,bd=1e9;for(let i=0;i<T.S;i+=3){const c=T.C[i],d=(c[0]-o.x-.5)**2+(c[1]-o.y-.5)**2;if(d<bd){bd=d;best=c}}if(best)o.rot=facingRot(o.x+.5,o.y+.5,best[0],best[1])}};
+// a stand seen straight on (facing down the screen) and from behind (facing up the screen)
+function standFrontSpr(back){const s=newSpr(66,58,33,46),g=s.g,R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)};
+  if(!back){R(3,44,60,3,'rgba(10,16,6,.35)');// shadow
+    R(6,14,54,10,'#4e3420');for(let x=8;x<58;x+=6)R(x,14,1,10,'#3e2818');// back wall
+    const tiers=[[22,'#8a6440'],[30,'#7a5636'],[38,'#6b4a2e']];
+    for(const[y,c]of tiers){R(6,y,54,2,'#a8804e');R(6,y+2,54,6,c);R(6,y+2,54,1,'#5a3e26');for(let x=10;x<58;x+=8)R(x,y+3,1,5,'#5a3e26')}
+    R(6,44,54,2,'#4a3220')}
+  else{R(3,44,60,3,'rgba(10,16,6,.35)');R(6,16,54,30,'#5a3a22');for(let x=8;x<58;x+=5)R(x,16,1,30,'#4a2e1a');for(let y=22;y<46;y+=7)R(6,y,54,1,'#4a2e1a');R(6,16,54,2,'#6b4a2e')}
+  // posts and the striped canopy
+  for(const x of[5,58])R(x,6,3,40,'#3a2616');R(4,4,58,5,'#8a2e24');R(4,4,58,1,'#a8382c');
+  for(let k=0;k<9;k++){R(4+k*6.5|0,9,6,2,k%2?'#e2d6b6':'#8a2e24');R((4+k*6.5|0)+1,11,4,1,k%2?'#e2d6b6':'#8a2e24')}
+  // pennants on the roof
+  for(const x of[10,33,56]){R(x,0,1,5,'#3a2616');R(x+1,0,4,2,['#e8c45a','#2f56a8','#3a7a3a'][x%3])}
+  return s}
+function drawStandObj(o,sh){const[sx,sy]=scr(o.x,o.y),view=o.view||'axis';
+  if(view==='axis'){drawSpr(SPR.standR?SPR.standR[o.rot||0]:SPR.stand,o.x,o.y,sh)}
+  else{if(!SPR.standF){SPR.standF=standFrontSpr(false);SPR.standB=standFrontSpr(true)}drawSpr(view==='front'?SPR.standF:SPR.standB,o.x,o.y,sh)}
+  if(sh)return;const ex=race&&race.state!=='post'?1:0,hot=race&&(race.state==='done'||race.cheer>0);
+  const person=(px,py,k,r)=>{const cheer=(ex||(race&&race.cheer>0))&&Math.sin(now*(hot?11:7)+k*2.1+r+o.seed)>.3?1:0,c=crowdC[(k*3+r*5+o.seed)%crowdC.length];
+    fx.fillStyle='#e0b48a';fx.fillRect(px,py-5-cheer,1,1);fx.fillStyle=c;fx.fillRect(px,py-4-cheer,1,2);if(cheer){fx.fillStyle='#e0b48a';fx.fillRect(px-1,py-6,1,1);fx.fillRect(px+1,py-6,1,1)}};
+  if(view==='axis'){for(let r=0;r<3;r++)for(let k=0;k<6;k++){const[u,v]=STR[o.rot||0]([.82,.55,.28][r],.18+k*.13);person(Math.round(sx+(u-v)*TW/2),Math.round(sy+(u+v)*TH/2-[6,12,18][r]),k,r)}}
+  else if(view==='front'){const x0=sx-33,y0=sy-46;for(let r=0;r<3;r++)for(let k=0;k<11;k++)person(x0+9+k*5+(r%2)*2,y0+[38,30,22][r]+1,k,r)}
+  else{const x0=sx-33,y0=sy-46;for(let k=0;k<12;k++)if((k*7+o.seed)%3)person(x0+9+k*4+(k%2),y0+16,k,0)}}
+// pick the view: straight on if the action is down (or up) the screen, an angled build otherwise
+const _buildObjs19=buildObjs;buildObjs=function(){_buildObjs19.apply(this,arguments);for(const o of objs){if(o.kind!=='stand')continue;let best=null,bd=1e9;for(let i=0;i<T.S;i+=3){const c=T.C[i],d=(c[0]-o.x-.5)**2+(c[1]-o.y-.5)**2;if(d<bd){bd=d;best=c}}if(!best)continue;
+  const fx_=best[0]-o.x-.5,fy_=best[1]-o.y-.5,scx=fx_-fy_,scy=(fx_+fy_)/2;o.view=Math.abs(scy)>Math.abs(scx)*.55?(scy>0?'front':'back'):'axis'}};
+
+// ===================== a livelier joust, and a camera that keeps both knights in shot =====================
+// the zoom is as close as it can be while both knights stay on screen
+joustZoom=function(){if(!SP||!SP.a)return;const a=scr(SP.a.x,SP.a.y),b=scr(SP.b.x,SP.b.y),sep=Math.max(Math.abs(a[0]-b[0])+28,Math.abs(a[1]-b[1])*1.9+40);
+  let z=clamp(AW*.86/sep,1.15,2.8);if(SP.phase==='charge'&&SP.hit)z=Math.max(z,2.5);if(SP.phase==='between')z=1.7;if(SP.phase==='ready')z=Math.min(z,2.2);SP.zt=z};
+// herald, crowd and colour
+const _joustSim3=joustSim;joustSim=function(dt){const ph0=SP.phase;_joustSim3(dt);if(!SP||!SP.a)return;
+  if(SP.phase==='charge'&&ph0!=='charge'){horn(mf(74),.22,.05);horn(mf(78),.22,.045,.24);horn(mf(81),.5,.05,.48);crowd(.55)}// a herald's call for every pass
+  if(SP.phase==='charge'&&!SP.hit){const d=Math.abs(SP.a.sx-SP.b.sx);race.cheer=Math.max(race.cheer,.35+(1-Math.min(1,d/9))*.8);crowd(.3+(1-Math.min(1,d/9))*.6)}
+  if(SP.phase==='between'&&ph0!=='between'){const L=SP.log[SP.log.length-1];if(L){for(const s of T.stands)for(let k=0;k<4;k++)tossHat(s.x,s.y);const w=card.comp[L.w];
+      for(let k=0;k<40&&bits.length<760;k++){const R=SP.a.unhorsed?SP.b:SP.a;bits.push({x:(SP.a.x+SP.b.x)/2,y:(SP.a.y+SP.b.y)/2,z:16,vx:(Math.random()-.5)*2.4,vy:(Math.random()-.5)*2.4,vz:30+Math.random()*50,c:[w.silk[0],w.silk[1],'#ffe9b0'][k%3],s:Math.random()<.4?2:1,life:2.2,rest:1})}}}};
+const _impact5=impact;impact=function(po){_impact5(po);if(Math.max(po[0],po[1])>=1){for(const s of T.stands)if(Math.random()<.7)tossHat(s.x,s.y);race.cheer=Math.max(race.cheer,1.6);crowd(1)}};
+// pennants fluttering along the barrier
+const _drawTilt3=drawTilt;drawTilt=function(){_drawTilt3();const P=SP.tilt;for(let k=4;k<P.length;k+=4){const a=scr(P[k][0],P[k][1]),f=Math.floor(now*8+k)%3,c=['#b8322a','#2f56a8','#e8c45a'][(k/4|0)%3];
+  fx.fillStyle='#3a2616';fx.fillRect(a[0],a[1]-16,1,6);fx.fillStyle=c;fx.fillRect(a[0]+1,a[1]-16,3+(f===1?1:0),1);fx.fillRect(a[0]+1,a[1]-15,2+(f===2?1:0),1);fx.fillRect(a[0]+1,a[1]-14,1,1)}};
+
+// ===================== live betting for every sport =====================
+// Prices come from re-running each sport's own model from the current state (never from the scripted result),
+// with a bookmaker's margin, a per-event limit, and suspension at the decisive moments.
+const LIVE_MARGIN=1.14;
+function sportLiveProbs(){const rc=card,r=mulberry32((now*1000)|0),N0=900;
+  if(rc.sport==='polo'){// remaining goals for each side from the pre-match scoring rates, then sudden death
+    const k=PL.ev[PL.ei]?PL.ev[PL.ei].k:PHASES,left=Math.max(0,PHASES-k)/PHASES,sims=rc.simI||[];let mA=0,mB=0;for(const s of sims){mA+=s.g[0];mB+=s.g[1]}mA/=sims.length||1;mB/=sims.length||1;
+    const pois=(l)=>{let L=Math.exp(-l),k2=0,p=1;do{k2++;p*=r()}while(p>L);return k2-1};let w=[0,0];
+    for(let i=0;i<N0;i++){const a=PL.g[0]+pois(mA*left),b=PL.g[1]+pois(mB*left);if(a>b)w[0]++;else if(b>a)w[1]++;else w[r()<mA/(mA+mB)?0:1]++}
+    return[{L:{m:'pw',a:0},n:rc.teams[0].name,p:w[0]/N0},{L:{m:'pw',a:1},n:rc.teams[1].name,p:w[1]/N0}]}
+  if(rc.sport==='joust'){const K=rc.comp,res=rc.result,w=new Array(K.length).fill(0);
+    for(let i=0;i<N0;i++){const out=[];// replay the tourney from where we are
+      const boutFrom=(bi,ia,ib)=>{let pa=0,pb=0;const live=bi===SP.bout;if(live){pa=SP.score[bi][0];pb=SP.score[bi][1]}const start=live?SP.pass+(SP.hit?1:0):0;
+        for(let p=start;p<5;p++){const oa=passOut(K[ia],K[ib],r),ob=passOut(K[ib],K[ia],r);if(oa===3&&ob!==3)return ia;if(ob===3&&oa!==3)return ib;pa+=oa===3?0:oa;pb+=ob===3?0:ob;if(p>=2&&pa!==pb)break}
+        return pa>pb?ia:pb>pa?ib:(kRating(K[ia])+r()*10>kRating(K[ib])+r()*10?ia:ib)};
+      const P=res.pair,done=SP.log.map(l=>l.w);let f0,f1;
+      f0=SP.bout>0?done[0]:boutFrom(0,P[0][0],P[0][1]);f1=SP.bout>1?done[1]:boutFrom(1,P[1][0],P[1][1]);w[boutFrom(2,f0,f1)]++}
+    return K.map((k2,i)=>({L:{m:'sw',a:i},n:k2.name,p:w[i]/N0})).filter(x=>x.p>.002)}
+  if(rc.sport==='archery'){const A=rc.comp,res=rc.result,w=new Array(A.length).fill(0),known=A.map((a,i)=>i<SP.k?res.tot[i]:null),cur=SP.k<A.length?SP.k:-1,shotsDone=SP.shot||0;
+    const curArrows=cur>=0?res.shots[cur].slice(0,shotsDone).reduce((a,s)=>a+s.sc,0):0;
+    for(let i=0;i<N0;i++){let best=-1,bi=0;for(let j=0;j<A.length;j++){let t;if(known[j]!=null)t=known[j];else{const from=j===cur?shotsDone:0;t=(j===cur?curArrows:0);for(let q=from;q<5;q++)t+=shoot(A[j],rc.wind,r).sc;t+=Math.round(A[j].speed*6+r()*2)}
+        if(t>best||(t===best&&r()<.5)){best=t;bi=j}}w[bi]++}
+    return A.map((a,i)=>({L:{m:'sw',a:i},n:a.name,p:w[i]/N0})).filter(x=>x.p>.002)}
+  return[]}
+function sportSuspended(){if(!race||race.state!=='run')return true;const rc=card;
+  if(rc.sport==='polo')return!PL||['shot','celebrate'].includes(PL.phase)||(PL.ev[PL.ei]&&PL.ev[PL.ei].k>=PHASES-2);
+  if(rc.sport==='joust')return!SP||(SP.phase==='charge'&&!SP.hit&&Math.abs(SP.a.sx-SP.b.sx)<4)||SP.bout>2;
+  if(rc.sport==='archery')return!SP||SP.k>=rc.comp.length-1&&SP.shot>=3;return true}
+let liveCache={t:-9,list:[]};
+function sportLiveList(){if(now-liveCache.t>1.2){liveCache={t:now,list:sportLiveProbs().map(x=>({...x,dec:qDec(clamp(1/(Math.max(.01,x.p)*LIVE_MARGIN),1.02,60))}))}}return liveCache.list}
+function liveSportBet(i){const x=sportLiveList()[i];if(!x)return;const cap=Math.max(20,Math.round(G.purse*liveCapPct())),used=card.bets.filter(b=>b.live).reduce((a,b)=>a+b.cost,0);
+  if(sportSuspended()||G.purse<liveStake)return;if(used+liveStake>cap){say('The bookmaker shakes his head: no more in-play bets from you this event.');return}
+  G.purse-=liveStake;card.bets.push({legs:[x.L],stake:liveStake,cost:liveStake,dec:x.dec,live:1,label:x.n+' to win'});G.stats.bets++;G.stats.staked+=liveStake;save();blip(1320,.06,'square',.05);say('Live bet: '+liveStake+' on '+x.n+' at '+amer(x.dec)+'.');buildLive()}
+function betTag(b){return b.live?'<em class="tagL">LIVE</em>':'<em class="tagP">PRE</em>'}
+const _buildLive20=buildLive;buildLive=function(){if(!race||!race.sport)return _buildLive20();if($('live').style.display!=='block')return;const sus=sportSuspended();
+  let h='<div class="lvH"><b class="bl">Live</b><span>'+coin()+G.purse+'</span><button class="x" onclick="toggleLive()">✕</button></div>';
+  if(card.bets.length){h+='<div class="lvS">Your bets</div>'+card.bets.map(b=>'<div class="lvB"><span>'+betTag(b)+b.cost+' · '+b.label+' <small>'+amer(b.dec)+'</small></span></div>').join('')}
+  h+='<div class="lvS">'+(sus?'Betting suspended':'Live winner odds · stake '+[5,10,25,50].map(v=>'<a class="'+(liveStake===v?'on':'')+'" onclick="liveStake='+v+';buildLive()">'+v+'</a>').join(''))+'</div><div class="lvO">';
+  sportLiveList().forEach((x,i)=>{h+='<button '+(sus||G.purse<liveStake?'disabled':'')+' onclick="liveSportBet('+i+')">'+'<span class="lvN">'+x.n.replace(/^Sir /,'')+'</span> <b>'+amer(x.dec)+'</b></button>'});
+  h+='</div><div class="kvn">In-play limit: '+Math.max(20,Math.round(G.purse*liveCapPct()))+' an event. Betting is suspended at the big moments.</div>';$('live').innerHTML=h};
+const _toggleLive20=toggleLive;toggleLive=function(){if(!race||!race.sport)return _toggleLive20();const p=$('live');if(p.style.display==='block'){p.style.display='none';$('rc').style.display='flex';return}p.style.display='block';$('rc').style.display='none';buildLive()};
+// show the Bets button in every sport, and keep the panel's prices fresh
+const _startSport20=startSport;startSport=function(){_startSport20.apply(this,arguments);$('rc').style.display='flex';$('live').style.display='none';liveCache.t=-9};
+setInterval(()=>{if(race&&race.sport&&$('live').style.display==='block')buildLive()},1000);
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
@@ -2780,9 +2884,7 @@ function drawObj(o,sh){
     case'tree':drawSpr(SPR.tree[o.t][o.v],o.x,o.y,sh);break;
     case'house':drawSpr(o.k==='chapel'?SPR.chapel:(o.m?SPR.houseM:SPR.house)[o.v],o.x,o.y,sh);break;
     case'prop':drawSpr(SPR[o.k][o.v%SPR[o.k].length],o.x,o.y,sh);break;
-    case'stand':{drawSpr(SPR.stand,o.x,o.y,sh);if(sh)break;const[sx,sy]=scr(o.x,o.y),ex=race&&race.state!=='post'?1:0;
-      for(let r=0;r<3;r++)for(let k=0;k<6;k++){const u=[.82,.55,.28][r],v=.18+k*.13,px=Math.round(sx+(u-v)*TW/2),py=Math.round(sy+(u+v)*TH/2-[6,12,18][r]),cheer=(ex||(race&&race.cheer>0))&&Math.sin(now*(race&&(race.state==='done'||race.cheer>0)?11:7)+k*2.1+r+o.seed)>.3?1:0,c=crowdC[(k*3+r*5+o.seed)%crowdC.length];
-        fx.fillStyle='#e0b48a';fx.fillRect(px,py-5-cheer,1,1);fx.fillStyle=c;fx.fillRect(px,py-4-cheer,1,2);if(cheer){fx.fillStyle='#e0b48a';fx.fillRect(px-1,py-6,1,1);fx.fillRect(px+1,py-6,1,1)}}}break;
+    case'stand':{drawStandObj(o,sh)}break;
     case'crowd':{if(sh)break;const[sx,sy]=scr(o.x,o.y);
       for(let k=0;k<3;k++){const px=sx-3+k*3+((o.seed*7+k)%2),j=waveJump(o,k),c=crowdC[(o.seed*3+k*7)%crowdC.length];fx.fillStyle='#3a2a1e';fx.fillRect(px,sy-1,1,1);fx.fillRect(px+1,sy-1,1,1);fx.fillStyle=c;fx.fillRect(px,sy-4-j,2,3);fx.fillStyle='#e0b48a';fx.fillRect(px,sy-6-j,2,2);if(j){fx.fillRect(px-1,sy-6-j,1,1);fx.fillRect(px+2,sy-6-j,1,1);if((o.seed+k)%3===0){const sc=['#b8322a','#e8c45a','#2f56a8'][(o.seed+k)%3],wv=Math.floor(now*8+k)%2;fx.fillStyle=sc;fx.fillRect(px-1+wv,sy-9-j,3,1)}}}}break;
     case'flag':{if(sh)break;const[sx,sy]=scr(o.x,o.y),c=['#b8322a','#2f56a8','#e8c45a','#3a7a3a'][o.c];fx.fillStyle='#3a2616';fx.fillRect(sx,sy-15,1,15);
