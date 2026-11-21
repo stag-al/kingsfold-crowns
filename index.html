@@ -111,6 +111,7 @@
   .pasCard{margin-top:4px}.pasBars{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin:8px 0;font-size:12px;color:#c9b27a}.pasBars span{display:flex;flex-direction:column;gap:2px}
   .pbar{display:block;height:6px;background:#1e150d;border:1px solid #4a3420;border-radius:2px;overflow:hidden}.pbar i{display:block;height:100%}
   .pasAct{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin:8px 0}.pasAct .chip{display:flex;flex-direction:column;align-items:center;padding:6px 2px;font-size:13px}.pasAct .chip small{font-size:10px;color:#a8946a}
+  #stable.yardV{background:linear-gradient(180deg,rgba(8,10,14,0) 0%,rgba(8,10,14,0) 44%,rgba(8,10,14,.55) 100%);align-items:flex-end}#stable.yardV .yardP{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));max-height:50vh;overflow-y:auto;margin:0 auto;max-width:520px}
   .divd{margin:6px 0;padding:5px 8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:12.5px;color:#efd9a0}
 
   .pace{margin:6px 0 4px;font-size:12px;color:#c9b27a;line-height:1.35}.pace b{color:#e8c45a}
@@ -2621,74 +2622,6 @@ function careAct(id,k){const h=G.roster.find(x=>x.id===id);if(!h)return;careInit
   if(k==='bathe'){if(G.purse<5)return;G.purse-=5;h.clean=100;h.mood=Math.min(100,h.mood-2);if(P){P.act={k:'bathe',t:3}}noiseHit(AC?AC.currentTime:0,.4,1800,1,.04)}
   if(k==='pet'){h.mood=Math.min(100,h.mood+12);if(P){P.act={k:'pet',t:2.4}}pluck(mf(74),.6,.05);pluck(mf(78),.6,.04,.1)}
   used[k]=G.raceNo;save();pasInfo()}
-// ---- the scene
-function pasNew(){const r=mulberry32(77),M=mineAll();PAS={t:0,horses:M.map((h,i)=>({h,x:30+((i*29)%(PW-44)),y:42+((i*19)%(PH-50)),tx:0,ty:0,f:i%2?1:-1,st:'graze',stT:1+r()*3,gait:r()*4,ph:r()*6})),hay:[],fx:[],cv:null,g:null};
-  for(const P of PAS.horses){P.tx=P.x;P.ty=P.y}}
-const PCOL={g1:'#4f8a3a',g2:'#5a9642',g3:'#467c33',g4:'#6aa64c',dirt:'#8a6a42',wood:'#6b4a2e',woodL:'#8a6440',woodD:'#3a2616'};
-function pasBg(g){const r=mulberry32(5);
-  for(let y=0;y<PH;y++)for(let x=0;x<PW;x++){const n=(Math.sin(x*.21+y*.13)+Math.sin(x*.07-y*.19))*.5,d=((x*7+y*13)%5)/5;g.fillStyle=n+d*.4>.5?PCOL.g2:n+d*.4<-.3?PCOL.g3:PCOL.g1;g.fillRect(x,y,1,1)}
-  for(let k=0;k<160;k++){g.fillStyle=r()<.5?PCOL.g4:'#3f7230';g.fillRect((r()*PW)|0,(r()*PH)|0,1,1)}
-  for(let k=0;k<26;k++){const x=(r()*PW)|0,y=26+((r()*(PH-30))|0);g.fillStyle=['#f4f0e0','#f0d860','#e8a0b8'][k%3];g.fillRect(x,y,1,1)}// flowers
-  // a worn path to the barn
-  for(let y=22;y<PH;y++){const x=26+Math.round(Math.sin(y*.1)*3);g.fillStyle=PCOL.dirt;g.fillRect(x,y,4,1);g.fillStyle='#9a7a50';g.fillRect(x+1,y,2,1)}
-  // the barn
-  const bx=6,by=3;g.fillStyle='#8a2e24';g.fillRect(bx,by+8,36,13);g.fillStyle='#a8382c';for(let x=bx;x<bx+36;x+=4)g.fillRect(x,by+8,1,13);
-  g.fillStyle='#5a3a22';for(let k=0;k<10;k++)g.fillRect(bx-2+k,by+8-k*.8|0,40-2*k,1);g.fillStyle='#3a2616';g.fillRect(bx-2,by+8,40,1);
-  g.fillStyle='#2a1a10';g.fillRect(bx+13,by+12,10,9);g.fillStyle='#e8dcc0';g.fillRect(bx+13,by+12,10,1);g.fillRect(bx+17,by+12,1,9);g.fillRect(bx+13,by+16,10,1);
-  g.fillStyle='#efe6d0';g.fillRect(bx+4,by+11,5,3);g.fillRect(bx+27,by+11,5,3);
-  // water trough and hay rack
-  g.fillStyle=PCOL.woodD;g.fillRect(8,PH-17,18,5);g.fillStyle=PCOL.woodL;g.fillRect(8,PH-17,18,2);g.fillStyle='#6aa0c8';g.fillRect(9,PH-16,16,2);g.fillStyle='#9cc4e0';g.fillRect(11,PH-16,5,1);
-  g.fillStyle=PCOL.woodD;g.fillRect(PW-26,17,20,2);g.fillRect(PW-25,17,2,11);g.fillRect(PW-8,17,2,11);g.fillStyle='#d8b860';g.fillRect(PW-23,20,15,6);g.fillStyle='#b8983e';for(let x=PW-23;x<PW-8;x+=3)g.fillRect(x,20,1,6);
-  // trees
-  for(const[x,y]of[[PW-18,PH-38],[78,4]]){g.fillStyle=PCOL.woodD;g.fillRect(x,y+9,3,7);for(const[dx,dy,c]of[[-5,0,'#2f5a28'],[-3,-4,'#3a6a30'],[0,-5,'#3a6a30'],[3,-2,'#2f5a28'],[-2,2,'#4a7a3a']]){g.fillStyle=c;g.fillRect(x+dx,y+dy,8,7)}}
-  // fence all round
-  for(const y of[23,PH-2]){g.fillStyle=PCOL.wood;g.fillRect(0,y,PW,1);g.fillRect(0,y-3,PW,1);for(let x=2;x<PW;x+=9){g.fillStyle=PCOL.woodD;g.fillRect(x,y-5,2,7)}}
-  for(const x of[1,PW-3]){g.fillStyle=PCOL.wood;g.fillRect(x,23,1,PH-25);g.fillRect(x+1,23,1,PH-25)}}
-function pasHorse(g,P){const h=P.h,co=COATS[h.coat]||COATS[0],bc=co[1],dk=co[2],f=P.f,foal=h.age<1||h.foal>0,S=foal?.72:1;
-  const st=P.act?P.act.k:P.st,moving=st==='walk'||st==='trot',F=st==='trot'?TROT[Math.floor(P.gait*1.6)%2]:st==='walk'?TROT[Math.floor(P.gait*1.2)%2]:STAND,b=0;
-  const ox=Math.round(P.x),oy=Math.round(P.y),r=(px,py,w,hh,c)=>{g.fillStyle=c;const X=f>0?px:-px-w+1;g.fillRect(ox+Math.round(X*S),oy+Math.round(py*S),Math.max(1,Math.round(w*S)),Math.max(1,Math.round(hh*S)))};
-  g.fillStyle='rgba(10,16,6,.3)';g.fillRect(ox-Math.round(5*S),oy,Math.round(11*S),1);
-  const leg=(L,c)=>{for(let k=0;k<L.length;k++){const[x,y]=L[k];r(x,y-b,1,1,k===L.length-1?'#1a1410':c)}};
-  leg(F.L[1],shade(dk,.8));leg(F.L[3],shade(dk,.8));r(-4,-7,9,3,bc);r(-3,-7,7,1,shade(bc,1.15));r(-3,-5,6,1,shade(bc,.85));
-  // head: down to graze or drink, up when alert, droops when unhappy
-  const low=st==='graze'||st==='drink'||st==='eat'||(h.mood<30&&!moving),hy=low?3:(h.mood<45?1:0);
-  if(low){r(4,-7,2,3,bc);r(6,-5,2,3,bc);r(7,-3,2,2,bc);r(8,-2,1,1,'#120c08');r(5,-8,1,2,dk)}
-  else{r(4,-9+hy,2,3,bc);r(5,-11+hy,3,2,bc);r(8,-10+hy,1,1,shade(bc,.8));r(5,-12+hy,1,1,shade(bc,.9));r(7,-11+hy,1,1,'#120c08');r(4,-10+hy,1,2,dk)}
-  r(-5,-7,1,3,dk);r(-6,-5+Math.round(Math.sin(now*3+P.ph)),1,1,dk);
-  leg(F.L[0],dk===bc?shade(bc,.9):dk);leg(F.L[2],dk===bc?shade(bc,.9):dk);
-  // mud when dirty, a rug for retired stock
-  if(h.clean<50){const n=h.clean<25?6:3;for(let k=0;k<n;k++)r(-3+((k*5+h.id)%7),-6+(k%2),1,1,'#4a3a22')}
-  if(h.retired)r(-3,-7,6,2,h.silk?h.silk[0]:'#8a2e24');
-  if(pasSel===h.id){const y0=oy-Math.round(16*S)+Math.round(Math.sin(now*5));g.fillStyle='#1a120a';g.fillRect(ox-3,y0-1,7,4);g.fillStyle='#e8c45a';g.fillRect(ox-2,y0,5,1);g.fillRect(ox-1,y0+1,3,1);g.fillRect(ox,y0+2,1,1)}}
-function pasStep(dt){if(!PAS)return;PAS.t+=dt;const r=Math.random;
-  for(const P of PAS.horses){const h=P.h;careInit(h);if(P.act){P.act.t-=dt;
-      if(P.act.k==='brush'&&r()<dt*14)PAS.fx.push({x:P.x+(r()-.5)*10,y:P.y-6-r()*5,vx:(r()-.5)*8,vy:-6-r()*6,c:r()<.5?'#fff6d2':'#f2d278',t:.6});
-      if(P.act.k==='bathe'&&r()<dt*22)PAS.fx.push({x:P.x+(r()-.5)*12,y:P.y-10,vx:(r()-.5)*14,vy:-10-r()*10,c:r()<.5?'#cfe8ff':'#ffffff',t:.7,grav:1});
-      if(P.act.k==='pet'&&r()<dt*3)PAS.fx.push({x:P.x+(P.f>0?6:-6),y:P.y-14,vx:(r()-.5)*4,vy:-10,c:'#e86080',t:1.2,heart:1});
-      if(P.act.t<=0)P.act=null;continue}
-    P.stT-=dt;
-    if(P.stT<=0){const q=r(),hungry=h.cond<45,thirsty=r()<.12;
-      if(hungry&&PAS.hay.length){const H0=PAS.hay[0];P.st='walk';P.tx=H0.x;P.ty=H0.y;P.goal='eat'}
-      else if(thirsty){P.st='walk';P.tx=16+r()*6;P.ty=PH-10;P.goal='drink'}
-      else if(q<.45){P.st='graze';P.stT=2+r()*4}
-      else if(q<.85||h.mood<35){P.st='walk';P.tx=10+r()*(PW-20);P.ty=32+r()*(PH-38);P.goal=null}
-      else{P.st='trot';P.tx=10+r()*(PW-20);P.ty=32+r()*(PH-38);P.goal=null}
-      if(P.st!=='graze')P.stT=99}
-    if(P.st==='walk'||P.st==='trot'){const dx=P.tx-P.x,dy=P.ty-P.y,d=Math.hypot(dx,dy),sp=(P.st==='trot'?16:7)*(h.age<1?.8:1);if(Math.abs(dx)>.5)P.f=dx>0?1:-1;
-      if(d<1.2){P.st=P.goal||'graze';P.stT=P.goal==='eat'?4:P.goal==='drink'?2.5:2+r()*3;P.goal=null}else{P.x+=dx/d*sp*dt;P.y+=dy/d*sp*dt;P.gait+=dt*(P.st==='trot'?5:3)}}
-    else if(P.st==='drink'||P.st==='eat'){if(P.stT<0){P.st='graze';P.stT=2}}
-    // flies around a dirty horse
-    if(h.clean<30&&r()<dt*2)PAS.fx.push({x:P.x+(r()-.5)*8,y:P.y-8,vx:0,vy:0,c:'#1a1410',t:1.5,fly:1,ph:r()*6})}
-  for(const H0 of PAS.hay)H0.t-=dt;PAS.hay=PAS.hay.filter(x=>x.t>0);
-  for(const e of PAS.fx){e.t-=dt;if(e.fly){e.ph+=dt*9;e.x+=Math.cos(e.ph)*12*dt;e.y+=Math.sin(e.ph*1.3)*8*dt}else{e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.grav)e.vy+=40*dt}}PAS.fx=PAS.fx.filter(e=>e.t>0)}
-function pasDraw(){if(!PAS||!PAS.g)return;const g=PAS.g;g.drawImage(PAS.bg,0,0);
-  for(const H0 of PAS.hay){g.fillStyle='#d8b860';g.fillRect(Math.round(H0.x)-3,Math.round(H0.y)-2,7,3);g.fillStyle='#b8983e';g.fillRect(Math.round(H0.x)-2,Math.round(H0.y)-3,4,1)}
-  for(const P of [...PAS.horses].sort((a,b)=>a.y-b.y))pasHorse(g,P);
-  for(const e of PAS.fx){g.fillStyle=e.c;if(e.heart){const x=Math.round(e.x),y=Math.round(e.y);g.fillRect(x-1,y,1,1);g.fillRect(x+1,y,1,1);g.fillRect(x-1,y+1,3,1);g.fillRect(x,y+2,1,1)}else g.fillRect(Math.round(e.x),Math.round(e.y),1,1)}
-  if(!PAS.horses.length){g.fillStyle='rgba(20,14,8,.6)';g.fillRect(8,44,116,14);g.fillStyle='#efd9a0';g.font='7px monospace';g.fillText('An empty pasture. Visit the market.',11,53)}}
-function pasLoop(){if(!PAS||$('stable').style.display==='none'||stableTab!=='pasture'){pasRAF=0;return}const t=performance.now()/1000,dt=Math.min(.05,t-(PAS.lt||t));PAS.lt=t;pasStep(dt);pasDraw();pasRAF=requestAnimationFrame(pasLoop)}
-function pasTap(ev){const cv=PAS.cv,R=cv.getBoundingClientRect(),x=(ev.clientX-R.left)/R.width*PW,y=(ev.clientY-R.top)/R.height*PH;let best=null,bd=14;
-  for(const P of PAS.horses){const d=Math.hypot(P.x-x,(P.y-5)-y);if(d<bd){bd=d;best=P}}pasSel=best?best.h.id:null;if(best&&!best.act){best.st='graze';best.stT=2.5;best.f=x>best.x?1:-1}pasInfo()}
 // ---- the card for the chosen horse
 function pbar(v,c){return'<span class="pbar"><i style="width:'+Math.round(v)+'%;background:'+c+'"></i></span>'}
 function pasInfo(){const el=$('pasInfo');if(!el)return;const h=G.roster.find(x=>x.id===pasSel&&x.mine);
@@ -2699,15 +2632,84 @@ function pasInfo(){const el=$('pasInfo');if(!el)return;const h=G.roster.find(x=>
   s+='<div class="shS"><span>Speed '+stars(h.abil)+'</span><span>Stamina '+stars(60+h.stam*2.2)+'</span><span>Jumping '+stars(60+h.jump*40)+'</span></div>';
   s+='<div class="pasAct"><button class="chip" '+(done('feed')||G.purse<fc?'disabled':'')+' onclick="careAct('+h.id+',\'feed\')">🌾 Feed<small>'+(done('feed')?'fed':fc+' crowns')+'</small></button><button class="chip" '+(done('brush')?'disabled':'')+' onclick="careAct('+h.id+',\'brush\')">🪮 Brush<small>'+(done('brush')?'done':'free')+'</small></button><button class="chip" '+(done('bathe')||G.purse<5?'disabled':'')+' onclick="careAct('+h.id+',\'bathe\')">🪣 Bathe<small>'+(done('bathe')?'done':'5 crowns')+'</small></button><button class="chip" '+(done('pet')?'disabled':'')+' onclick="careAct('+h.id+',\'pet\')">♥ Pet<small>'+(done('pet')?'done':'free')+'</small></button></div>';
   s+='<div class="kvn">Each can be done once between events. A clean, happy, well-fed horse races a little better; neglect shows in mud, flies and a drooping head.</div></div>';el.innerHTML=s}
-// ---- the Pasture tab is the stable's front door
+
+// ===================== the yard: your horses out in the real game world =====================
+// Opening the stable flies the camera to a fenced paddock on the current course: real terrain, light and weather,
+// a barn, hay bales, and your horses drawn with the same sprites as race day. Tap a horse to look after it.
+let YARD=null;
+function yardFind(){const L=9,Wd=7;let best=null,bs=-1e9;
+  for(let lv=0;lv<3&&!best;lv++)for(let cy=14;cy<N-14-Wd;cy++)for(let cx=14;cx<N-14-L;cx++){let ok=true,h0=0,n=0;
+    for(let y=cy-2;y<cy+Wd+2&&ok;y++)for(let x=cx-2;x<cx+L+2;x++){const i=idx(x,y);if(T.water[i]||T.far[i]<HALFW+(lv?2:3)||(lv<2&&!T.th.desert&&base[i]!==4)||(T.houses||[]).some(h=>Math.abs(h.x-x)<1.5&&Math.abs(h.y-y)<1.5)||(T.fields||[]).some(F=>x>F[0]-2&&x<F[2]+2&&y>F[1]-2&&y<F[3]+2)||(lv<2&&onRoad&&onRoad[(y*MR+2)*M+x*MR+2])){ok=false;break}h0+=hgt[i];n++}
+    if(!ok)continue;h0/=n;let v=0;for(let y=cy;y<cy+Wd;y++)for(let x=cx;x<cx+L;x++)v=Math.max(v,Math.abs(hgt[idx(x,y)]-h0));if(v>[.05,.08,.14][lv])continue;
+    const s=-v*120-Math.hypot(cx+L/2-N/2,cy+Wd/2-N/2)*1.2;if(s>bs){bs=s;best={x0:cx,y0:cy,x1:cx+L,y1:cy+Wd}}}
+  return best||{x0:N/2-4,y0:N/2-3,x1:N/2+5,y1:N/2+4}}
+function yardOpen(){if(race)return;const A=yardFind(),M=mineAll(),r=mulberry32(99);
+  // clear the paddock of trees and clutter, then fence it, add a barn and hay
+  objs=objs.filter(o=>{const x=o.x+(o.kind==='tree'||o.kind==='prop'||o.kind==='house'?.5:0),y=o.y+(o.kind==='tree'||o.kind==='prop'||o.kind==='house'?.5:0);return!(x>A.x0-1.5&&x<A.x1+1.5&&y>A.y0-2.5&&y<A.y1+1.5)});
+  const posts=[],add=(x,y)=>posts.push({kind:'post',x,y,key:x+y});
+  for(let x=A.x0;x<=A.x1;x+=1.5){add(x,A.y0);add(x,A.y1)}for(let y=A.y0+1.5;y<A.y1;y+=1.5){add(A.x0,y);add(A.x1,y)}
+  const ring=[...posts.filter(p=>p.y===A.y0).sort((a,b)=>a.x-b.x),...posts.filter(p=>p.x===A.x1&&p.y!==A.y0&&p.y!==A.y1).sort((a,b)=>a.y-b.y),...posts.filter(p=>p.y===A.y1).sort((a,b)=>b.x-a.x),...posts.filter(p=>p.x===A.x0&&p.y!==A.y0&&p.y!==A.y1).sort((a,b)=>b.y-a.y)];
+  ring.forEach((p,k)=>{if(!(p.y===A.y1&&Math.abs(p.x-(A.x0+3))<.8))p.nx=ring[(k+1)%ring.length]});// a gap for the gate
+  const extra=[{kind:'house',k:'house',v:3,m:0,x:A.x0-.5,y:A.y0-2,key:A.x0-.5+A.y0-2+.5,yard:1},{kind:'bale',x:A.x1-1.2,y:A.y0+.8,v:1,key:A.x1+A.y0-.4,yard:1},{kind:'bale',x:A.x1-.6,y:A.y0+1.3,v:2,key:A.x1+A.y0+.7,yard:1}];
+  objs.push(...ring.map(p=>({...p,yard:1})),...extra,{kind:'sport',yard:1,x:A.x0+.8,y:A.y1-.8,key:A.x0+A.y1,draw:()=>drawTrough(A.x0+.8,A.y1-.8)});
+  YARD={A,t0:now};PAS={horses:M.map((h,i)=>({h,H:{coat:h.coat,silk:h.silk||G.silk},x:A.x0+1.5+((i*2.3)%(A.x1-A.x0-3)),y:A.y0+1.5+((i*1.7)%(A.y1-A.y0-3)),vx:0,vy:0,v:0,gait:r()*4,ph:r()*6,f:1,unhorsed:true,noLabel:true,lat:99,i:0,jz:0,st:'graze',stT:1+r()*3,tx:0,ty:0})),hay:[],fx:[]};
+  for(const P of PAS.horses){P.tx=P.x;P.ty=P.y}
+  $('card').style.display='none';setZoomCSS(2.1);{const c=yardCam();cam.x=c.x;cam.y=c.y}if(!yardRAF)yardRAF=requestAnimationFrame(yardLoop)}
+function yardClose(){if(!YARD)return;YARD=null;PAS=null;setZoomCSS(1);buildObjs()}
+function yardCam(){const A=YARD.A,cx=(A.x0+A.x1)/2+.5,cy=(A.y0+A.y1)/2-.3;return{x:isoX(cx,cy)-AW/2,y:isoY(cx,cy)-AH/2-hz(cx,cy)+AH*.085}}
+function drawTrough(x,y){const[sx,sy]=scr(x,y);fx.fillStyle='rgba(10,16,6,.3)';fx.fillRect(sx-7,sy+1,15,2);fx.fillStyle='#3a2616';fx.fillRect(sx-7,sy-4,14,5);fx.fillStyle='#6b4a2e';fx.fillRect(sx-7,sy-4,14,1);fx.fillStyle='#5a8ab0';fx.fillRect(sx-6,sy-3,12,2);fx.fillStyle='#9cc4e0';fx.fillRect(sx-4,sy-3,4,1)}
+// the horses as world objects
+const _sportObjs24=sportObjs;sportObjs=function(){if(!YARD||!PAS)return _sportObjs24();const o=[];
+  for(const P of PAS.horses){o.push({kind:'horse',h:P,key:P.x+P.y});o.push({kind:'sport',key:P.x+P.y+.01,draw:()=>yardOver(P)})}
+  for(const H0 of PAS.hay)o.push({kind:'sport',key:H0.x+H0.y-.05,draw:()=>{const[sx,sy]=scr(H0.x,H0.y);fx.fillStyle='#d8b860';fx.fillRect(sx-3,sy-2,7,3);fx.fillStyle='#b8983e';fx.fillRect(sx-2,sy-3,4,1)}});
+  o.push({kind:'sport',key:1e9,draw:yardFX});return o};
+function yardOver(P){const h=P.h,[sx,sy]=scr(P.x,P.y);careInit(h);
+  if(h.clean<50){fx.fillStyle='#4a3a22';const n=h.clean<25?6:3;for(let k=0;k<n;k++)fx.fillRect(sx-3+((k*5+h.id)%7),sy-6+(k%2),1,1)}
+  if(h.retired){fx.fillStyle=(h.silk||G.silk)[0];fx.fillRect(sx-3,sy-7,6,2)}
+  if(pasSel===h.id){const y=sy-20+Math.round(Math.sin(now*5));fx.fillStyle='#1a120a';fx.fillRect(sx-3,y-1,7,4);fx.fillStyle='#e8c45a';fx.fillRect(sx-2,y,5,1);fx.fillRect(sx-1,y+1,3,1);fx.fillRect(sx,y+2,1,1)}}
+function yardFX(){for(const e of PAS.fx){const[sx,sy]=scr(e.x,e.y),x=Math.round(sx),y=Math.round(sy-e.z);fx.fillStyle=e.c;if(e.heart){fx.fillRect(x-1,y,1,1);fx.fillRect(x+1,y,1,1);fx.fillRect(x-1,y+1,3,1);fx.fillRect(x,y+2,1,1)}else fx.fillRect(x,y,1,1)}}
+// living in the paddock: graze, wander, trot, drink; head for hay when hungry
+let yardRAF=0;function yardLoop(){if(!YARD){yardRAF=0;return}const t=performance.now()/1000,dt=Math.min(.05,t-(YARD.lt||t));YARD.lt=t;yardStep(dt);yardRAF=requestAnimationFrame(yardLoop)}
+function yardStep(dt){const A=YARD.A,r=Math.random;
+  for(const P of PAS.horses){const h=P.h;careInit(h);
+    if(P.act){P.act.t-=dt;P.v=0;P.walk=false;
+      if(P.act.k==='brush'&&r()<dt*14)PAS.fx.push({x:P.x+(r()-.5)*.5,y:P.y+(r()-.5)*.5,z:8+r()*6,vz:10,c:r()<.5?'#fff6d2':'#f2d278',t:.6});
+      if(P.act.k==='bathe'&&r()<dt*22)PAS.fx.push({x:P.x+(r()-.5)*.6,y:P.y+(r()-.5)*.6,z:14,vz:-8-r()*10,c:r()<.5?'#cfe8ff':'#ffffff',t:.7});
+      if(P.act.k==='pet'&&r()<dt*3)PAS.fx.push({x:P.x,y:P.y,z:16,vz:12,c:'#e86080',t:1.2,heart:1});
+      if(P.act.k==='eat'&&r()<dt*2)puff(P.x,P.y,'#d8b860',.3,.4);if(P.act.t<=0)P.act=null;continue}
+    P.stT-=dt;
+    if(P.stT<=0){const q=r();if(h.cond<45&&PAS.hay.length){const H0=PAS.hay[0];P.st='walk';P.tx=H0.x;P.ty=H0.y;P.goal='eat'}
+      else if(r()<.12){P.st='walk';P.tx=A.x0+1.3;P.ty=A.y1-1.1;P.goal='drink'}
+      else if(q<.45){P.st='graze';P.stT=2+r()*4}
+      else{P.st=q<.85||h.mood<35?'walk':'trot';P.tx=A.x0+.8+r()*(A.x1-A.x0-1.6);P.ty=A.y0+.8+r()*(A.y1-A.y0-1.6);P.goal=null}
+      if(P.st!=='graze')P.stT=99}
+    if(P.st==='walk'||P.st==='trot'){const dx=P.tx-P.x,dy=P.ty-P.y,d=Math.hypot(dx,dy),sp=(P.st==='trot'?2.6:1.1)*(h.age<1?.85:1);
+      if(d<.15){P.st=P.goal||'graze';P.stT=P.goal==='eat'?4:P.goal==='drink'?2.5:2+r()*3;P.goal=null;P.v=0;P.walk=false}
+      else{P.vx=dx/d*sp;P.vy=dy/d*sp;P.x+=P.vx*dt;P.y+=P.vy*dt;P.v=P.st==='trot'?3.4:1.2;P.walk=true;P.gait+=dt*(P.st==='trot'?3:2)}}
+    else{P.v=0;P.walk=false}
+    if(h.clean<30&&r()<dt*2)PAS.fx.push({x:P.x+(r()-.5)*.4,y:P.y+(r()-.5)*.4,z:9,vz:0,c:'#1a1410',t:1.4,fly:1,ph:r()*6})}
+  for(const H0 of PAS.hay)H0.t-=dt;PAS.hay=PAS.hay.filter(x=>x.t>0);
+  for(const e of PAS.fx){e.t-=dt;if(e.fly){e.ph+=dt*9;e.x+=Math.cos(e.ph)*.5*dt;e.y+=Math.sin(e.ph*1.3)*.5*dt}else{e.z+=e.vz*dt}}PAS.fx=PAS.fx.filter(e=>e.t>0)}
+// care actions, shown in the world
+careAct=function(id,k){const h=G.roster.find(x=>x.id===id);if(!h)return;careInit(h);const used=h.care||(h.care={});if(used[k]===G.raceNo)return;const P=PAS&&PAS.horses.find(p=>p.h===h);
+  if(k==='feed'){const c=Math.round((FEEDS[h.feed]||FEEDS.oats).cost*.6);if(G.purse<c)return;G.purse-=c;h.cond=Math.min(100,h.cond+7);h.mood=Math.min(100,h.mood+5);if(P){P.act={k:'eat',t:3.2};PAS.hay.push({x:P.x+.4,y:P.y+.2,t:6})}blip(392,.12)}
+  if(k==='brush'){h.clean=Math.min(100,h.clean+30);h.mood=Math.min(100,h.mood+4);if(P)P.act={k:'brush',t:2.6};knock(1400,.03)}
+  if(k==='bathe'){if(G.purse<5)return;G.purse-=5;h.clean=100;h.mood=Math.max(0,h.mood-2);if(P)P.act={k:'bathe',t:3};if(AC)noiseHit(AC.currentTime,.4,1800,1,.04)}
+  if(k==='pet'){h.mood=Math.min(100,h.mood+12);if(P)P.act={k:'pet',t:2.4};pluck(mf(74),.6,.05);pluck(mf(78),.6,.04,.1)}
+  used[k]=G.raceNo;save();pasInfo();const pu=$('stable').querySelector('.purse b');if(pu)pu.textContent=G.purse};
+// tap the world to pick a horse
+function yardTap(ev){if(!YARD||ev.target!==$('stable'))return;const W=innerWidth,H=innerHeight,z=2.1,ax=AW/2+(ev.clientX-W/2)/z*(AW/W),ay=AH/2+(ev.clientY-H/2)/z*(AH/H);
+  let best=null,bd=22;for(const P of PAS.horses){const[sx,sy]=scr(P.x,P.y),d=Math.hypot(sx-ax,sy-8-ay);if(d<bd){bd=d;best=P}}
+  pasSel=best?best.h.id:null;if(best&&!best.act){best.st='graze';best.stT=2.5;best.v=0}pasInfo()}
+// ---- the Pasture tab
 stableTab='pasture';
-const _openStable23=openStable;openStable=function(){if(stableTab!=='pasture'||careerOf)return _openStable23();stableInit();const M=mineAll();
-  let h='<div class="panel cp"><div class="cTop"><span class="bl brand">The Stable</span><span class="purse">'+coin()+'<b>'+G.purse+'</b></span><button class="x" onclick="closeStable()">✕</button></div>';
-  h+='<div class="tabs">'+[['pasture','Pasture'],['mine','My horses ('+M.length+'/'+stallCap()+')'],['market','Market'],['breed','Breeding']].map(([k,n])=>'<button class="'+(stableTab===k?'on':'')+'" onclick="stableTab=\''+k+'\';openStable()">'+n+'</button>').join('')+'</div>';
-  h+='<canvas id="pasC" width="'+PW+'" height="'+PH+'"></canvas><div id="pasInfo"></div></div>';$('stable').innerHTML=h;$('stable').style.display='flex';
-  if(!PAS||PAS.horses.length!==M.length||PAS.horses.some((P,i)=>P.h!==M[i]))pasNew();PAS.cv=$('pasC');PAS.g=PAS.cv.getContext('2d');
-  if(!PAS.bg){PAS.bg=document.createElement('canvas');PAS.bg.width=PW;PAS.bg.height=PH;pasBg(PAS.bg.getContext('2d'))}
-  PAS.cv.addEventListener('pointerdown',pasTap);pasInfo();if(!pasRAF)pasRAF=requestAnimationFrame(pasLoop)};
+const _openStable24=openStable;openStable=function(){if(stableTab!=='pasture'||careerOf){yardClose();$('stable').classList.remove('yardV');return _openStable24()}stableInit();const M=mineAll();
+  let h='<div class="panel cp yardP"><div class="cTop"><span class="bl brand">The Yard</span><span class="purse">'+coin()+'<b>'+G.purse+'</b></span><button class="x" onclick="closeStable()">✕</button></div>';
+  h+='<div class="tabs">'+[['pasture','Pasture'],['mine','My horses ('+M.length+'/'+stallCap()+')'],['market','Market'],['breed','Breeding']].map(([k,n])=>'<button class="'+(stableTab===k?'on':'')+'" onclick="stableTab=\''+k+'\';openStable()">'+n+'</button>').join('')+'</div><div id="pasInfo"></div></div>';
+  const el=$('stable');el.innerHTML=h;el.style.display='flex';el.classList.add('yardV');if(!YARD)yardOpen();
+  if(!M.length)$('pasInfo').innerHTML='<div class="sNote">An empty paddock. Visit the Market to buy a racehorse, a yearling or a broodmare.</div>';else pasInfo()};
+const _closeStable24=closeStable;closeStable=function(){yardClose();$('stable').classList.remove('yardV');return _closeStable24()};
+$('stable').addEventListener('pointerdown',yardTap);
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
@@ -3164,6 +3166,7 @@ function frame0(t){now=t/1000;let dt=Math.min(.1,(t-lastT)/1000);lastT=t;if(!T)r
   // camera: the leading pack, or your horse
   let tx,ty;
   if(race&&race.sport&&SP){const D=sportCam();tx=D.x;ty=D.y}else if(race&&horses.length){const D=director(dt);tx=D.x;ty=D.y;if(D.snap){cam.x=tx;cam.y=ty}}
+  else if(typeof YARD!=='undefined'&&YARD){const D=yardCam();tx=D.x;ty=D.y}
   else{previewT+=dt;const i=Math.floor((previewT*1.6/T.ds))%T.S,p=T.C[i];tx=isoX(p[0],p[1])-AW/2;ty=isoY(p[0],p[1])-AH/2-hz(p[0],p[1]);if(previewT<.05){cam.x=tx;cam.y=ty}}
   const k=1-Math.exp(-dt*(race?(race.dir&&race.dir.still?6:2.6):1.2));cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;
   gl.useProgram(prog);gl.viewport(0,0,AW,AH);gl.uniform2f(U.uMapSize,N,N);gl.uniform2f(U.uCam,Math.round(cam.x),Math.round(cam.y));gl.uniform2f(U.uRes,AW,AH);gl.uniform1f(U.uTime,now);gl.drawArrays(gl.TRIANGLES,0,3);
