@@ -2001,6 +2001,13 @@ startPhase=function(){const e=nextEvent();if(!e){endMatch();return}const B0=PL.b
   else S=team.reduce((a,b)=>dist(b.x,b.y,B0.x,B0.y)<dist(a.x,a.y,B0.x,B0.y)?b:a);
   if(e.out==='goal'&&e.a<0)S=team.find(R=>R.j===e.j);
   PL.plan=planEvent(e,S);PL.pi=0;PL.carrier=PL.plan[0].R;PL.phase='chase';PL.t=0;PL.tt=0;PL.ro=0;PL.tgt={};PL.dest=null;poloHud()};
+// live play: horses keep moving. Near the spot they want, they canter on, arcing back round, never parking.
+function ride(R,dt,tx,ty,vmax,minV=2.1){const F=PL.F,d=dist(R.x,R.y,tx,ty);
+  if(d<1.6){const hd=R.hd!=null?R.hd:Math.atan2(R.vy||0,R.vx||1),k=(1.6-d)/1.6;let ax=R.x+Math.cos(hd)*2.2,ay=R.y+Math.sin(hd)*2.2;
+    // turn back toward the play before running out of field
+    if(ax<F.x0+.8||ax>F.x1-.8||ay<F.y0+.6||ay>F.y1-.6){ax=lerp(ax,(F.x0+F.x1)/2,.6);ay=lerp(ay,PL.midY,.6)}
+    tx=lerp(tx,ax,k*.85);ty=lerp(ty,ay,k*.85);vmax=Math.max(minV,vmax*(.55+.45*(1-k)))}
+  steer(R,dt,tx,ty,vmax)}
 // ----- the match loop
 poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.flash-dt);PL.think=(PL.think||0)-dt;const thinking=PL.think<=0;if(thinking)PL.think=.25;
   // the ball always rolls on its own
@@ -2019,17 +2026,23 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
   // ----- the defence
   // the presser rides the striker off the line; the rest mark goal-side; the back guards the mouth
   if(thinking||!PL.presser){const cands=def.filter(R=>R.j!==3||Math.abs(B0.x-ownG)<4);PL.presser=step&&step.k==='steal'?S:(S?cands.reduce((a,b)=>dist(b.x,b.y,S.x,S.y)<dist(a.x,a.y,S.x,S.y)?b:a):cands[0])}
+  if(thinking||!PL.contest){const c=def.filter(R=>R!==PL.presser&&(R.j!==3||Math.abs(B0.x-ownG)<5));PL.contest=c.length?c.reduce((a,b)=>dist(b.x,b.y,bs[0],bs[1])<dist(a.x,a.y,bs[0],bs[1])?b:a):null;if(thinking)PL.hookSaid=PL.hookSaid&&Math.random()<.9}
   for(const R of def){if(step&&R===S)continue;
     if(R===PL.presser&&S){// shoulder to shoulder on the striker's off side, matching his line
-      const side=R.y<S.y?-1:1,tx=S.x+(S.vx||0)*.3-dir*.15,ty=S.y+side*.48+(S.vy||0)*.3;steer(R,dt,tx,ty,R.lame?3:4.7);
+      const side=R.y<S.y?-1:1,tx=S.x+(S.vx||0)*.3-dir*.15,ty=S.y+side*.48+(S.vy||0)*.3;ride(R,dt,tx,ty,R.lame?3:4.8,3);
       if(dist(R.x,R.y,S.x,S.y)<.62){S.v*=1-dt*.45;R.v*=1-dt*.3;if(Math.random()<dt*5)puff((S.x+R.x)/2,(S.y+R.y)/2,'#a89a70',.4);if(!PL.ro&&Math.random()<dt*.9&&race.t-race.lastC>1.8){PL.ro=1;sayP(R.p.name+' rides off '+S.p.name+'. Shoulder to shoulder!')}}continue}
-    if(R.j===3){const t=.28,bx=lerp(ownG,bs[0],t),by=lerp(PL.midY,bs[1],t*.8);steer(R,dt,bx-dir*.3,by,4.3);continue}
+    if(R===PL.contest&&step&&step.k!=='steal'){// races the striker for the ball; arrives a beat late and swings at it
+      const fut=ballAt(B0,Math.min(1,dist(R.x,R.y,B0.x,B0.y)/4.6));ride(R,dt,fut[0],fut[1],R.lame?3:4.55,3);
+      if(dist(R.x,R.y,B0.x,B0.y)<.6&&Math.random()<dt*6){R.swing=1;if(!PL.hookSaid&&Math.random()<.35&&race.t-race.lastC>1.6){PL.hookSaid=1;sayP(R.p.name+' swings for it, just misses!')}}continue}
+    if(R.j===3){const t=.28,bx=lerp(ownG,bs[0],t),by=lerp(PL.midY,bs[1],t*.8);ride(R,dt,bx-dir*.3,by,4.3,1.6);continue}
     const mark=att.find(a=>a.j===ROLE_MARK[R.j])||att[0],gs=.9/Math.max(1,dist(mark.x,mark.y,ownG,PL.midY)),bx=(bs[0]-mark.x)*.15,by=(bs[1]-mark.y)*.15;
-    steer(R,dt,mark.x+(ownG-mark.x)*gs+bx,mark.y+(PL.midY-mark.y)*gs+by,4.3)}
+    ride(R,dt,mark.x+(mark.vx||0)*.4+(ownG-mark.x)*gs+bx,mark.y+(mark.vy||0)*.4+(PL.midY-mark.y)*gs+by,4.5)}
   // ----- the attack off the ball: runs into space, receivers run onto passes
+  if(thinking||!PL.backup){const c=att.filter(R=>R!==S&&!(PL.dest&&PL.dest.R===R)&&R.j!==3);PL.backup=c.length?c.reduce((a,b)=>dist(b.x,b.y,B0.x,B0.y)<dist(a.x,a.y,B0.x,B0.y)?b:a):null}
   for(const R of att){if(R===S)continue;
     if(PL.dest&&PL.dest.R===R){steer(R,dt,PL.dest.x,PL.dest.y,R.lame?3:4.8);continue}// the man the ball is played to
-    if(thinking||!PL.tgt[R.j])PL.tgt[R.j]=supportSpot(R,e,{x:bs[0],y:bs[1]});steer(R,dt,...PL.tgt[R.j],R.j===3?3.4:4.3)}
+    if(R===PL.backup&&S){const fut=ballAt(B0,.5);ride(R,dt,fut[0]-dir*.9,fut[1]+(R.y<fut[1]?-.5:.5),4.4,2.6);continue}// backing up the striker on the line
+    if(thinking||!PL.tgt[R.j])PL.tgt[R.j]=supportSpot(R,e,{x:bs[0]+dir*.8,y:bs[1]});ride(R,dt,...PL.tgt[R.j],R.j===3?3.8:4.5,R.j===3?1.6:2.2)}
   if(!step){PL.ei++;afterEvent(false);return}
   // ----- shot in flight
   if(PL.phase==='shot'){S&&steer(S,dt,S.x+dir*1.5,S.y,3.5);const crossed=e.t?B0.x<=F.x0:B0.x>=F.x1;

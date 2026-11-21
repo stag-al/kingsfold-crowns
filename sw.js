@@ -1,5 +1,5 @@
-// Kingsfold Crowns service worker · version c7578bce56
-const V='kd-c7578bce56';const CORE=['./','index.html','manifest.json','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
+// Kingsfold Crowns service worker · version bbcbb55d99
+const V='kd-bbcbb55d99';const CORE=['./','index.html','manifest.json','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(CORE)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 // network first, so a new upload shows up the next time you open the app; the cache keeps it playable offline
