@@ -2410,6 +2410,12 @@ const _loanHtml14=loanHtml;loanHtml=function(){const d=debt();if(d&&G.purse<10){
     return'<div class="loanB debt"><span>You owe Aldous <b>'+d+'</b> and your purse is empty.<small>'+(can?'He\'ll extend the loan: 50 more now, 68 added to what you owe (35%). He still takes half of every win.':'He won\'t lend you another crown until you pay something back. Sell a horse or shares, or reset below.')+'</small><span class="loanO">'+(can?'<button class="chip" onclick="extendLoan()">Borrow 50<small>owe +68</small></button>':'')+'<button class="chip" onclick="resetPurse()">Reset to 100<small>play-test</small></button></span></span></div>'}
   if(!d&&G.purse<10)return _loanHtml14().replace('</span></span></div>','<button class="chip" onclick="resetPurse()">Reset to 100<small>play-test</small></button></span></span></div>');
   return _loanHtml14()};
+// ----- rumble diagnostics: remember whether each in-game rumble was let through
+(function(){if(!('vibrate' in navigator))return;const raw=navigator.vibrate.bind(navigator);window.__vibLog=[];
+  navigator.vibrate=function(p){let r=false;try{r=raw(p)}catch(e){}const ua=navigator.userActivation;window.__vibLog.push({r,t:Date.now(),act:ua?ua.isActive:null});if(window.__vibLog.length>10)window.__vibLog.shift();
+    if(!r&&race&&race.state==='run'&&!window.__vibWarned){window.__vibWarned=1;say('(Your phone blocked the rumble just now.)')}return r}})();
+const _testRumble15=testRumble;testRumble=function(){_testRumble15();const L=(window.__vibLog||[]).slice(0,-1).reverse().find(x=>x),el=$('rumbleMsg');
+  if(el&&L){const s=Math.round((Date.now()-L.t)/1000);el.textContent+=' · Last in-game rumble ('+s+'s ago): '+(L.r?'sent':'BLOCKED')+(L.act===false?' (no recent tap)':'')+'.'}};
 
 // ===================== the photo finish: a tight, crisp shot of the two horses on the line =====================
 function renderAt(cx,cy){gl.useProgram(prog);gl.viewport(0,0,AW,AH);gl.uniform2f(U.uMapSize,N,N);gl.uniform2f(U.uCam,Math.round(cx),Math.round(cy));gl.uniform2f(U.uRes,AW,AH);gl.uniform1f(U.uTime,now);gl.drawArrays(gl.TRIANGLES,0,3);draw()}
