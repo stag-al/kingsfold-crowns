@@ -103,6 +103,8 @@
   .loanB{display:flex;align-items:center;gap:8px;margin:8px 0;padding:8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:13px;color:#efd9a0}.loanB>span{flex:1;display:block;line-height:1.4}.loanB small{display:block;color:#a8946a;font-size:11.5px}.loanO .chip small{display:block}
   .loanO{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.loanO .chip{display:flex;flex-direction:column;align-items:center;padding:5px 9px}.loanO .chip small{font-size:10px;color:#a8946a}.loanB.debt{border-color:#b05a3a;background:rgba(176,90,58,.14)}.divd.warn{border-color:#b05a3a;background:rgba(176,90,58,.14)}
   .onball{font-size:11.5px;color:#efd9a0;margin-bottom:2px}.onball small{color:#a8946a}
+  #soundP{z-index:9;background:rgba(8,10,14,.6)}.sndP{max-width:420px}.sndR{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #3a2a18}.sndR span{flex:1;display:block}.sndR b{display:block;font-size:15px;color:#efd9a0}.sndR small{display:block;font-size:11.5px;color:#a8946a}.sndR input{width:42%;accent-color:#e8c45a}.sndR i{width:28px;text-align:right;font-style:normal;color:#e8c45a;font-size:13px}
+  .sndB{margin-left:6px;width:34px;height:34px;font-size:17px;color:#e8d39a;background:#2a1e12;border:2px solid #8a6a32;border-radius:4px;flex:none}
   .divd{margin:6px 0;padding:5px 8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:12.5px;color:#efd9a0}
 
   .pace{margin:6px 0 4px;font-size:12px;color:#c9b27a;line-height:1.35}.pace b{color:#e8c45a}
@@ -1211,7 +1213,7 @@ function drawAmb(){for(const a of amb){if(a.k==='leaf'){const fl=Math.sin(a.ph*5
   // lightning bolt
   if(WX.bolt){const r=mulberry32(WX.bolt.seed);let x=WX.bolt.x,y=0;fx.fillStyle='#f4f8ff';while(y<AH*.55){const nx=x+(r()-.5)*14,ny=y+6+r()*8;pxl(fx,x,y,nx,ny,'#f4f8ff');pxl(fx,x+1,y,nx+1,ny,'rgba(180,200,255,.6)');if(r()<.12){let bx=nx,by=ny;for(let q=0;q<4;q++){const qx=bx+(r()-.4)*12,qy=by+5+r()*6;pxl(fx,bx,by,qx,qy,'#c8d8ff');bx=qx;by=qy}}x=nx;y=ny}}}
 function thunder(){if(!AC||muted)return;const t=AC.currentTime,nb=AC.createBuffer(1,AC.sampleRate*2.5,AC.sampleRate),d=nb.getChannelData(0);let v=0;for(let i=0;i<d.length;i++){v=v*.985+(Math.random()*2-1)*.15;d[i]=v*Math.min(1,i/2000)*Math.exp(-i/(AC.sampleRate*.8))*(1+.6*Math.sin(i/9000))}
-  const s=AC.createBufferSource();s.buffer=nb;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=220;const g=AC.createGain();g.gain.value=.9;s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t)}
+  const s=AC.createBufferSource();s.buffer=nb;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=220;const g=AC.createGain();g.gain.value=.9;s.connect(f);f.connect(g);g.connect(catOut('wx'));s.start(t)}
 // ----- the winner's moment: streamers and a burst over the line
 function winnerBurst(h){for(let k=0;k<40;k++){const a=Math.random()*6.283,v=.4+Math.random()*1.4;bits.push({x:h.x,y:h.y,z:14,vx:Math.cos(a)*v,vy:Math.sin(a)*v,vz:40+Math.random()*60,c:[h.H.silk[0],h.H.silk[1],'#ffe9b0','#ffffff'][k%4],s:Math.random()<.5?2:1,life:2.2,rest:1.2})}}
 
@@ -1475,7 +1477,7 @@ function drawFG(){fg.setTransform(1,0,0,1,0,0);fg.clearRect(0,0,AW,AH);const w=W
   // the flash of lightning lights the whole frame
   if(w.flash>.05){fg.fillStyle='rgba(235,240,255,'+(w.flash*.35).toFixed(3)+')';fg.fillRect(0,0,AW,AH)}}
 // ----- weather and wind you can hear
-function atmoAudio(){if(!AC||!eng)return;const t=AC.currentTime;if(!eng.rain){const mk=(ft,fq,q)=>{const nb=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const ns=AC.createBufferSource();ns.buffer=nb;ns.loop=true;const nf=AC.createBiquadFilter();nf.type=ft;nf.frequency.value=fq;nf.Q.value=q;const ng=AC.createGain();ng.gain.value=0;ns.connect(nf);nf.connect(ng);ng.connect(AC.destination);ns.start();return{ng,nf}};eng.rain=mk('highpass',2400,.4);eng.wind=mk('bandpass',380,.7)}
+function atmoAudio(){if(!AC||!eng)return;const t=AC.currentTime;if(!eng.rain){const mk=(ft,fq,q)=>{const nb=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const ns=AC.createBufferSource();ns.buffer=nb;ns.loop=true;const nf=AC.createBiquadFilter();nf.type=ft;nf.frequency.value=fq;nf.Q.value=q;const ng=AC.createGain();ng.gain.value=0;ns.connect(nf);nf.connect(ng);ng.connect(catOut('wx'));ns.start();return{ng,nf}};eng.rain=mk('highpass',2400,.4);eng.wind=mk('bandpass',380,.7)}
   eng.rain.ng.gain.setTargetAtTime((WX.rain||0)*.05,t,.4);const wd=(WX.wind||.3)*.012+gust*.035;eng.wind.ng.gain.setTargetAtTime(wd,t,.3);eng.wind.nf.frequency.setTargetAtTime(300+Math.sin(now*.7)*120+gust*300,t,.3)}
 // a Mexican wave through each crowd as the leaders reach them
 function waveJump(o,k){if(!race)return 0;if(race.sport)return race.cheer>0&&Math.sin(now*11+k*1.7+o.seed)>.1?1:0;if(race.state==='done')return Math.sin(now*11+k*1.7+o.seed)>.1?1:0;const L=leaderI();if(L==null)return 0;const d=((o.i-L+T.S*1.5)%T.S-T.S/2)*T.ds;// metres ahead of the leader
@@ -1643,7 +1645,7 @@ function drawKnightR(r,b,h,run){const[s1,s2]=h.H.silk,ar='#8a8f98',hi='#b8bec8';
   const L=h.lance||0,ln=12;if(L>.5){r(2,-11-b,ln,1,'#d8c8a0');r(2+ln,-11-b,1,1,'#e8e4dc');r(4,-12-b,3,1,s1);r(4,-13-b,2,1,s2)}else{r(2,-12-b-Math.round((1-L)*4),1,6,'#d8c8a0');for(let k=0;k<ln-4;k++)r(2+Math.round(k*.3),-13-b-k,1,1,'#d8c8a0')}}
 function drawArcherR(r,b,h,run){const[s1,s2,cap]=h.H.silk;r(-1,-11-b,2,3,s1);r(1,-10-b,1,1,s2);r(-1,-13-b,2,2,'#d9a07a');r(-1,-14-b,2,1,cap);r(-2,-13-b,1,1,cap);
   const draw=Math.floor(now*4+h.ph)%3===0;r(2,-14-b,1,1,'#5a3a22');r(3,-13-b,1,4,'#5a3a22');r(2,-9-b,1,1,'#5a3a22');if(draw){r(1,-12-b,1,1,'#e8e4dc');r(1,-11-b,1,1,'#e8e4dc')}r(-2,-10-b,1,3,'#7a5434')}
-function crack(){if(!AC||muted)return;const t=AC.currentTime,nb=AC.createBuffer(1,AC.sampleRate*.25,AC.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/1500);const s=AC.createBufferSource();s.buffer=nb;const f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=900;const g=AC.createGain();g.gain.value=.35;s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t)}
+function crack(){if(!AC||muted)return;const t=AC.currentTime,nb=AC.createBuffer(1,AC.sampleRate*.25,AC.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/1500);const s=AC.createBufferSource();s.buffer=nb;const f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=900;const g=AC.createGain();g.gain.value=.35;s.connect(f);f.connect(g);g.connect(catOut('sfx'));s.start(t)}
 function sportCam(){if(card.sport==='polo')return poloCam();const G0=SP.G;let p;if(card.sport==='joust'){p=SP.a&&SP.b?[(SP.a.x+SP.b.x)/2,(SP.a.y+SP.b.y)/2]:G0.at(0,0)}else{const R=SP.riders[Math.min(SP.k,SP.riders.length-1)];p=[R.x*.6+G0.at(1,0)[0]*.4,R.y*.6+G0.at(1,0)[1]*.4]}
   return{x:isoX(p[0],p[1])-AW/2,y:isoY(p[0],p[1])-AH/2-hz(p[0],p[1])+AH*.05}}
 // ----- settling the tourney
@@ -2925,7 +2927,10 @@ function bus(){if(BUS||!AC)return BUS;const out=AC.createGain();out.gain.value=.
   const len=AC.sampleRate*1.8,ir=AC.createBuffer(2,len,AC.sampleRate);for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++){const x=i/len;d[i]=(Math.random()*2-1)*Math.pow(1-x,3.2)*(i<AC.sampleRate*.012?0:1)}}
   const cv=AC.createConvolver();cv.buffer=ir;const wet=AC.createGain();wet.gain.value=.24;cv.connect(wet);wet.connect(out);
   const dry=AC.createGain();dry.gain.value=1;dry.connect(lp);dry.connect(cv);
-  MUS=AC.createGain();MUS.gain.value=0;MUS.connect(dry);BUS=dry;return BUS}
+  // four channels you can set separately: music, effects, ambience (crowd, birds) and weather
+  for(const k of['music','sfx','amb'])CAT[k]=AC.createGain(),CAT[k].connect(dry);CAT.wx=AC.createGain();CAT.wx.connect(AC.destination);applySound();
+  MUS=AC.createGain();MUS.gain.value=0;MUS.connect(CAT.music);BUS=CAT.sfx;return BUS}
+const CAT={};function catOut(k){bus();return CAT[k]||AC.destination}
 // D dorian: everything lands in the mode so interface sounds feel like part of the tune
 const DOR=[0,2,3,5,7,9,10];
 function snapF(f){let m=Math.round(69+12*Math.log2(f/440)),pc=((m-62)%12+12)%12,best=99,bm=m;for(const s of DOR)for(const o of[-12,0,12]){const d=s+o-pc;if(Math.abs(d)<Math.abs(best)){best=d}}bm=m+best;return 440*Math.pow(2,(bm-69)/12)}
@@ -3004,6 +3009,30 @@ addEventListener('pointerdown',()=>{if(!muted){audioStart();if(AC&&AC.state==='s
 // silence the moment you leave the game (another app, the home screen, a locked phone), back on when you return
 function bgAudio(){if(!AC)return;if(document.hidden){AC.suspend().catch(()=>{})}else if(!muted){AC.resume().catch(()=>{})}}
 document.addEventListener('visibilitychange',bgAudio);addEventListener('pagehide',()=>{if(AC)AC.suspend().catch(()=>{})});addEventListener('blur',()=>{if(AC&&document.hidden)AC.suspend().catch(()=>{})});
+// ----- sound settings: four sliders, saved between visits
+let SND={music:.8,sfx:.9,amb:.8,wx:.8};try{Object.assign(SND,JSON.parse(localStorage.getItem('kingsfold-sound')||'{}'))}catch(e){}
+function applySound(){if(!AC)return;const t=AC.currentTime;for(const k in CAT){if(CAT[k])CAT[k].gain.setTargetAtTime(Math.pow(SND[k]??.8,1.6),t,.05)}}
+function setSnd(k,v){SND[k]=v/100;try{localStorage.setItem('kingsfold-sound',JSON.stringify(SND))}catch(e){}applySound();if(k==='sfx'&&v>0)blip(880,.05);if(k==='amb'&&v>0&&typeof chirp==='function')chirp(true)}
+// the engine's hoof rumble is an effect; the crowd murmur is ambience
+const _audioStart16=audioStart;audioStart=function(){const had=!!AC;_audioStart16.apply(this,arguments);if(AC&&eng&&!eng._routed){try{bus();eng.hoof.disconnect();eng.hoof.connect(CAT.sfx);eng.crowd.disconnect();eng.crowd.connect(CAT.amb);eng._routed=1}catch(e){}}};
+// ----- nature: birdsong by day, crickets at dusk, nothing in the rain
+function chirp(force){if(!AC||muted||AC.state!=='running')return;const B=catOut('amb'),t=AC.currentTime+.02,pan=AC.createStereoPanner?AC.createStereoPanner():null;if(pan){pan.pan.value=Math.random()*1.6-.8;pan.connect(B)}const out=pan||B;
+  const night=race&&race.rc&&race.rc.tod==='evening'&&Math.random()<.6;
+  if(night&&!force){for(let k=0;k<6;k++){const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=4300+Math.random()*200;g.gain.setValueAtTime(0,t+k*.07);g.gain.linearRampToValueAtTime(.012,t+k*.07+.01);g.gain.linearRampToValueAtTime(0,t+k*.07+.045);o.connect(g);g.connect(out);o.start(t+k*.07);o.stop(t+k*.07+.06)}return}
+  const n=2+((Math.random()*4)|0),base=2300+Math.random()*1800,kind=Math.random();let tt=t;
+  for(let k=0;k<n;k++){const o=AC.createOscillator(),g=AC.createGain(),d=.05+Math.random()*.08,f0=base*(1+(Math.random()-.5)*.25);o.type='sine';
+    o.frequency.setValueAtTime(f0*(kind<.5?.8:1.2),tt);o.frequency.exponentialRampToValueAtTime(f0*(kind<.5?1.25:.75),tt+d);
+    g.gain.setValueAtTime(0,tt);g.gain.linearRampToValueAtTime(.022,tt+.008);g.gain.exponentialRampToValueAtTime(.0005,tt+d);o.connect(g);g.connect(out);o.start(tt);o.stop(tt+d+.02);tt+=d+.03+Math.random()*.06}}
+setInterval(()=>{if(!AC||muted||document.hidden||(SND.amb||0)<.01)return;const wet=WX&&(WX.rain>.2||WX.snow>.2||WX.storm);if(wet)return;if(Math.random()<(race?.22:.3))chirp()},900);
+// ----- the sound panel
+function openSound(){let el=$('soundP');if(!el){el=document.createElement('div');el.id='soundP';el.className='ov';document.body.appendChild(el)}
+  const row=(k,n,d)=>'<div class="sndR"><span><b>'+n+'</b><small>'+d+'</small></span><input type="range" min="0" max="100" value="'+Math.round((SND[k]??.8)*100)+'" oninput="setSnd(\''+k+'\',+this.value);this.nextSibling.textContent=this.value"><i>'+Math.round((SND[k]??.8)*100)+'</i></div>';
+  el.innerHTML='<div class="panel cp sndP"><div class="cTop"><span class="bl brand">Sound</span><button class="x" onclick="$(\'soundP\').style.display=\'none\'">✕</button></div>'+
+    row('music','Music','The lute and recorder between events')+row('sfx','Effects','Hooves, mallets, lances, bells, coins')+row('amb','Ambience','The crowd, birdsong, crickets at dusk')+row('wx','Weather','Rain, wind and thunder')+
+    '<div class="rB"><button onclick="setMute(!muted);openSound()">'+(muted?'Turn sound on':'Mute everything')+'</button></div></div>';el.style.display='flex';audioStart()}
+// the ♪ button opens the panel instead of just muting
+(function(){const b=$('muteB');if(b)b.onclick=openSound})();
+const _renderCard16=renderCard;renderCard=function(){_renderCard16.apply(this,arguments);const top=$('card').querySelector('.panel .cTop');if(top&&!top.querySelector('.sndB'))top.insertAdjacentHTML('beforeend','<button class="sndB" onclick="openSound()">'+(muted?'♪̸':'♪')+'</button>')};
 
 // ===================== STAGAL splash: shown once as the game opens =====================
 // Set in the same blackletter gold as the game's own titles, with a glint passing across it.
