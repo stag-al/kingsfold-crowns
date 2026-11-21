@@ -107,6 +107,10 @@
   .sndB{margin-left:6px;width:34px;height:34px;font-size:17px;color:#e8d39a;background:#2a1e12;border:2px solid #8a6a32;border-radius:4px;flex:none}
   .tagL,.tagP{display:inline-block;font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.5px;padding:0 4px;margin-right:5px;border-radius:2px;vertical-align:1px}.tagL{background:#b8322a;color:#fff3e8}.tagP{background:#3a2a18;color:#c9b27a;border:1px solid #5a4026}
   .lvN{display:inline-block;max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+  #pasC{display:block;width:100%;image-rendering:pixelated;image-rendering:crisp-edges;border:2px solid #4a3420;border-radius:4px;margin:8px 0;touch-action:manipulation;cursor:pointer}
+  .pasCard{margin-top:4px}.pasBars{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin:8px 0;font-size:12px;color:#c9b27a}.pasBars span{display:flex;flex-direction:column;gap:2px}
+  .pbar{display:block;height:6px;background:#1e150d;border:1px solid #4a3420;border-radius:2px;overflow:hidden}.pbar i{display:block;height:100%}
+  .pasAct{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin:8px 0}.pasAct .chip{display:flex;flex-direction:column;align-items:center;padding:6px 2px;font-size:13px}.pasAct .chip small{font-size:10px;color:#a8946a}
   .divd{margin:6px 0;padding:5px 8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:12.5px;color:#efd9a0}
 
   .pace{margin:6px 0 4px;font-size:12px;color:#c9b27a;line-height:1.35}.pace b{color:#e8c45a}
@@ -1341,7 +1345,7 @@ function bar(v,c){return'<span class="sbar"><i style="width:'+clamp(v,0,100)+'%;
 function horseStatus(h){return h.foal>0?'Foal · races in '+h.foal+' weeks':h.preg?'In foal to '+h.preg.sire.name+' · due in '+Math.max(0,h.preg.due-G.raceNo)+' weeks':h.retired?'Retired to stud':h.entered?'In training · entered for races':'In training · resting from races'}
 function openStable(){stableInit();if(careerOf)return openCareer(careerOf);const M=mineAll();
   let h='<div class="panel cp"><div class="cTop"><span class="bl brand">The Stable</span><span class="purse">'+coin()+'<b>'+G.purse+'</b></span><button class="x" onclick="closeStable()">✕</button></div>';
-  h+='<div class="tabs">'+[['mine','My horses ('+M.length+'/'+stallCap()+')'],['market','Market'],['breed','Breeding']].map(([k,n])=>'<button class="'+(stableTab===k?'on':'')+'" onclick="stableTab=\''+k+'\';openStable()">'+n+'</button>').join('')+'</div>';
+  h+='<div class="tabs">'+[['pasture','Pasture'],['mine','My horses ('+M.length+'/'+stallCap()+')'],['market','Market'],['breed','Breeding']].map(([k,n])=>'<button class="'+(stableTab===k?'on':'')+'" onclick="stableTab=\''+k+'\';openStable()">'+n+'</button>').join('')+'</div>';
   if(G.yardNews&&G.yardNews.length){h+='<div class="yard">'+G.yardNews.map(x=>'<div>'+x+'</div>').join('')+'</div>'}
   if(stableTab==='mine'){if(!M.length)h+='<div class="sNote">Your yard is empty. Visit the market to buy a racehorse, a yearling to raise, or a broodmare to breed from.</div>';
     const wk=M.reduce((a,x)=>a+Math.round((FEEDS[x.feed]||FEEDS.oats).cost*est().feed*(x.foal>0?.5:1)*(x.retired?.7:1)),0);if(M.length)h+='<div class="sNote">Feed bill: <b>'+wk+'</b> crowns a week'+(G.lastBill!=null?' · last week '+G.lastBill:'')+'. Up to two of your horses are entered in each race, 20 crowns each.</div>';
@@ -2601,6 +2605,109 @@ const _toggleLive20=toggleLive;toggleLive=function(){if(!race||!race.sport)retur
 // show the Bets button in every sport, and keep the panel's prices fresh
 const _startSport20=startSport;startSport=function(){_startSport20.apply(this,arguments);$('rc').style.display='flex';$('live').style.display='none';liveCache.t=-9};
 setInterval(()=>{if(race&&race.sport&&$('live').style.display==='block')buildLive()},1000);
+
+// ===================== the pasture: your horses out on the grass, close enough to touch =====================
+// Tap a horse to see its card; feed, brush, bathe and make a fuss of it. Care shows (mud, flies, a drooping head)
+// and a well-kept, happy horse races a touch better.
+const PW=132,PH=92;let PAS=null,pasSel=null,pasRAF=0;
+function careInit(h){if(h.clean==null)h.clean=80;if(h.mood==null)h.mood=70}
+const _stableAdj23=stableAdj;stableAdj=function(h){let a=_stableAdj23(h);if(h&&h.mine){careInit(h);a+=(h.clean-60)/100*.06+(h.mood-60)/100*.08}return a};
+const _weekTick23=weekTick;weekTick=function(){const r=_weekTick23.apply(this,arguments);for(const h of mineAll()){careInit(h);h.clean=Math.max(0,h.clean-11);h.mood=Math.max(0,h.mood-(h.clean<35?11:7))}return r};
+// ---- care actions (each once per event, so it's a little routine, not a button to mash)
+function careAct(id,k){const h=G.roster.find(x=>x.id===id);if(!h)return;careInit(h);const used=h.care||(h.care={});if(used[k]===G.raceNo)return;
+  const P=PAS&&PAS.horses.find(p=>p.h===h);
+  if(k==='feed'){const c=Math.round((FEEDS[h.feed]||FEEDS.oats).cost*.6);if(G.purse<c)return;G.purse-=c;h.cond=Math.min(100,h.cond+7);h.mood=Math.min(100,h.mood+5);if(P){P.act={k:'eat',t:3.2};PAS.hay.push({x:P.x+(P.f>0?10:-10),y:P.y,t:6})}blip(392,.12)}
+  if(k==='brush'){h.clean=Math.min(100,h.clean+30);h.mood=Math.min(100,h.mood+4);if(P){P.act={k:'brush',t:2.6}}knock(1400,.03)}
+  if(k==='bathe'){if(G.purse<5)return;G.purse-=5;h.clean=100;h.mood=Math.min(100,h.mood-2);if(P){P.act={k:'bathe',t:3}}noiseHit(AC?AC.currentTime:0,.4,1800,1,.04)}
+  if(k==='pet'){h.mood=Math.min(100,h.mood+12);if(P){P.act={k:'pet',t:2.4}}pluck(mf(74),.6,.05);pluck(mf(78),.6,.04,.1)}
+  used[k]=G.raceNo;save();pasInfo()}
+// ---- the scene
+function pasNew(){const r=mulberry32(77),M=mineAll();PAS={t:0,horses:M.map((h,i)=>({h,x:30+((i*29)%(PW-44)),y:42+((i*19)%(PH-50)),tx:0,ty:0,f:i%2?1:-1,st:'graze',stT:1+r()*3,gait:r()*4,ph:r()*6})),hay:[],fx:[],cv:null,g:null};
+  for(const P of PAS.horses){P.tx=P.x;P.ty=P.y}}
+const PCOL={g1:'#4f8a3a',g2:'#5a9642',g3:'#467c33',g4:'#6aa64c',dirt:'#8a6a42',wood:'#6b4a2e',woodL:'#8a6440',woodD:'#3a2616'};
+function pasBg(g){const r=mulberry32(5);
+  for(let y=0;y<PH;y++)for(let x=0;x<PW;x++){const n=(Math.sin(x*.21+y*.13)+Math.sin(x*.07-y*.19))*.5,d=((x*7+y*13)%5)/5;g.fillStyle=n+d*.4>.5?PCOL.g2:n+d*.4<-.3?PCOL.g3:PCOL.g1;g.fillRect(x,y,1,1)}
+  for(let k=0;k<160;k++){g.fillStyle=r()<.5?PCOL.g4:'#3f7230';g.fillRect((r()*PW)|0,(r()*PH)|0,1,1)}
+  for(let k=0;k<26;k++){const x=(r()*PW)|0,y=26+((r()*(PH-30))|0);g.fillStyle=['#f4f0e0','#f0d860','#e8a0b8'][k%3];g.fillRect(x,y,1,1)}// flowers
+  // a worn path to the barn
+  for(let y=22;y<PH;y++){const x=26+Math.round(Math.sin(y*.1)*3);g.fillStyle=PCOL.dirt;g.fillRect(x,y,4,1);g.fillStyle='#9a7a50';g.fillRect(x+1,y,2,1)}
+  // the barn
+  const bx=6,by=3;g.fillStyle='#8a2e24';g.fillRect(bx,by+8,36,13);g.fillStyle='#a8382c';for(let x=bx;x<bx+36;x+=4)g.fillRect(x,by+8,1,13);
+  g.fillStyle='#5a3a22';for(let k=0;k<10;k++)g.fillRect(bx-2+k,by+8-k*.8|0,40-2*k,1);g.fillStyle='#3a2616';g.fillRect(bx-2,by+8,40,1);
+  g.fillStyle='#2a1a10';g.fillRect(bx+13,by+12,10,9);g.fillStyle='#e8dcc0';g.fillRect(bx+13,by+12,10,1);g.fillRect(bx+17,by+12,1,9);g.fillRect(bx+13,by+16,10,1);
+  g.fillStyle='#efe6d0';g.fillRect(bx+4,by+11,5,3);g.fillRect(bx+27,by+11,5,3);
+  // water trough and hay rack
+  g.fillStyle=PCOL.woodD;g.fillRect(8,PH-17,18,5);g.fillStyle=PCOL.woodL;g.fillRect(8,PH-17,18,2);g.fillStyle='#6aa0c8';g.fillRect(9,PH-16,16,2);g.fillStyle='#9cc4e0';g.fillRect(11,PH-16,5,1);
+  g.fillStyle=PCOL.woodD;g.fillRect(PW-26,17,20,2);g.fillRect(PW-25,17,2,11);g.fillRect(PW-8,17,2,11);g.fillStyle='#d8b860';g.fillRect(PW-23,20,15,6);g.fillStyle='#b8983e';for(let x=PW-23;x<PW-8;x+=3)g.fillRect(x,20,1,6);
+  // trees
+  for(const[x,y]of[[PW-18,PH-38],[78,4]]){g.fillStyle=PCOL.woodD;g.fillRect(x,y+9,3,7);for(const[dx,dy,c]of[[-5,0,'#2f5a28'],[-3,-4,'#3a6a30'],[0,-5,'#3a6a30'],[3,-2,'#2f5a28'],[-2,2,'#4a7a3a']]){g.fillStyle=c;g.fillRect(x+dx,y+dy,8,7)}}
+  // fence all round
+  for(const y of[23,PH-2]){g.fillStyle=PCOL.wood;g.fillRect(0,y,PW,1);g.fillRect(0,y-3,PW,1);for(let x=2;x<PW;x+=9){g.fillStyle=PCOL.woodD;g.fillRect(x,y-5,2,7)}}
+  for(const x of[1,PW-3]){g.fillStyle=PCOL.wood;g.fillRect(x,23,1,PH-25);g.fillRect(x+1,23,1,PH-25)}}
+function pasHorse(g,P){const h=P.h,co=COATS[h.coat]||COATS[0],bc=co[1],dk=co[2],f=P.f,foal=h.age<1||h.foal>0,S=foal?.72:1;
+  const st=P.act?P.act.k:P.st,moving=st==='walk'||st==='trot',F=st==='trot'?TROT[Math.floor(P.gait*1.6)%2]:st==='walk'?TROT[Math.floor(P.gait*1.2)%2]:STAND,b=0;
+  const ox=Math.round(P.x),oy=Math.round(P.y),r=(px,py,w,hh,c)=>{g.fillStyle=c;const X=f>0?px:-px-w+1;g.fillRect(ox+Math.round(X*S),oy+Math.round(py*S),Math.max(1,Math.round(w*S)),Math.max(1,Math.round(hh*S)))};
+  g.fillStyle='rgba(10,16,6,.3)';g.fillRect(ox-Math.round(5*S),oy,Math.round(11*S),1);
+  const leg=(L,c)=>{for(let k=0;k<L.length;k++){const[x,y]=L[k];r(x,y-b,1,1,k===L.length-1?'#1a1410':c)}};
+  leg(F.L[1],shade(dk,.8));leg(F.L[3],shade(dk,.8));r(-4,-7,9,3,bc);r(-3,-7,7,1,shade(bc,1.15));r(-3,-5,6,1,shade(bc,.85));
+  // head: down to graze or drink, up when alert, droops when unhappy
+  const low=st==='graze'||st==='drink'||st==='eat'||(h.mood<30&&!moving),hy=low?3:(h.mood<45?1:0);
+  if(low){r(4,-7,2,3,bc);r(6,-5,2,3,bc);r(7,-3,2,2,bc);r(8,-2,1,1,'#120c08');r(5,-8,1,2,dk)}
+  else{r(4,-9+hy,2,3,bc);r(5,-11+hy,3,2,bc);r(8,-10+hy,1,1,shade(bc,.8));r(5,-12+hy,1,1,shade(bc,.9));r(7,-11+hy,1,1,'#120c08');r(4,-10+hy,1,2,dk)}
+  r(-5,-7,1,3,dk);r(-6,-5+Math.round(Math.sin(now*3+P.ph)),1,1,dk);
+  leg(F.L[0],dk===bc?shade(bc,.9):dk);leg(F.L[2],dk===bc?shade(bc,.9):dk);
+  // mud when dirty, a rug for retired stock
+  if(h.clean<50){const n=h.clean<25?6:3;for(let k=0;k<n;k++)r(-3+((k*5+h.id)%7),-6+(k%2),1,1,'#4a3a22')}
+  if(h.retired)r(-3,-7,6,2,h.silk?h.silk[0]:'#8a2e24');
+  if(pasSel===h.id){const y0=oy-Math.round(16*S)+Math.round(Math.sin(now*5));g.fillStyle='#1a120a';g.fillRect(ox-3,y0-1,7,4);g.fillStyle='#e8c45a';g.fillRect(ox-2,y0,5,1);g.fillRect(ox-1,y0+1,3,1);g.fillRect(ox,y0+2,1,1)}}
+function pasStep(dt){if(!PAS)return;PAS.t+=dt;const r=Math.random;
+  for(const P of PAS.horses){const h=P.h;careInit(h);if(P.act){P.act.t-=dt;
+      if(P.act.k==='brush'&&r()<dt*14)PAS.fx.push({x:P.x+(r()-.5)*10,y:P.y-6-r()*5,vx:(r()-.5)*8,vy:-6-r()*6,c:r()<.5?'#fff6d2':'#f2d278',t:.6});
+      if(P.act.k==='bathe'&&r()<dt*22)PAS.fx.push({x:P.x+(r()-.5)*12,y:P.y-10,vx:(r()-.5)*14,vy:-10-r()*10,c:r()<.5?'#cfe8ff':'#ffffff',t:.7,grav:1});
+      if(P.act.k==='pet'&&r()<dt*3)PAS.fx.push({x:P.x+(P.f>0?6:-6),y:P.y-14,vx:(r()-.5)*4,vy:-10,c:'#e86080',t:1.2,heart:1});
+      if(P.act.t<=0)P.act=null;continue}
+    P.stT-=dt;
+    if(P.stT<=0){const q=r(),hungry=h.cond<45,thirsty=r()<.12;
+      if(hungry&&PAS.hay.length){const H0=PAS.hay[0];P.st='walk';P.tx=H0.x;P.ty=H0.y;P.goal='eat'}
+      else if(thirsty){P.st='walk';P.tx=16+r()*6;P.ty=PH-10;P.goal='drink'}
+      else if(q<.45){P.st='graze';P.stT=2+r()*4}
+      else if(q<.85||h.mood<35){P.st='walk';P.tx=10+r()*(PW-20);P.ty=32+r()*(PH-38);P.goal=null}
+      else{P.st='trot';P.tx=10+r()*(PW-20);P.ty=32+r()*(PH-38);P.goal=null}
+      if(P.st!=='graze')P.stT=99}
+    if(P.st==='walk'||P.st==='trot'){const dx=P.tx-P.x,dy=P.ty-P.y,d=Math.hypot(dx,dy),sp=(P.st==='trot'?16:7)*(h.age<1?.8:1);if(Math.abs(dx)>.5)P.f=dx>0?1:-1;
+      if(d<1.2){P.st=P.goal||'graze';P.stT=P.goal==='eat'?4:P.goal==='drink'?2.5:2+r()*3;P.goal=null}else{P.x+=dx/d*sp*dt;P.y+=dy/d*sp*dt;P.gait+=dt*(P.st==='trot'?5:3)}}
+    else if(P.st==='drink'||P.st==='eat'){if(P.stT<0){P.st='graze';P.stT=2}}
+    // flies around a dirty horse
+    if(h.clean<30&&r()<dt*2)PAS.fx.push({x:P.x+(r()-.5)*8,y:P.y-8,vx:0,vy:0,c:'#1a1410',t:1.5,fly:1,ph:r()*6})}
+  for(const H0 of PAS.hay)H0.t-=dt;PAS.hay=PAS.hay.filter(x=>x.t>0);
+  for(const e of PAS.fx){e.t-=dt;if(e.fly){e.ph+=dt*9;e.x+=Math.cos(e.ph)*12*dt;e.y+=Math.sin(e.ph*1.3)*8*dt}else{e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.grav)e.vy+=40*dt}}PAS.fx=PAS.fx.filter(e=>e.t>0)}
+function pasDraw(){if(!PAS||!PAS.g)return;const g=PAS.g;g.drawImage(PAS.bg,0,0);
+  for(const H0 of PAS.hay){g.fillStyle='#d8b860';g.fillRect(Math.round(H0.x)-3,Math.round(H0.y)-2,7,3);g.fillStyle='#b8983e';g.fillRect(Math.round(H0.x)-2,Math.round(H0.y)-3,4,1)}
+  for(const P of [...PAS.horses].sort((a,b)=>a.y-b.y))pasHorse(g,P);
+  for(const e of PAS.fx){g.fillStyle=e.c;if(e.heart){const x=Math.round(e.x),y=Math.round(e.y);g.fillRect(x-1,y,1,1);g.fillRect(x+1,y,1,1);g.fillRect(x-1,y+1,3,1);g.fillRect(x,y+2,1,1)}else g.fillRect(Math.round(e.x),Math.round(e.y),1,1)}
+  if(!PAS.horses.length){g.fillStyle='rgba(20,14,8,.6)';g.fillRect(8,44,116,14);g.fillStyle='#efd9a0';g.font='7px monospace';g.fillText('An empty pasture. Visit the market.',11,53)}}
+function pasLoop(){if(!PAS||$('stable').style.display==='none'||stableTab!=='pasture'){pasRAF=0;return}const t=performance.now()/1000,dt=Math.min(.05,t-(PAS.lt||t));PAS.lt=t;pasStep(dt);pasDraw();pasRAF=requestAnimationFrame(pasLoop)}
+function pasTap(ev){const cv=PAS.cv,R=cv.getBoundingClientRect(),x=(ev.clientX-R.left)/R.width*PW,y=(ev.clientY-R.top)/R.height*PH;let best=null,bd=14;
+  for(const P of PAS.horses){const d=Math.hypot(P.x-x,(P.y-5)-y);if(d<bd){bd=d;best=P}}pasSel=best?best.h.id:null;if(best&&!best.act){best.st='graze';best.stT=2.5;best.f=x>best.x?1:-1}pasInfo()}
+// ---- the card for the chosen horse
+function pbar(v,c){return'<span class="pbar"><i style="width:'+Math.round(v)+'%;background:'+c+'"></i></span>'}
+function pasInfo(){const el=$('pasInfo');if(!el)return;const h=G.roster.find(x=>x.id===pasSel&&x.mine);
+  if(!h){el.innerHTML='<div class="sNote">Tap a horse in the pasture to see it up close.</div>';return}careInit(h);const used=h.care||{},done=k=>used[k]===G.raceNo,fc=Math.round((FEEDS[h.feed]||FEEDS.oats).cost*.6);
+  const mood=h.mood>75?'content':h.mood>50?'settled':h.mood>30?'restless':'miserable',clean=h.clean>75?'gleaming':h.clean>50?'tidy':h.clean>30?'grubby':'filthy';
+  let s='<div class="pasCard"><div class="shH"><i class="silk" style="'+silkCss(h.silk)+'"></i><div><b>'+h.name+'</b><small>'+(h.age<1?'Foal':h.age+'yo')+' '+(h.sex==='m'?(h.age<4?'colt':'stallion'):(h.age<4?'filly':'mare'))+' · '+COATS[h.coat][0]+' · rated '+h.or+'</small><small class="st">Looks '+clean+' and '+mood+'.</small></div><button class="chip" onclick="careerOf='+h.id+';stableTab=\'mine\';openStable()">Career</button></div>';
+  s+='<div class="pasBars"><span>Condition'+pbar(h.cond,'#e8c45a')+'</span><span>Fitness'+pbar(h.fit,'#9ccf6a')+'</span><span>Clean'+pbar(h.clean,'#8ac4e8')+'</span><span>Happy'+pbar(h.mood,'#e88aa8')+'</span></div>';
+  s+='<div class="shS"><span>Speed '+stars(h.abil)+'</span><span>Stamina '+stars(60+h.stam*2.2)+'</span><span>Jumping '+stars(60+h.jump*40)+'</span></div>';
+  s+='<div class="pasAct"><button class="chip" '+(done('feed')||G.purse<fc?'disabled':'')+' onclick="careAct('+h.id+',\'feed\')">🌾 Feed<small>'+(done('feed')?'fed':fc+' crowns')+'</small></button><button class="chip" '+(done('brush')?'disabled':'')+' onclick="careAct('+h.id+',\'brush\')">🪮 Brush<small>'+(done('brush')?'done':'free')+'</small></button><button class="chip" '+(done('bathe')||G.purse<5?'disabled':'')+' onclick="careAct('+h.id+',\'bathe\')">🪣 Bathe<small>'+(done('bathe')?'done':'5 crowns')+'</small></button><button class="chip" '+(done('pet')?'disabled':'')+' onclick="careAct('+h.id+',\'pet\')">♥ Pet<small>'+(done('pet')?'done':'free')+'</small></button></div>';
+  s+='<div class="kvn">Each can be done once between events. A clean, happy, well-fed horse races a little better; neglect shows in mud, flies and a drooping head.</div></div>';el.innerHTML=s}
+// ---- the Pasture tab is the stable's front door
+stableTab='pasture';
+const _openStable23=openStable;openStable=function(){if(stableTab!=='pasture'||careerOf)return _openStable23();stableInit();const M=mineAll();
+  let h='<div class="panel cp"><div class="cTop"><span class="bl brand">The Stable</span><span class="purse">'+coin()+'<b>'+G.purse+'</b></span><button class="x" onclick="closeStable()">✕</button></div>';
+  h+='<div class="tabs">'+[['pasture','Pasture'],['mine','My horses ('+M.length+'/'+stallCap()+')'],['market','Market'],['breed','Breeding']].map(([k,n])=>'<button class="'+(stableTab===k?'on':'')+'" onclick="stableTab=\''+k+'\';openStable()">'+n+'</button>').join('')+'</div>';
+  h+='<canvas id="pasC" width="'+PW+'" height="'+PH+'"></canvas><div id="pasInfo"></div></div>';$('stable').innerHTML=h;$('stable').style.display='flex';
+  if(!PAS||PAS.horses.length!==M.length||PAS.horses.some((P,i)=>P.h!==M[i]))pasNew();PAS.cv=$('pasC');PAS.g=PAS.cv.getContext('2d');
+  if(!PAS.bg){PAS.bg=document.createElement('canvas');PAS.bg.width=PW;PAS.bg.height=PH;pasBg(PAS.bg.getContext('2d'))}
+  PAS.cv.addEventListener('pointerdown',pasTap);pasInfo();if(!pasRAF)pasRAF=requestAnimationFrame(pasLoop)};
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
