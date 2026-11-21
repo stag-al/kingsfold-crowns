@@ -100,6 +100,7 @@
   .shr{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #3a2a18}.shr span{flex:1;display:flex;flex-direction:column;font-size:13px;color:#efd9a0}.shr small{color:#a8946a;font-size:11.5px}
   .saveTxt{width:100%;box-sizing:border-box;background:#120c07;color:#c9b27a;border:1px solid #4a3420;border-radius:4px;font:10px monospace;padding:6px}
   .tabBet{display:block;font-size:10px;color:#9ccf6a;font-weight:600}
+  .loanB{display:flex;align-items:center;gap:8px;margin:8px 0;padding:8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:13px;color:#efd9a0}.loanB span{flex:1;display:flex;flex-direction:column}.loanB small{color:#a8946a;font-size:11.5px}
   .divd{margin:6px 0;padding:5px 8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:12.5px;color:#efd9a0}
 
   .pace{margin:6px 0 4px;font-size:12px;color:#c9b27a;line-height:1.35}.pace b{color:#e8c45a}
@@ -2065,19 +2066,18 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
 // the ball sits on the ground beside the hooves: the marker follows the man about to strike
 function goalRumble(){try{if(navigator.vibrate)navigator.vibrate([260,70,260,70,520]);else{let t=0;for(let k=0;k<14;k++){setTimeout(hapTick,t);t+=1100/14}}}catch(e){}}
 // ----- a proper polo ground: clear of crops, roads, buildings and water, then mown
-findPitch=function(){const best={s:-1e9},bad=(x,y)=>{const i=idx(x,y);if(T.water[i]||T.far[i]<HALFW+1.6)return true;if(onRoad){for(let a=0;a<MR;a+=2)for(let b=0;b<MR;b+=2)if(onRoad[(y*MR+b)*M+x*MR+a])return true}if(maskData){const j=((y*MR+2)*M+x*MR+2)*4;if(maskData[j]>40||maskData[j+1]>40)return true}
+findPitch=function(){const best={s:-1e9},bad=(x,y)=>{const i=idx(x,y);if(T.water[i]||T.far[i]<HALFW+1.6)return true;if(!T.th.desert&&base[i]!==4)return true;if(onRoad){for(let a=0;a<MR;a+=2)for(let b=0;b<MR;b+=2)if(onRoad[(y*MR+b)*M+x*MR+a])return true}if(maskData){const j=((y*MR+2)*M+x*MR+2)*4;if(maskData[j]>40||maskData[j+1]>40)return true}
     if((T.fields||[]).some(F=>x>F[0]-2&&x<F[2]+2&&y>F[1]-2&&y<F[3]+2))return true;if((T.houses||[]).some(h=>Math.abs(h.x-x)<2.2&&Math.abs(h.y-y)<2.2))return true;return false};
   for(const[Lx,Ly]of[[15,9],[14,8],[13,8],[11,7]]){for(let cy=3;cy<N-3-Ly;cy++)for(let cx=3;cx<N-3-Lx;cx++){let ok=true,h0=0,n=0;
       for(let y=cy-1;y<cy+Ly+1&&ok;y++)for(let x=cx-1;x<cx+Lx+1;x++){if(x<0||y<0||x>=N||y>=N||bad(x,y)){ok=false;break}h0+=hgt[idx(x,y)];n++}if(!ok)continue;h0/=n;let v=0;
       for(let y=cy;y<cy+Ly;y++)for(let x=cx;x<cx+Lx;x++)v=Math.max(v,Math.abs(hgt[idx(x,y)]-h0));if(v>.06)continue;
       const st=T.stands[0]||{x:CX,y:CY},s=-dist(cx+Lx/2,cy+Ly/2,st.x,st.y)-v*200;if(s>best.s)Object.assign(best,{s,x0:cx,y0:cy,x1:cx+Lx,y1:cy+Ly})}if(best.x0!=null)break}
   if(best.x0==null)Object.assign(best,{x0:CX-6,y0:CY-4,x1:CX+6,y1:CY+4});return best};
-const _drawPitch5=drawPitch;drawPitch=function(){const F=PL.F,m=.7,P=[[F.x0-m,F.y0-m],[F.x1+m,F.y0-m],[F.x1+m,F.y1+m],[F.x0-m,F.y1+m]].map(p=>scr(p[0],p[1]));
-  fx.fillStyle='#4a8236';fx.beginPath();P.forEach((p,k)=>k?fx.lineTo(...p):fx.moveTo(...p));fx.closePath();fx.fill();
-  // mown stripes across the ground, and a little texture so it isn't flat paint
-  for(let x=F.x0-m;x<F.x1+m;x+=1){const a=scr(x,F.y0-m),b=scr(Math.min(F.x1+m,x+1),F.y0-m),c=scr(Math.min(F.x1+m,x+1),F.y1+m),d=scr(x,F.y1+m);fx.fillStyle=Math.floor(x-F.x0+m)%2?'#538f3c':'#4a8236';fx.beginPath();fx.moveTo(...a);fx.lineTo(...b);fx.lineTo(...c);fx.lineTo(...d);fx.closePath();fx.fill()}
-  const r=mulberry32(77);for(let k=0;k<220;k++){const x=F.x0-m+r()*(F.x1-F.x0+2*m),y=F.y0-m+r()*(F.y1-F.y0+2*m),[sx,sy]=scr(x,y);fx.fillStyle=r()<.5?'#3f7230':'#5e9a46';fx.fillRect(Math.round(sx),Math.round(sy),1,1)}
-  _drawPitch5()};
+// the pitch is the course's own grass: no painted lawn, just the lines
+
+// ----- broke? the Crown's steward will stake you
+function stewardLoan(){if(G.purse>=10)return;G.purse+=50;G.loans=(G.loans||0)+1;save();coins(5);renderCard()}
+const _renderCard9=renderCard;renderCard=function(){_renderCard9.apply(this,arguments);if(G.purse<10&&card&&!(card.bets||[]).length){const c=$('card'),p=c.querySelector('.panel');if(p&&!p.querySelector('.loanB'))p.querySelector('.cTop').insertAdjacentHTML('afterend','<div class="loanB"><span>Your purse is nearly empty.<small>Aldous, the Crown\'s steward, will stake you 50 crowns.'+(G.loans?' He has helped you '+G.loans+' time'+(G.loans>1?'s':'')+' before.':'')+'</small></span><button class="chip" onclick="stewardLoan()">Take 50</button></div>')}};
 
 // ===================== jousting you can see: couched lances that really strike, close camera, hit-stop =====================
 const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
