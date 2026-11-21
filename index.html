@@ -894,7 +894,7 @@ function pubModel(rc){const avg=rc.field.reduce((a,e)=>a+e.h.or,0)/rc.field.leng
   const ex=sc.map(s=>Math.exp(s)),t=ex.reduce((a,b)=>a+b,0);return ex.map(x=>x/t)}
 const norm=a=>{const t=a.reduce((x,y)=>x+y,0);return a.map(x=>x/t)};
 function toLadder(dec){const fv=dec-1;let best=LADDER[0];for(const L of LADDER)if(oval(L)<=fv)best=L;return best}
-function bookify(p){const q=norm(p.map(x=>Math.pow(Math.max(x,.002),.9)));return q.map(x=>toLadder(1/(x*1.17)))}
+function bookify(p){const q=norm(p.map(x=>Math.pow(Math.max(x,.002),.96)));return q.map(x=>toLadder(1/(x*1.17)))}
 function openMarket(rc){paceMap(rc);const s=(Math.random()*1e9)|0,I=mc(rc,false,2400,s),S=mc(rc,true,2400,s+7),pub=pubModel(rc);
   rc.simI=simsFor(rc,false,1500,s+11);rc.simS=simsFor(rc,true,1500,s+11);rc.pInfo=I.w;rc.pIn=S.w;rc.pInP=S.p;rc.fc=S.fc;rc.open=norm(rc.field.map((e,k)=>.45*pub[k]+.55*I.w[k]));rc.mt=0;
   const o=bookify(rc.open);rc.field.forEach((e,k)=>{e.odds=o[k];e.openOdds=o[k];e.prev=o[k];e.pw=1/(oval(o[k])+1);e.mv=0});boardFor(rc)}
@@ -1391,11 +1391,11 @@ function tactics(h,tp,f,dt){const{K,S,ds}=T,me=h;let km=0;for(let d=6;d<(h.v*1.2
     h.en=Math.max(0,(h.en??1)-drain*dt*(1+Math.max(0,race.rc.g-3)*.12));
     if(h.en<.32)tp*=.85+.15*h.en/.32}
   if(blk&&blk.o.v<tp-.1){h.boxT=(h.boxT||0)+dt;if(h.boxT>1.6&&f>.62&&!h.saidBox&&race.t-race.lastC>1.2&&rankNow().indexOf(h)<5){h.saidBox=1;say(h.H.name+' is boxed in! Nowhere to go!')}}else h.boxT=0;
-  h.lt-=dt;if(h.lt<=0&&race.state==='run'){h.lt=.3+Math.random()*.25;const old=h.tl;
+  h.lt-=dt;if(h.lt<=0&&race.state==='run'){h.lt=.2+Math.random()*.15;const old=h.tl;
     const kickOn=f>.68+(h.H.style==='closer'?.06:0);
     if(blk&&blk.o.v<tp-.05){// find a gap: outside first, then inside, or force one
       if(h.tl<7&&free(h.tl+1,-.5,.9))h.tl++;else if(h.tl>0&&free(h.tl-1,-.5,.9))h.tl--;
-      else if(kickOn&&h.boxT>.8&&h.tl<7&&Math.random()<.35){h.tl++;h.forced=true}}
+      else if(kickOn&&h.boxT>.45&&h.tl<7&&Math.random()<.6){h.tl++;h.forced=true}}
     else if(kickOn&&!bend&&h.H.style!=='front'&&blk&&h.tl<6&&free(h.tl+2,-.4,.8))h.tl+=2;// swing wide for a clear run
     else if(bend&&h.tl>0&&free(h.tl-1,-.7,1.2))h.tl--;// save ground on the turn
     else if(!kickOn&&h.tl>0&&free(h.tl-1,-.65,1.1)&&(h.H.style!=='closer'||Math.random()<.4))h.tl--;
@@ -1409,7 +1409,7 @@ function tactics(h,tp,f,dt){const{K,S,ds}=T,me=h;let km=0;for(let d=6;d<(h.v*1.2
 // ----- sudden weather mid-race
 function planRaceWeather(rc){const se=seasonOf(rc.no).n,w=rc.wx;race.turn=null;if(rc.course==='oasis')return;
   const p=w==='rain'||w==='storm'?0:w==='showers'?.4:w==='fair'||w==='breezy'?(se==='Spring'||se==='Autumn'?.2:.1):w==='mist'?.12:0;
-  if(Math.random()<p)race.turn={at:.25+Math.random()*.4,done:false}}
+  if(Math.random()<p*.5)race.turn={at:.25+Math.random()*.4,done:false}}
 function weatherTurn(){const T0=race.turn;if(!T0||T0.done)return;const L=rankNow().find(h=>!h.fallen);if(!L||L.dist/race.D<T0.at)return;T0.done=true;
   const snow=WX.snowG>.3;Object.assign(WX,snow?{snow:.9,cover:.85,dark:.15,fog:.1}:{rain:.85,cover:.9,dark:.3,wind:1.3});race.rc.g=clamp(race.rc.g+1,0,5);
   say(snow?'And now it\'s snowing hard! This changes everything!':'The heavens open! A sudden downpour, and the ground is getting softer by the stride!');crowd(.6);if(!snow&&Math.random()<.5){WX.storm=1}}
@@ -2626,11 +2626,11 @@ function newGame(){const r=mulberry32((Math.random()*1e9)|0),used=new Set(),rost
   for(const h of roster)h.runs.sort((a,b)=>a.day-b.day);save()}
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(G))}catch(e){}}
 function load(){try{const s=localStorage.getItem(SAVE);if(s){G=JSON.parse(s);return true}}catch(e){}return false}
-const sigOf=h=>.06+.11*(1-h.cons);
+const sigOf=h=>.035+.07*(1-h.cons);
 // the true running model: what a horse can do over a trip, before traffic and luck in running
 function paceAt(h,rc,f,dn,wt,jsk){
   // horses are close in speed: every edge is a percent or two, which is why races are tight and odds matter
-  let b=(h.abil-80)*.021-(wt-126)*.009+jsk*.12-Math.abs(rc.g-h.gp)*.05+h.hp*rc.hilly*.1+dn+(G?fitAdj(h):0)+(rc.course?courseAff(h,rc.course):0);
+  let b=(h.abil-80)*.028-(wt-126)*.009+jsk*.12-Math.abs(rc.g-h.gp)*.05+h.hp*rc.hilly*.1+dn+(G?fitAdj(h):0)+(rc.course?courseAff(h,rc.course):0);
   const fr=rc.fr??2;
   // the shape of the race: a crowded lead burns front-runners out and sets it up for the closers
   if(h.style==='front')b+=f<.55?.3:f>.72?-.14-Math.max(0,fr-2)*.1+(fr===1?.12:0):0;
