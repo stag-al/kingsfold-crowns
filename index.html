@@ -99,6 +99,7 @@
   .estNow{display:flex;gap:10px;align-items:center;margin:8px 0}.estNow .eic{font-size:34px}.estNow small{display:block;color:#a8946a;font-size:12px}
   .shr{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #3a2a18}.shr span{flex:1;display:flex;flex-direction:column;font-size:13px;color:#efd9a0}.shr small{color:#a8946a;font-size:11.5px}
   .saveTxt{width:100%;box-sizing:border-box;background:#120c07;color:#c9b27a;border:1px solid #4a3420;border-radius:4px;font:10px monospace;padding:6px}
+  .tabBet{display:block;font-size:10px;color:#9ccf6a;font-weight:600}
   .divd{margin:6px 0;padding:5px 8px;background:rgba(232,196,90,.12);border:1px solid #8a6a32;border-radius:4px;font-size:12.5px;color:#efd9a0}
 
   .pace{margin:6px 0 4px;font-size:12px;color:#c9b27a;line-height:1.35}.pace b{color:#e8c45a}
@@ -2184,6 +2185,23 @@ function saveCode(){try{return btoa(unescape(encodeURIComponent(JSON.stringify(G
 function saveBoxHtml(){return'<div class="whT">Move your save <small>copy this code, then paste it into the app (or back)</small></div><textarea id="saveTxt" class="saveTxt" rows="3" onclick="this.select()" readonly>'+saveCode()+'</textarea><div class="rB" style="margin-top:6px"><button onclick="copySave()">Copy save code</button></div><textarea id="loadTxt" class="saveTxt" rows="2" placeholder="Paste a save code here to load it"></textarea><div class="rB" style="margin-top:6px"><button onclick="loadSave()">Load this save</button></div><div id="saveMsg"></div>'}
 function copySave(){const t=$('saveTxt');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}t.blur();$('saveMsg').innerHTML='<div class="divd">Copied. Paste it into the other version under Estate → Accounts.</div>'}
 function loadSave(){const c=($('loadTxt').value||'').trim();if(!c)return;try{const g=JSON.parse(decodeURIComponent(escape(atob(c))));if(!g||g.purse==null)throw 0;G=g;save();location.reload()}catch(e){$('saveMsg').innerHTML='<div class="divd">That save code didn\'t work. Copy the whole thing and try again.</div>'}}
+
+// ===================== each sport keeps its event until it has actually been run =====================
+// Switching tabs no longer rebuilds the card: venue, weather, field, prices, rivals and any bets you've
+// placed all stay put. A fresh event is drawn only once that sport's event has been run.
+const PEND={};
+switchSport=function(k){const cur=card.sport||'race';if(cur===k)return;PEND[cur]=card;G.sport=k;
+  const P=PEND[k];
+  if(P&&!P.ran&&G.raceNo-P.no<RACES_PER_SEASON)card=P;// same event as before
+  else{if(P&&P.bets&&P.bets.length&&!P.ran)for(const b of P.bets){G.purse+=b.cost;G.stats.bets--;G.stats.staked-=b.cost}// a stale event that never ran: refund it
+    G.raceNo--;card=k==='race'?makeRace():makeSport(k)}
+  BS={sel:[],stakes:{},sgpStake:10,open:false};cardTab='win';save();showCard()};
+// mark an event as run the moment it starts, and forget it once it's over
+const _startRace7=startRace;startRace=function(){if(card)card.ran=true;return _startRace7.apply(this,arguments)};
+const _nextRace7=nextRace;nextRace=function(){const k=card?(card.sport||'race'):null;if(k)delete PEND[k];return _nextRace7.apply(this,arguments)};
+// a small note on the tabs so you can see which events already hold your money
+const _sportTabs7=sportTabs;sportTabs=function(){const cur=card.sport||'race';return'<div class="sportT">'+Object.entries(SPORTS).map(([k,S])=>{const P=k===cur?card:PEND[k],n=P&&!P.ran?P.bets.reduce((a,b)=>a+b.cost,0):0;
+  return'<button class="'+(cur===k?'on':'')+'" onclick="switchSport(\''+k+'\')">'+S.ic+' '+S.n+(n?'<small class="tabBet">'+coin()+n+' on</small>':'')+'</button>'}).join('')+'</div>'};
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
