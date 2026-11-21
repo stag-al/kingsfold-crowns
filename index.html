@@ -1957,6 +1957,128 @@ function upsetHtml(rc,res){const D=res.day,bits=[];if(rc.favT!=null&&res.w!==rc.
   return bits.length?'<div class="upset">'+bits.slice(0,4).join('<br>')+'</div>':''}
 const _poloSettle4=poloSettle;poloSettle=function(){_poloSettle4();const rc=race.rc,res=rc.result,el=$('results').querySelector('.fsc');const h=upsetHtml(rc,res);if(el&&h)el.insertAdjacentHTML('afterend',h)};
 
+// ===================== real polo: the ball is struck, never carried =====================
+// Each possession is a planned move (passes into space, give-and-goes, tap-ons, shots, steals) that lands
+// exactly on what the match model decided; riders read the line of the ball, mark their man and ride off.
+const FRIC=1.35;// ground friction on the ball (per second, exponential)
+const ROLE_MARK=[3,2,1,0];// polo marking: your #1 takes their #4, #2 takes #3, and so on
+function ballStop(B0){return[B0.x+B0.vx/FRIC,B0.y+B0.vy/FRIC]}
+function ballAt(B0,t){const k=(1-Math.exp(-FRIC*t))/FRIC;return[B0.x+B0.vx*k,B0.y+B0.vy*k]}
+function clampF(p,m=.45){const F=PL.F;return[clamp(p[0],F.x0+m,F.x1-m),clamp(p[1],F.y0+m,F.y1-m)]}
+function hitBall(R,tx,ty,kind,loft){const B0=PL.ball,dx=tx-B0.x,dy=ty-B0.y,d=Math.hypot(dx,dy)||1;let sp=kind==='shot'?Math.max(8.5,d*FRIC*1.25):d*FRIC*1.12;sp=Math.min(sp,13);
+  B0.vx=dx/d*sp;B0.vy=dy/d*sp;B0.vz=loft!=null?loft:(d>5?3+Math.random()*2:d>2.5?1.2:0);R.swing=1;R.hitT=now;crack2();
+  // what kind of stroke was it, relative to the way the horse is going?
+  const hh=Math.atan2(R.vy||0,R.vx||(R.team?-1:1)),a=Math.abs(wrapA(Math.atan2(dy,dx)-hh));return a<.6?'forehand':a<1.9?'neck shot':'backhand'}
+const POLOSAY={pass:[(a,b,s)=>a+' with a '+s+' to '+b+'.',(a,b)=>'Long ball from '+a+', '+b+' runs onto it!',(a,b,s)=>'Lovely '+s+' by '+a+' into space for '+b+'.',(a,b)=>a+' finds '+b+' on the run.'],
+  tap:[(a)=>a+' taps it on.',(a)=>a+' takes it up the line.',(a)=>a+' dribbles past his man.'],
+  give:[(a,b)=>'One-two! '+a+' plays it to '+b+' and goes for the return.']};
+const pick=L=>L[(Math.random()*L.length)|0];
+// ----- planning a possession
+function planEvent(e,S){const att=PL.riders.filter(R=>R.team===e.t),by=j=>att.find(R=>R.j===j),plan=[];
+  if(e.out==='goal'){const J=by(e.j),A=e.a>=0?by(e.a):null;
+    if(A){if(S===J){plan.push({R:J,k:'pass',to:A},{R:A,k:'pass',to:J,give:1})}else if(S!==A){plan.push({R:S,k:Math.random()<.5?'tap':'pass',to:A})}
+      if(S===A&&Math.random()<.6)plan.push({R:A,k:'tap'});if(plan.length&&plan[plan.length-1].R!==A)plan.push({R:A,k:'pass',to:J});else if(!plan.length)plan.push({R:A,k:'pass',to:J});plan.push({R:J,k:'shot',out:'goal'})}
+    else{plan.push({R:J,k:'tap'});if(Math.random()<.5)plan.push({R:J,k:'tap'});plan.push({R:J,k:'shot',out:'goal'})}}
+  else if(e.out==='miss'||e.out==='save'){const J=by(e.j);if(S!==J)plan.push({R:S,k:'pass',to:J});else plan.push({R:J,k:'tap'});plan.push({R:J,k:'shot',out:e.out})}
+  else{// turnover: a tap or two, then the defender reads it and takes it away
+    plan.push({R:S,k:'tap'});if(Math.random()<.5){const M=att.filter(R=>R!==S&&R.j!==3).sort((a,b)=>dist(a.x,a.y,S.x,S.y)-dist(b.x,b.y,S.x,S.y))[0];if(M)plan.push({R:S,k:'pass',to:M,lost:1});else plan.push({R:S,k:'tap',lost:1})}else plan[0].lost=1;
+    const D=PL.riders.find(R=>R.team!==e.t&&R.j===e.d);plan.push({R:D,k:'steal'})}
+  return plan}
+// a receiving spot: ahead of the receiver, into open grass, in range of goal for the scorer
+function passSpot(from,to,e,shooter){const F=PL.F,dir=e.t?-1:1,gx=goalX(e.t);let base=[to.x+dir*(1.6+Math.random()*.8)+(to.vx||0)*.35,to.y+(to.vy||0)*.25];
+  if(shooter){base=[gx-dir*(3.2+Math.random()*1.6),PL.midY+(Math.random()-.5)*2.4]}
+  let best=base,bs=-1e9;for(let k=0;k<10;k++){const a=k*.628,r=k?.9:0,p=clampF([base[0]+Math.cos(a)*r,base[1]+Math.sin(a)*r]);let m=9;for(const o of PL.riders)if(o.team!==from.team)m=Math.min(m,dist(o.x,o.y,p[0],p[1]));
+    const s=Math.min(m,2.6)+laneOpen(PL.ball.x,PL.ball.y,p[0],p[1],from.team)*.7-dist(p[0],p[1],base[0],base[1])*.4;if(s>bs){bs=s;best=p}}
+  return best}
+startPhase=function(){const e=nextEvent();if(!e){endMatch();return}const B0=PL.ball,team=PL.riders.filter(R=>R.team===e.t);let S;
+  // the pony that went lame
+  const D0=card.result.day;if(D0&&D0.lame&&!PL.lameSaid&&e.k>=D0.lame.k){PL.lameSaid=1;const i=D0.lame.i,R=PL.riders.find(R=>R.team===(i>>2)&&R.j===(i&3));if(R){R.lame=1;sayP('Oh no, '+R.p.name+'\'s pony has pulled up lame! He\'s on a tired spare now.');blip(220,.3,'triangle',.06)}}
+  if(PL.knock){S=team.find(R=>R.j===3);PL.knock=false;B0.vx=B0.vy=0;if(Math.random()<.6)sayP('Knock-in for the '+card.teams[e.t].short+'. '+S.p.name+' to restart.')}
+  else S=team.reduce((a,b)=>dist(b.x,b.y,B0.x,B0.y)<dist(a.x,a.y,B0.x,B0.y)?b:a);
+  if(e.out==='goal'&&e.a<0)S=team.find(R=>R.j===e.j);
+  PL.plan=planEvent(e,S);PL.pi=0;PL.carrier=PL.plan[0].R;PL.phase='chase';PL.t=0;PL.tt=0;PL.ro=0;PL.tgt={};PL.dest=null;poloHud()};
+// ----- the match loop
+poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.flash-dt);PL.think=(PL.think||0)-dt;const thinking=PL.think<=0;if(thinking)PL.think=.25;
+  // the ball always rolls on its own
+  B0.x+=B0.vx*dt;B0.y+=B0.vy*dt;B0.vz-=30*dt;B0.z=Math.max(0,B0.z+B0.vz*dt);if(B0.z===0){if(B0.vz<-4)B0.vz=-B0.vz*.3;else B0.vz=0}
+  const fr=PL.phase==='shot'&&PL.shotT==='goal'?Math.exp(-dt*.25):Math.exp(-dt*(B0.z>0?.3:FRIC));B0.vx*=fr;B0.vy*=fr;
+  if(PL.phase!=='shot'&&PL.phase!=='celebrate'){if(B0.y<F.y0+.15||B0.y>F.y1-.15){B0.vy*=-.4;B0.y=clamp(B0.y,F.y0+.15,F.y1-.15)}if(B0.x<F.x0+.1||B0.x>F.x1-.1){B0.vx*=-.3;B0.x=clamp(B0.x,F.x0+.1,F.x1-.1)}}
+  const e=nextEvent();
+  if(PL.phase==='kickoff'){for(const R of PL.riders)steer(R,dt,...homeSpot(R),3.6);if(PL.t>1){PL.phase='throw';PL.t=0;B0.x=(F.x0+F.x1)/2;B0.y=F.y1+.2;B0.vx=0;B0.vy=-5.2;B0.vz=5;blip(660,.08,'square',.05);if(race.t-race.lastC>1)sayP('The umpire bowls it in between the lines!')}return}
+  if(PL.phase==='throw'){for(const R of PL.riders)steer(R,dt,B0.x+(R.team?.35:-.35),B0.y+(R.j-1.5)*.4,3);if(PL.t>.55)startPhase();return}
+  if(PL.phase==='pause'){for(const R of PL.riders)steer(R,dt,...homeSpot(R),2.4);if(PL.t>PL.pauseT){if(!e){endMatch();return}PL.phase='kickoff';PL.t=0;resetPositions(false)}return}
+  if(PL.phase==='celebrate'){for(const R of PL.riders){const own=R.team===PL.lastT;steer(R,dt,own?clamp(R.x+(R.team?-.6:.6),F.x0,F.x1):R.x,R.y+(own?Math.sin(now*3+R.j)*.4:0),own?2.5:1)}if(PL.t>1.5){PL.ei++;afterEvent(true)}return}
+  if(!e){endMatch();return}
+  const att=PL.riders.filter(R=>R.team===e.t),def=PL.riders.filter(R=>R.team!==e.t),gx=goalX(e.t),dir=e.t?-1:1,ownG=goalX(1-e.t),step=PL.plan&&PL.plan[PL.pi],S=step?step.R:null;
+  // where the ball will be: everyone reads the line of the ball
+  const bs=ballStop(B0),bspd=Math.hypot(B0.vx,B0.vy);
+  // ----- the defence
+  // the presser rides the striker off the line; the rest mark goal-side; the back guards the mouth
+  if(thinking||!PL.presser){const cands=def.filter(R=>R.j!==3||Math.abs(B0.x-ownG)<4);PL.presser=step&&step.k==='steal'?S:(S?cands.reduce((a,b)=>dist(b.x,b.y,S.x,S.y)<dist(a.x,a.y,S.x,S.y)?b:a):cands[0])}
+  for(const R of def){if(step&&R===S)continue;
+    if(R===PL.presser&&S){// shoulder to shoulder on the striker's off side, matching his line
+      const side=R.y<S.y?-1:1,tx=S.x+(S.vx||0)*.3-dir*.15,ty=S.y+side*.48+(S.vy||0)*.3;steer(R,dt,tx,ty,R.lame?3:4.7);
+      if(dist(R.x,R.y,S.x,S.y)<.62){S.v*=1-dt*.45;R.v*=1-dt*.3;if(Math.random()<dt*5)puff((S.x+R.x)/2,(S.y+R.y)/2,'#a89a70',.4);if(!PL.ro&&Math.random()<dt*.9&&race.t-race.lastC>1.8){PL.ro=1;sayP(R.p.name+' rides off '+S.p.name+'. Shoulder to shoulder!')}}continue}
+    if(R.j===3){const t=.28,bx=lerp(ownG,bs[0],t),by=lerp(PL.midY,bs[1],t*.8);steer(R,dt,bx-dir*.3,by,4.3);continue}
+    const mark=att.find(a=>a.j===ROLE_MARK[R.j])||att[0],gs=.9/Math.max(1,dist(mark.x,mark.y,ownG,PL.midY)),bx=(bs[0]-mark.x)*.15,by=(bs[1]-mark.y)*.15;
+    steer(R,dt,mark.x+(ownG-mark.x)*gs+bx,mark.y+(PL.midY-mark.y)*gs+by,4.3)}
+  // ----- the attack off the ball: runs into space, receivers run onto passes
+  for(const R of att){if(R===S)continue;
+    if(PL.dest&&PL.dest.R===R){steer(R,dt,PL.dest.x,PL.dest.y,R.lame?3:4.8);continue}// the man the ball is played to
+    if(thinking||!PL.tgt[R.j])PL.tgt[R.j]=supportSpot(R,e,{x:bs[0],y:bs[1]});steer(R,dt,...PL.tgt[R.j],R.j===3?3.4:4.3)}
+  if(!step){PL.ei++;afterEvent(false);return}
+  // ----- shot in flight
+  if(PL.phase==='shot'){S&&steer(S,dt,S.x+dir*1.5,S.y,3.5);const crossed=e.t?B0.x<=F.x0:B0.x>=F.x1;
+    if(PL.shotT==='save'){const D=def.find(R=>R.j===3)||def[0],ip=ballAt(B0,.25);steer(D,dt,ip[0],ip[1],5.2);
+      if(dist(D.x,D.y,B0.x,B0.y)<.7||PL.t>.45){const st=hitBall(D,B0.x-dir*4,clamp(B0.y+(Math.random()-.5)*3,F.y0+.5,F.y1-.5),'clear',2.5);PL.phase='loose';PL.t=0;sayP(pick(['Saved! '+D.p.name+' gets across and backs it away!','What a stop by '+D.p.name+'!',D.p.name+' blocks it on the line with a '+st+'!']));race.cheer=.8;crowd(.6);return}}
+    if(crossed){if(PL.shotT==='goal'){PL.g[e.t]++;PL.lastT=e.t;const sc=PL.shooter,as=PL.assist||null;PL.scorers.push({t:e.t,name:sc.p.name,k:e.k,as:as?as.p.name:null});PL.flash=1.2;race.cheer=2;crowd(1);goalRumble();
+        for(let q=0;q<24;q++)bits.push({x:B0.x,y:B0.y,z:6,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,vz:30+Math.random()*50,c:[card.teams[e.t].c1,card.teams[e.t].c2,'#ffe9b0'][q%3],s:Math.random()<.5?2:1,life:1.8,rest:.9});jingle();
+        sayP('GOAL! '+sc.p.name+(as?', set up by '+as.p.name:'')+'! '+card.teams[0].short+' '+PL.g[0]+'–'+PL.g[1]+' '+card.teams[1].short);PL.phase='celebrate';PL.t=0;PL.assist=null;poloHud();return}
+      else{sayP(pick(['Wide! Just past the post.','It drifts wide!','So close, wide of the posts!']));race.cheer=.6;crowd(.5);B0.x=e.t?F.x0+.2:F.x1-.2;B0.y=clamp(B0.y,F.y0+.4,F.y1-.4);B0.vx=B0.vy=0;B0.vz=0;PL.knock=true;PL.ei++;afterEvent(false);return}}
+    if(PL.t>2.4){PL.ei++;afterEvent(false)}return}
+  if(PL.phase==='loose'){if(PL.t>.7){PL.ei++;afterEvent(false)}return}
+  // ----- the striker: meet the ball on its line, arriving already moving the right way
+  PL.tt+=dt;const lead=Math.min(1.2,dist(S.x,S.y,B0.x,B0.y)/4.5),meet=ballAt(B0,lead),
+    want=step.k==='shot'?[gx,PL.midY]:step.k==='steal'?[B0.x-(-dir)*3,B0.y]:step.to?[step.to.x,step.to.y]:[B0.x+dir*3,B0.y],
+    ax=want[0]-meet[0],ay=want[1]-meet[1],al=Math.hypot(ax,ay)||1,app=[meet[0]-ax/al*.38,meet[1]-ay/al*.38];
+  const close=dist(S.x,S.y,meet[0],meet[1])<1.1;steer(S,dt,close?meet[0]:app[0],close?meet[1]:app[1],(S.lame?3.2:4.9)+(PL.tt>2?.6:0));
+  if(step.k==='steal'&&S.v>0)S.swing=Math.max(S.swing,.3);
+  // planning cue: the man on the ball weighs his option
+  if(step.to&&thinking){PL.look={x0:S.x,y0:S.y,x1:step.to.x,y1:step.to.y,t:now}}
+  const reach=dist(S.x,S.y,B0.x,B0.y);
+  if(reach<.48||(PL.tt>3.2&&reach<1.4)||PL.tt>4.5){if(PL.tt>4.5){B0.x=lerp(B0.x,S.x,.6);B0.y=lerp(B0.y,S.y,.6)}
+    const nm=S.p.name;let msg=null;
+    if(step.k==='steal'){const fwd=-dir,mates=def.filter(R=>R!==S&&R.j!==3),M=mates.sort((a,b)=>(b.x-a.x)*fwd-(a.x-b.x)*fwd)[0],tgt=M&&Math.random()<.55?clampF([M.x+fwd*1.8,M.y]):clampF([B0.x+fwd*(3+Math.random()*2),B0.y+(Math.random()-.5)*2]);
+      const st=hitBall(S,tgt[0],tgt[1],'clear');msg=pick([nm+' hooks the stick and steals it!','Turnover! '+nm+' comes away with it.',nm+' wins the ride-off and the ball!','A '+st+' from '+nm+' turns defence into attack.']);
+      if(Math.random()<.65)sayP(msg);race.cheer=.5;PL.phase='loose';PL.t=0;PL.dest=null;return}
+    if(step.k==='shot'){const out=step.out,aimY=out==='goal'?PL.midY+(Math.random()-.5)*1.3:out==='miss'?PL.midY+(Math.random()<.5?-1:1)*(1.65+Math.random()*1):PL.midY+(Math.random()-.5)*1.1;
+      const st=hitBall(S,gx+dir*.8,aimY,'shot',out==='save'?3.5:1.5+Math.random()*2.5);PL.shooter=S;PL.shotT=out;PL.phase='shot';PL.t=0;PL.dest=null;if(Math.random()<.5&&race.t-race.lastC>.8)sayP(nm+' shoots'+(st==='forehand'?'':' — a '+st+'!')+'...');return}
+    if(step.k==='pass'){const to=step.to,next=PL.plan[PL.pi+1],shooterNext=next&&next.R===to&&PL.plan[PL.pi+2]&&PL.plan[PL.pi+2].k==='shot'||(next&&next.k==='shot'&&next.R===to);
+      let spot=passSpot(S,to,e,shooterNext);if(step.lost){// the misplaced pass: drift it toward where the defender is lurking
+        const D=PL.riders.find(R=>R.team!==e.t&&R.j===e.d);if(D)spot=clampF([lerp(spot[0],D.x,.55),lerp(spot[1],D.y,.55)])}
+      const st=hitBall(S,spot[0],spot[1],'pass');PL.dest=step.lost?null:{R:to,x:spot[0],y:spot[1]};PL.assist=(next&&next.R===to&&next.k==='shot')?S:(PL.plan[PL.pi+2]&&PL.plan[PL.pi+2].k==='shot'&&PL.plan[PL.pi+2].R===to?null:PL.assist);
+      if(next&&next.R===to&&next.k==='shot')PL.assist=S;msg=step.give?pick(POLOSAY.give)(nm,to.p.name):pick(POLOSAY.pass)(nm,to.p.name,st)}
+    else{// a tap: a short forward hit to keep it moving, away from the nearest defender
+      let tx=B0.x+dir*(2+Math.random()*1.2),ty=B0.y;const[o,od]=nearestOpp(S);if(o&&od<2)ty+=(B0.y>o.y?1:-1)*1.2;ty+=(PL.midY-B0.y)*.25;const p=clampF([tx,ty]);hitBall(S,p[0],p[1],'tap');PL.dest=null;msg=pick(POLOSAY.tap)(nm)}
+    if(msg&&Math.random()<.45&&race.t-race.lastC>1.4)sayP(msg);
+    PL.pi++;PL.tt=0;const nx=PL.plan[PL.pi];if(nx){PL.carrier=nx.R;if(nx.R!==S&&PL.dest&&PL.dest.R!==nx.R)PL.dest=null}}};
+// the ball sits on the ground beside the hooves: the marker follows the man about to strike
+function goalRumble(){try{if(navigator.vibrate)navigator.vibrate([260,70,260,70,520]);else{let t=0;for(let k=0;k<14;k++){setTimeout(hapTick,t);t+=1100/14}}}catch(e){}}
+// ----- a proper polo ground: clear of crops, roads, buildings and water, then mown
+findPitch=function(){const best={s:-1e9},bad=(x,y)=>{const i=idx(x,y);if(T.water[i]||T.far[i]<HALFW+1.6)return true;if(onRoad){for(let a=0;a<MR;a+=2)for(let b=0;b<MR;b+=2)if(onRoad[(y*MR+b)*M+x*MR+a])return true}if(maskData){const j=((y*MR+2)*M+x*MR+2)*4;if(maskData[j]>40||maskData[j+1]>40)return true}
+    if((T.fields||[]).some(F=>x>F[0]-2&&x<F[2]+2&&y>F[1]-2&&y<F[3]+2))return true;if((T.houses||[]).some(h=>Math.abs(h.x-x)<2.2&&Math.abs(h.y-y)<2.2))return true;return false};
+  for(const[Lx,Ly]of[[15,9],[14,8],[13,8],[11,7]]){for(let cy=3;cy<N-3-Ly;cy++)for(let cx=3;cx<N-3-Lx;cx++){let ok=true,h0=0,n=0;
+      for(let y=cy-1;y<cy+Ly+1&&ok;y++)for(let x=cx-1;x<cx+Lx+1;x++){if(x<0||y<0||x>=N||y>=N||bad(x,y)){ok=false;break}h0+=hgt[idx(x,y)];n++}if(!ok)continue;h0/=n;let v=0;
+      for(let y=cy;y<cy+Ly;y++)for(let x=cx;x<cx+Lx;x++)v=Math.max(v,Math.abs(hgt[idx(x,y)]-h0));if(v>.06)continue;
+      const st=T.stands[0]||{x:CX,y:CY},s=-dist(cx+Lx/2,cy+Ly/2,st.x,st.y)-v*200;if(s>best.s)Object.assign(best,{s,x0:cx,y0:cy,x1:cx+Lx,y1:cy+Ly})}if(best.x0!=null)break}
+  if(best.x0==null)Object.assign(best,{x0:CX-6,y0:CY-4,x1:CX+6,y1:CY+4});return best};
+const _drawPitch5=drawPitch;drawPitch=function(){const F=PL.F,m=.7,P=[[F.x0-m,F.y0-m],[F.x1+m,F.y0-m],[F.x1+m,F.y1+m],[F.x0-m,F.y1+m]].map(p=>scr(p[0],p[1]));
+  fx.fillStyle='#4a8236';fx.beginPath();P.forEach((p,k)=>k?fx.lineTo(...p):fx.moveTo(...p));fx.closePath();fx.fill();
+  // mown stripes across the ground, and a little texture so it isn't flat paint
+  for(let x=F.x0-m;x<F.x1+m;x+=1){const a=scr(x,F.y0-m),b=scr(Math.min(F.x1+m,x+1),F.y0-m),c=scr(Math.min(F.x1+m,x+1),F.y1+m),d=scr(x,F.y1+m);fx.fillStyle=Math.floor(x-F.x0+m)%2?'#538f3c':'#4a8236';fx.beginPath();fx.moveTo(...a);fx.lineTo(...b);fx.lineTo(...c);fx.lineTo(...d);fx.closePath();fx.fill()}
+  const r=mulberry32(77);for(let k=0;k<220;k++){const x=F.x0-m+r()*(F.x1-F.x0+2*m),y=F.y0-m+r()*(F.y1-F.y0+2*m),[sx,sy]=scr(x,y);fx.fillStyle=r()<.5?'#3f7230':'#5e9a46';fx.fillRect(Math.round(sx),Math.round(sy),1,1)}
+  _drawPitch5()};
+
 // ===================== jousting you can see: couched lances that really strike, close camera, hit-stop =====================
 const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
 // close-up camera for the tourney events
@@ -2788,6 +2910,12 @@ addEventListener('pointerdown',()=>{if(!muted){audioStart();if(AC&&AC.state==='s
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>{r.update();setInterval(()=>r.update(),60*60*1000)});
   const hadSW=!!navigator.serviceWorker.controller;let reloaded=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloaded||!hadSW)return;reloaded=true;
     const b=document.createElement('div');b.textContent='Kingsfold Crowns has been updated. Tap to load the new version.';b.style.cssText='position:fixed;left:10px;right:10px;bottom:14px;z-index:99;padding:12px;background:#3a5a2a;color:#eaf6d8;border:2px solid #7ab04a;border-radius:6px;font:600 14px sans-serif;text-align:center';b.onclick=()=>location.reload();document.body.appendChild(b)})}
+
+// a real "Install app" button whenever Chrome says the game can be installed
+let bip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();bip=e;if(matchMedia('(display-mode: standalone)').matches)return;if(document.getElementById('instB'))return;
+  const b=document.createElement('button');b.id='instB';b.textContent='📲 Install Kingsfold Crowns';b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:99;padding:12px 18px;background:#3a5a2a;color:#eaf6d8;border:2px solid #7ab04a;border-radius:6px;font:700 15px sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.5)';
+  b.onclick=async()=>{b.remove();bip.prompt();try{await bip.userChoice}catch(e){}bip=null};document.body.appendChild(b);setTimeout(()=>{const x=document.getElementById('instB');if(x)x.remove()},20000)});
+addEventListener('appinstalled',()=>{const x=document.getElementById('instB');if(x)x.remove()});
 </script>
 </body>
 </html>
