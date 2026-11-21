@@ -1978,19 +1978,26 @@ const POLOSAY={pass:[(a,b,s)=>a+' with a '+s+' to '+b+'.',(a,b)=>'Long ball from
   give:[(a,b)=>'One-two! '+a+' plays it to '+b+' and goes for the return.']};
 const pick=L=>L[(Math.random()*L.length)|0];
 // ----- planning a possession
-function planEvent(e,S){const att=PL.riders.filter(R=>R.team===e.t),by=j=>att.find(R=>R.j===j),plan=[];
+function planEvent(e,S){const att=PL.riders.filter(R=>R.team===e.t),by=j=>att.find(R=>R.j===j),plan=[],free=(k,to,extra)=>Object.assign({R:S,k,to,free:1},extra||{});
+  // only the touches the bets depend on are fixed (the assist, the scorer's shot, the steal); every other touch
+  // goes to whoever can reach the ball first, decided live
+  const taps=Math.random()<.45?1:Math.random()<.5?2:0;for(let k=0;k<taps;k++)plan.push(free('tap'));
   if(e.out==='goal'){const J=by(e.j),A=e.a>=0?by(e.a):null;
-    if(A){if(S===J){plan.push({R:J,k:'pass',to:A},{R:A,k:'pass',to:J,give:1})}else if(S!==A){plan.push({R:S,k:Math.random()<.5?'tap':'pass',to:A})}
-      if(S===A&&Math.random()<.6)plan.push({R:A,k:'tap'});if(plan.length&&plan[plan.length-1].R!==A)plan.push({R:A,k:'pass',to:J});else if(!plan.length)plan.push({R:A,k:'pass',to:J});plan.push({R:J,k:'shot',out:'goal'})}
-    else{plan.push({R:J,k:'tap'});if(Math.random()<.5)plan.push({R:J,k:'tap'});plan.push({R:J,k:'shot',out:'goal'})}}
-  else if(e.out==='miss'||e.out==='save'){const J=by(e.j);if(S!==J)plan.push({R:S,k:'pass',to:J});else plan.push({R:J,k:'tap'});plan.push({R:J,k:'shot',out:e.out})}
-  else{// turnover: a tap or two, then the defender reads it and takes it away
-    plan.push({R:S,k:'tap'});if(Math.random()<.5){const M=att.filter(R=>R!==S&&R.j!==3).sort((a,b)=>dist(a.x,a.y,S.x,S.y)-dist(b.x,b.y,S.x,S.y))[0];if(M)plan.push({R:S,k:'pass',to:M,lost:1});else plan.push({R:S,k:'tap',lost:1})}else plan[0].lost=1;
-    const D=PL.riders.find(R=>R.team!==e.t&&R.j===e.d);plan.push({R:D,k:'steal'})}
+    if(A){plan.push(free('pass',A,{feeds:A}));plan.push({R:A,k:'pass',to:J,fixed:1});plan.push({R:J,k:'shot',out:'goal',fixed:1})}
+    else{plan.push(free('pass',J,{feeds:J}));plan.push({R:J,k:'tap',fixed:1});plan.push({R:J,k:'shot',out:'goal',fixed:1})}}
+  else if(e.out==='miss'||e.out==='save'){const J=by(e.j);plan.push(free('pass',J,{feeds:J}));plan.push({R:J,k:'shot',out:e.out,fixed:1})}
+  else{plan.push(free('tap',null,{lost:1}));const D=PL.riders.find(R=>R.team!==e.t&&R.j===e.d);plan.push({R:D,k:'steal',fixed:1})}
   return plan}
+// who gets to the ball first: distance over speed, with a bonus for already riding toward it
+function eta(R,B0){const d=dist(R.x,R.y,B0.x,B0.y),toward=((B0.x-R.x)*(R.vx||0)+(B0.y-R.y)*(R.vy||0))/Math.max(.1,d);return d/(4.6)-Math.max(0,toward)*.06+(R.lame?.6:0)}
+function liveStriker(step,att,B0){if(!step||!step.free)return;const pool=att.filter(R=>R.j!==3||dist(R.x,R.y,B0.x,B0.y)<2.5);let best=step.R,bt=eta(step.R,B0)-.12;// a small stickiness so it doesn't flip-flop
+  for(const R of pool){const t=eta(R,B0);if(t<bt){bt=t;best=R}}
+  if(best!==step.R){step.R=best;PL.carrier=best;PL.tt=0;poloHud()}
+  // the man we meant to feed is now the one on the ball: he just takes it on himself
+  if(step.k==='pass'&&step.to===step.R){step.k='tap';step.to=null}}
 // a receiving spot: ahead of the receiver, into open grass, in range of goal for the scorer
 function passSpot(from,to,e,shooter){const F=PL.F,dir=e.t?-1:1,gx=goalX(e.t);let base=[to.x+dir*(1.6+Math.random()*.8)+(to.vx||0)*.35,to.y+(to.vy||0)*.25];
-  if(shooter){base=[gx-dir*(3.2+Math.random()*1.6),PL.midY+(Math.random()-.5)*2.4]}
+  if(shooter){base=[lerp(to.x+dir*1.8+(to.vx||0)*.3,gx-dir*4,.3),lerp(to.y+(to.vy||0)*.3,PL.midY,.25)]}
   let best=base,bs=-1e9;for(let k=0;k<10;k++){const a=k*.628,r=k?.9:0,p=clampF([base[0]+Math.cos(a)*r,base[1]+Math.sin(a)*r]);let m=9;for(const o of PL.riders)if(o.team!==from.team)m=Math.min(m,dist(o.x,o.y,p[0],p[1]));
     const s=Math.min(m,2.6)+laneOpen(PL.ball.x,PL.ball.y,p[0],p[1],from.team)*.7-dist(p[0],p[1],base[0],base[1])*.4;if(s>bs){bs=s;best=p}}
   return best}
@@ -2020,12 +2027,12 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
   if(PL.phase==='pause'){for(const R of PL.riders)steer(R,dt,...homeSpot(R),2.4);if(PL.t>PL.pauseT){if(!e){endMatch();return}PL.phase='kickoff';PL.t=0;resetPositions(false)}return}
   if(PL.phase==='celebrate'){for(const R of PL.riders){const own=R.team===PL.lastT;steer(R,dt,own?clamp(R.x+(R.team?-.6:.6),F.x0,F.x1):R.x,R.y+(own?Math.sin(now*3+R.j)*.4:0),own?2.5:1)}if(PL.t>1.5){PL.ei++;afterEvent(true)}return}
   if(!e){endMatch();return}
-  const att=PL.riders.filter(R=>R.team===e.t),def=PL.riders.filter(R=>R.team!==e.t),gx=goalX(e.t),dir=e.t?-1:1,ownG=goalX(1-e.t),step=PL.plan&&PL.plan[PL.pi],S=step?step.R:null;
+  const att=PL.riders.filter(R=>R.team===e.t),def=PL.riders.filter(R=>R.team!==e.t),gx=goalX(e.t),dir=e.t?-1:1,ownG=goalX(1-e.t),step=PL.plan&&PL.plan[PL.pi];if(thinking&&PL.phase==='chase'&&step&&step.free)liveStriker(step,att,B0);const S=step?step.R:null;
   // where the ball will be: everyone reads the line of the ball
   const bs=ballStop(B0),bspd=Math.hypot(B0.vx,B0.vy);
   // ----- the defence
   // the presser rides the striker off the line; the rest mark goal-side; the back guards the mouth
-  if(thinking||!PL.presser){const cands=def.filter(R=>R.j!==3||Math.abs(B0.x-ownG)<4);PL.presser=step&&step.k==='steal'?S:(S?cands.reduce((a,b)=>dist(b.x,b.y,S.x,S.y)<dist(a.x,a.y,S.x,S.y)?b:a):cands[0])}
+  if(thinking||!PL.presser){const cands=def.filter(R=>R.j!==3||Math.abs(B0.x-ownG)<4);PL.presser=e.out==='turn'?(PL.riders.find(R=>R.team!==e.t&&R.j===e.d)||def[0]):step&&step.k==='steal'?S:(S?cands.reduce((a,b)=>dist(b.x,b.y,S.x,S.y)<dist(a.x,a.y,S.x,S.y)?b:a):cands[0])}
   if(thinking||!PL.contest){const c=def.filter(R=>R!==PL.presser&&(R.j!==3||Math.abs(B0.x-ownG)<5));PL.contest=c.length?c.reduce((a,b)=>dist(b.x,b.y,bs[0],bs[1])<dist(a.x,a.y,bs[0],bs[1])?b:a):null;if(thinking)PL.hookSaid=PL.hookSaid&&Math.random()<.9}
   for(const R of def){if(step&&R===S)continue;
     if(R===PL.presser&&S){// shoulder to shoulder on the striker's off side, matching his line
@@ -2054,7 +2061,7 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
       else{sayP(pick(['Wide! Just past the post.','It drifts wide!','So close, wide of the posts!']));race.cheer=.6;crowd(.5);B0.x=e.t?F.x0+.2:F.x1-.2;B0.y=clamp(B0.y,F.y0+.4,F.y1-.4);B0.vx=B0.vy=0;B0.vz=0;PL.knock=true;PL.ei++;afterEvent(false);return}}
     if(PL.t>2.4){PL.ei++;afterEvent(false)}return}
   if(PL.phase==='loose'){if(PL.t>.7){PL.ei++;afterEvent(false)}return}
-  // ----- the striker: meet the ball on its line, arriving already moving the right way
+  // ----- the striker: whoever can reach it first (unless this touch is one the bets depend on)
   PL.tt+=dt;const lead=Math.min(1.2,dist(S.x,S.y,B0.x,B0.y)/4.5),meet=ballAt(B0,lead),
     want=step.k==='shot'?[gx,PL.midY]:step.k==='steal'?[B0.x-(-dir)*3,B0.y]:step.to?[step.to.x,step.to.y]:[B0.x+dir*3,B0.y],
     ax=want[0]-meet[0],ay=want[1]-meet[1],al=Math.hypot(ax,ay)||1,app=[meet[0]-ax/al*.38,meet[1]-ay/al*.38];
@@ -2076,7 +2083,7 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
       const st=hitBall(S,spot[0],spot[1],'pass');PL.dest=step.lost?null:{R:to,x:spot[0],y:spot[1]};PL.assist=(next&&next.R===to&&next.k==='shot')?S:(PL.plan[PL.pi+2]&&PL.plan[PL.pi+2].k==='shot'&&PL.plan[PL.pi+2].R===to?null:PL.assist);
       if(next&&next.R===to&&next.k==='shot')PL.assist=S;msg=step.give?pick(POLOSAY.give)(nm,to.p.name):pick(POLOSAY.pass)(nm,to.p.name,st)}
     else{// a tap: a short forward hit to keep it moving, away from the nearest defender
-      let tx=B0.x+dir*(2+Math.random()*1.2),ty=B0.y;const[o,od]=nearestOpp(S);if(o&&od<2)ty+=(B0.y>o.y?1:-1)*1.2;ty+=(PL.midY-B0.y)*.25;const p=clampF([tx,ty]);hitBall(S,p[0],p[1],'tap');PL.dest=null;msg=pick(POLOSAY.tap)(nm)}
+      let tx=B0.x+dir*(2+Math.random()*1.2),ty=B0.y;const[o,od]=nearestOpp(S);if(o&&od<2)ty+=(B0.y>o.y?1:-1)*1.2;ty+=(PL.midY-B0.y)*.25;if(step.lost){const D=PL.riders.find(R=>R.team!==e.t&&R.j===e.d);if(D){tx=lerp(tx,D.x+(D.vx||0)*.4,.6);ty=lerp(ty,D.y+(D.vy||0)*.4,.6)}}const p=clampF([tx,ty]);hitBall(S,p[0],p[1],'tap');PL.dest=null;msg=pick(POLOSAY.tap)(nm)}
     if(msg&&Math.random()<.45&&race.t-race.lastC>1.4)sayP(msg);
     PL.pi++;PL.tt=0;const nx=PL.plan[PL.pi];if(nx){PL.carrier=nx.R;poloHud();if(nx.R!==S&&PL.dest&&PL.dest.R!==nx.R)PL.dest=null}}};
 // the ball sits on the ground beside the hooves: the marker follows the man about to strike
@@ -2450,6 +2457,32 @@ const _director11=director;director=function(dt){const R=rankNow().filter(h=>!h.
 function drawFinishLine(){if(!T||!T.C)return;const{C,NM}=T,i=0,a=scr(C[i][0]+NM[i][0]*(-HALFW),C[i][1]+NM[i][1]*(-HALFW)),b=scr(C[i][0]+NM[i][0]*HALFW,C[i][1]+NM[i][1]*HALFW);
   for(const[dy,c]of[[0,'rgba(246,242,230,.92)'],[1,'rgba(246,242,230,.92)'],[2,'rgba(40,30,20,.25)']])pxl(fx,a[0],a[1]+dy,b[0],b[1]+dy,c)}
 const _buildObjs11=buildObjs;buildObjs=function(){_buildObjs11.apply(this,arguments);objs.push({kind:'sport',key:-1e9,draw:drawFinishLine})};
+
+// ===================== more life in the air and on the ground =====================
+function groundDust(){if(WX&&WX.snowG>.25)return['#f2f5f8','#dfe6ee'];if(T&&T.th&&T.th.desert)return['#dcc48c','#c8ac70'];if(WX&&WX.rain>.3)return['#6a5a3e','#584a32'];return['#a8986a','#c2b282']}
+// hooves throw up dust (or snow, or sand) in every sport, not just the races
+const _sportSim17=sportSim;sportSim=function(dt){_sportSim17(dt);if(!race||race.state!=='run')return;const L=(card.sport==='polo'&&PL)?PL.riders:(SP&&SP.riders)||[],G=groundDust();
+  for(const R of L){if(R.unhorsed||(card.sport==='joust'&&R!==SP.a&&R!==SP.b)||(card.sport==='archery'&&R!==SP.riders[SP.k]))continue;const v=R.v||0;if(v<2.2)continue;
+    if(Math.random()<dt*v*1.1){const hx=R.x-(R.vx||0)*.06,hy=R.y-(R.vy||0)*.06;puff(hx+(Math.random()-.5)*.2,hy+(Math.random()-.5)*.2,G[(Math.random()*2)|0],.55+v*.06,.6+Math.random()*.6)}
+    // clods of turf at full gallop
+    if(v>4&&Math.random()<dt*2.2&&bits.length<700)bits.push({x:R.x,y:R.y,z:1,vx:-(R.vx||0)*.12+(Math.random()-.5)*.4,vy:-(R.vy||0)*.12+(Math.random()-.5)*.4,vz:14+Math.random()*16,c:WX.snowG>.25?'#f4f8fb':'#5a6a32',s:1,life:.7,rest:.2})}};
+// polo: a strike takes a divot
+const _hitBall17=hitBall;hitBall=function(R,tx,ty,kind,loft){const st=_hitBall17(R,tx,ty,kind,loft),B0=PL.ball,n=kind==='shot'?9:kind==='tap'?3:6,snow=WX.snowG>.25;
+  for(let k=0;k<n&&bits.length<720;k++){const a=Math.atan2(B0.vy,B0.vx)+Math.PI+(Math.random()-.5)*1.6,v=.4+Math.random()*1.1;bits.push({x:B0.x,y:B0.y,z:1,vx:Math.cos(a)*v,vy:Math.sin(a)*v,vz:16+Math.random()*26,c:snow?(k%2?'#ffffff':'#dfe6ee'):(k%3?'#4f7a34':'#6a5432'),s:k<2?2:1,life:.9,rest:.4})}
+  puff(B0.x,B0.y,groundDust()[0],.6,.8);return st};
+// ----- drifting things: thistledown and pollen in fine weather, motes in low sun, embers of autumn
+let amb2=[];
+const _ambTick17=ambTick;ambTick=function(dt){_ambTick17(dt);if(!T)return;const rc=race?race.rc:card,se=seasonOf(rc?.no||1).n,tod=rc?.tod,w=WX,wind=w.wind||.4,fine=!w.rain&&!w.snow&&!(w.fog>.4);
+  const want=fine?(se==='Summer'?22:se==='Spring'?16:se==='Autumn'?8:3):0;
+  if(amb2.filter(a=>a.k==='seed').length<want&&Math.random()<dt*6)amb2.push({k:'seed',x:Math.random()*AW*.9-AW*.1,y:Math.random()*AH,vx:6+wind*14+Math.random()*6,vy:-2+Math.random()*4,ph:Math.random()*6,life:14,c:se==='Summer'&&Math.random()<.4?'#f4e08a':'#fbf8ee'});
+  if(fine&&(tod==='morning'||tod==='evening')&&amb2.filter(a=>a.k==='mote').length<26&&Math.random()<dt*10)amb2.push({k:'mote',x:Math.random()*AW,y:Math.random()*AH*.8,ph:Math.random()*6,life:4+Math.random()*4});
+  for(const a of amb2){a.life-=dt;a.ph+=dt;if(a.k==='seed'){a.x+=(a.vx+Math.sin(a.ph*.7)*5)*dt;a.y+=(a.vy+Math.sin(a.ph*1.9)*4)*dt;if(a.x>AW+8)a.life=0}else{a.x+=Math.sin(a.ph*.6)*3*dt+wind*2*dt;a.y-=1.5*dt}}
+  amb2=amb2.filter(a=>a.life>0)};
+const _drawAmb17=drawAmb;drawAmb=function(){_drawAmb17();if(typeof fx==='undefined')return;
+  for(const a of amb2){const x=Math.round(a.x),y=Math.round(a.y),fade=Math.min(1,a.life/1.5,(a.k==='mote'?a.ph/1:1));
+    if(a.k==='seed'){fx.globalAlpha=.85*fade;fx.fillStyle=a.c;fx.fillRect(x,y,1,1);fx.globalAlpha=.35*fade;fx.fillRect(x-1,y,1,1);fx.fillRect(x+1,y,1,1);fx.fillRect(x,y-1,1,1)}
+    else{const tw=.35+.35*Math.sin(a.ph*4);fx.globalAlpha=tw*fade;fx.fillStyle='#ffe9a8';fx.fillRect(x,y,1,1)}}
+  fx.globalAlpha=1};
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
