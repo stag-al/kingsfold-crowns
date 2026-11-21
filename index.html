@@ -1960,21 +1960,23 @@ const _poloSettle4=poloSettle;poloSettle=function(){_poloSettle4();const rc=race
 // ===================== jousting you can see: couched lances that really strike, close camera, hit-stop =====================
 const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
 // close-up camera for the tourney events
-const _startSport2=startSport;startSport=function(){NOFIN=true;try{_startSport2()}finally{NOFIN=false}if(!SP)return;if(card.sport==='joust'||card.sport==='archery'){race.baseK=K;K=card.sport==='joust'?K:Math.round(K*2.2);setSizes();SP.jpops=[];SP.shake=0;SP.flash=0;
+const _startSport2=startSport;startSport=function(){NOFIN=true;try{_startSport2()}finally{NOFIN=false}if(!SP)return;if(card.sport==='joust'||card.sport==='archery'){race.baseK=K;if(card.sport==='archery'){K=Math.round(K*2.2);setSizes()}SP.zc=1;SP.zt=1;setZoomCSS(1);SP.jpops=[];SP.shake=0;SP.flash=0;
   const c=sportCam();cam.x=c.x;cam.y=c.y}};
 const _sportCam2=sportCam;sportCam=function(){if(!SP||card.sport==='polo')return _sportCam2();const G0=SP.G;let p;
   if(card.sport==='joust'&&SP.a&&SP.b){const a=SP.a,b=SP.b;p=[(a.x+b.x)/2,(a.y+b.y)/2];
     for(const D of SP.down||[])if(D.t<2.5&&SP.phase==='between'){p=[lerp(p[0],D.x,.5),lerp(p[1],D.y,.5)]}}
   else if(card.sport==='archery'){const R=SP.riders[Math.min(SP.k,SP.riders.length-1)],tg=SP.targets[Math.min(SP.shot||0,4)];p=tg?[R.x*.62+tg.x*.38,R.y*.62+tg.y*.38]:[R.x,R.y]}
   else return _sportCam2();
-  const s=SP.shake||0;return{x:isoX(p[0],p[1])-AW/2+(Math.random()-.5)*s,y:isoY(p[0],p[1])-AH/2-hz(p[0],p[1])+AH*.04+(Math.random()-.5)*s}};
+  if(card.sport==='joust')joustZoomTick();const s=SP.shake||0;return{x:isoX(p[0],p[1])-AW/2+(Math.random()-.5)*s,y:isoY(p[0],p[1])-AH/2-hz(p[0],p[1])+AH*.04+(Math.random()-.5)*s}};
 // hit-stop, then slow motion through the impact; a slower build-up as they close
 const _dramaJ=dramaScale;dramaScale=function(){if(race&&race.sport&&SP){if(SP.hs>now)return .03;if(SP.sm>now)return .3;
     if(card.sport==='joust'&&SP.phase==='charge'&&!SP.hit&&SP.a){const d=Math.abs(SP.a.sx-SP.b.sx);if(d<1.4)return .3;if(d<3)return .55}return 1}return _dramaJ()};
 // fresh lances each pass
 const _placeEnds2=placeEnds;placeEnds=function(){_placeEnds2();for(const R of[SP.a,SP.b]){R.broken=false;R.rec=0;R.hitT=-9;R.res=null}};
-function joustZoom(){if(!race||!race.baseK||!SP.a)return;const d=Math.abs(SP.a.sx-SP.b.sx),B=race.baseK,want=SP.phase==='charge'?(d>7?B:d>3.2?Math.round(B*1.6):Math.round(B*2.3)):SP.phase==='between'?Math.round(B*1.6):B;
-  if(want!==K){K=want;setSizes()}}
+function joustZoom(){if(!SP||!SP.a)return;const d=Math.abs(SP.a.sx-SP.b.sx),sm=x=>x*x*(3-2*x);
+  // one smooth zoom, no resolution jumps: wide at the ends of the lists, tighter and tighter as they close
+  let z=1;if(SP.phase==='charge'&&!SP.hit)z=1+1.35*sm(clamp((7.5-d)/6.6,0,1));else if(SP.phase==='charge')z=2.35;else if(SP.phase==='between')z=1.5;else z=1;
+  SP.zt=z}
 const _joustSim2=joustSim;joustSim=function(dt){_joustSim2(dt);if(!SP||!SP.a)return;joustZoom();
   for(const R of[SP.a,SP.b])if(SP.hit&&now-(R.hitT||-9)>.25&&R.lance>0)R.lance=Math.max(0,R.lance-dt*2.2);for(const R of[SP.a,SP.b]){R.rec=Math.max(0,(R.rec||0)-dt*3);if(SP.phase!=='charge')R.lance=Math.max(0,R.lance-dt*.8)}
   SP.shake=Math.max(0,(SP.shake||0)-dt*10);SP.flash=Math.max(0,(SP.flash||0)-dt*2.5);for(const P of SP.jpops||[])P.t+=dt;SP.jpops=(SP.jpops||[]).filter(P=>P.t<1.6)};
@@ -2023,13 +2025,23 @@ const _archSim2=archSim;archSim=function(dt){const n=SP.pops?SP.pops.length:0;_a
 // keep the lists and the archery course on dry ground, clear of rivers and bridges
 const _sportGeo2=sportGeo;sportGeo=function(){const g=_sportGeo2(),{S,ds,TG}=T,bad=new Set(T.bridgeIdx||[]);if(T.fordI!=null){const w=Math.round(3.5/ds);for(let k=-w;k<=w;k++)bad.add((T.fordI+k+S)%S)}
   const span=Math.round(11/ds);let off=0;for(let t=0;t<S;t++){const o=(t%2?1:-1)*Math.ceil(t/2);let ok=true;for(let k=-span;k<=span;k+=2)if(bad.has(((o+k)%S+S)%S)){ok=false;break}if(ok){off=o;break}}
-  const i0=((off%S)+S)%S;return Object.assign({},g,{at:(s,lat)=>g.at(s+off*ds,lat),off,dir:Math.atan2(TG[i0][1],TG[i0][0])})};
+  const i0=((off%S)+S)%S;const{C,NM}=T,smooth=(s,lat)=>{const u=s/ds+off,f=Math.floor(u),t=u-f,i=((f%S)+S)%S,j=(i+1)%S;// glide between track samples
+    return[lerp(C[i][0],C[j][0],t)+lerp(NM[i][0],NM[j][0],t)*lat,lerp(C[i][1],C[j][1],t)+lerp(NM[i][1],NM[j][1],t)*lat,t<.5?i:j]};
+  return Object.assign({},g,{at:smooth,off,dir:Math.atan2(TG[i0][1],TG[i0][0])})};
 const _drawPost2=drawPost;drawPost=function(){if(race&&race.sport)return;_drawPost2()};
 // ----- rumble: Android vibrates properly; iPhone (iOS 18+) gets a run of haptic ticks via a hidden switch
 let hapEl=null;function hapTick(){try{if(!hapEl){const l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');l.appendChild(i);l.style.cssText='position:fixed;left:-99px;top:0;opacity:0;pointer-events:none';document.body.appendChild(l);hapEl=l}hapEl.click()}catch(e){}}
 function rumble(o){const P=o===3?[700,60,450,60,230]:o===2?[500,70,350,70,300,70,140]:[380,90,260,90,220,90,160,90,210];
   if(navigator.vibrate){try{navigator.vibrate(P)}catch(e){}}else{let t=0;const n=o===3?22:o===2?16:12;for(let k=0;k<n;k++){setTimeout(hapTick,t);t+=1500/n}}}
 const _impact3=impact;impact=function(po){_impact3(po);const big=Math.max(po[0],po[1]);if(big>=1)rumble(big)};
+
+// smooth zoom: scale the world canvases around the screen centre (pixel art stays crisp)
+let zLastT=0;function setZoomCSS(z){for(const id of['gl','fx']){const el=$(id);if(el){el.style.transformOrigin='50% 50%';el.style.transform=z>1.001?'scale('+z.toFixed(4)+')':''}}}
+function joustZoomTick(){const t=performance.now()/1000,dt=Math.min(.1,t-(zLastT||t));zLastT=t;if(SP.zc==null)SP.zc=1;let tgt=SP.zt||1;
+  if(SP.punch&&t<SP.punch)tgt*=1.12;// a quick punch-in on contact
+  const k=1-Math.exp(-dt*(tgt>SP.zc?3.2:2.2));SP.zc+=(tgt-SP.zc)*k;setZoomCSS(SP.zc)}
+const _nextRace8=nextRace;nextRace=function(){setZoomCSS(1);return _nextRace8.apply(this,arguments)};
+const _impact4=impact;impact=function(po){_impact4(po);if(Math.max(po[0],po[1])>=1)SP.punch=performance.now()/1000+.35};
 
 // ===================== smarter rivals: each has a real betting brain =====================
 // Every rival forms its own probability estimate from the information it has, looks for value against the price,
