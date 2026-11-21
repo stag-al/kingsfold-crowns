@@ -2995,6 +2995,9 @@ function musicTick(){if(!AC||muted||AC.state!=='running'||!bus())return;MUS.gain
     musT+=Math.max(t,12*E8);musI++}}
 setInterval(musicTick,150);
 addEventListener('pointerdown',()=>{if(!muted){audioStart();if(AC&&AC.state==='suspended')AC.resume()}},{passive:true});
+// silence the moment you leave the game (another app, the home screen, a locked phone), back on when you return
+function bgAudio(){if(!AC)return;if(document.hidden){AC.suspend().catch(()=>{})}else if(!muted){AC.resume().catch(()=>{})}}
+document.addEventListener('visibilitychange',bgAudio);addEventListener('pagehide',()=>{if(AC)AC.suspend().catch(()=>{})});addEventListener('blur',()=>{if(AC&&document.hidden)AC.suspend().catch(()=>{})});
 
 // ===================== STAGAL splash: shown once as the game opens =====================
 // Set in the same blackletter gold as the game's own titles, with a glint passing across it.
