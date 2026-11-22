@@ -2016,7 +2016,12 @@ startPhase=function(){const e=nextEvent();if(!e){endMatch();return}const B0=PL.b
   if(e.out==='goal'&&e.a<0)S=team.find(R=>R.j===e.j);
   PL.plan=planEvent(e,S);PL.pi=0;PL.carrier=PL.plan[0].R;PL.phase='chase';PL.t=0;PL.tt=0;PL.ro=0;PL.tgt={};PL.dest=null;poloHud()};
 // polo is fast: a touch more pace for everyone in live play
-const _steer25=steer;steer=function(R,dt,tx,ty,vmax){return _steer25(R,dt,tx,ty,PL&&!['kickoff','pause','celebrate','throw'].includes(PL.phase)?vmax*1.2:vmax)};
+const _steer25=steer;steer=function(R,dt,tx,ty,vmax){const live=PL&&!['kickoff','pause','celebrate','throw'].includes(PL.phase);
+  if(live&&R.hd!=null){R.cutCD=(R.cutCD||0)-dt;const dx=tx-R.x,dy=ty-R.y,d=Math.hypot(dx,dy),dh=wrapA(Math.atan2(dy,dx)-R.hd);
+    // a tight cut: the pony sits back on its haunches and spins, but needs a breather before the next one
+    const onBall=R===PL.carrier||R===PL.contest||R===PL.presser||(PL.dest&&PL.dest.R===R);if(!R.cutT&&(R.forceCut||(onBall&&Math.abs(dh)>1.4&&d<2.6))&&R.cutCD<=0&&R.v>1.6){R.cutT=.32;R.cutCD=3+Math.random()*2.5;R.forceCut=0;puff(R.x,R.y,typeof groundDust==='function'?groundDust()[0]:'#a8986a',.7,.9);if(bits.length<720)for(let k=0;k<3;k++)bits.push({x:R.x,y:R.y,z:1,vx:-Math.cos(R.hd)*.6+(Math.random()-.5)*.5,vy:-Math.sin(R.hd)*.6+(Math.random()-.5)*.5,vz:12+Math.random()*12,c:'#5a6a32',s:1,life:.6,rest:.2})}
+    if(R.cutT>0){R.cutT=Math.max(0,R.cutT-dt);if(!R.cutT)R.cutT=0;R.hd+=clamp(dh,-10*dt,10*dt);R.v=Math.min(R.v,2.4)}}
+  return _steer25(R,dt,tx,ty,live?vmax*1.2:vmax)};
 // live play: horses keep moving. Near the spot they want, they canter on, arcing back round, never parking.
 function ride(R,dt,tx,ty,vmax,minV=2.1){const F=PL.F,d=dist(R.x,R.y,tx,ty);
   if(d<1.6){const hd=R.hd!=null?R.hd:Math.atan2(R.vy||0,R.vx||1),k=(1.6-d)/1.6;let ax=R.x+Math.cos(hd)*2.2,ay=R.y+Math.sin(hd)*2.2;
@@ -2081,7 +2086,7 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
   if(step.k==='steal'&&S.v>0)S.swing=Math.max(S.swing,.3);
   // planning cue: the man on the ball weighs his option
   if(step.to&&thinking){PL.look={x0:S.x,y0:S.y,x1:step.to.x,y1:step.to.y,t:now}}
-  const reach=dist(S.x,S.y,B0.x,B0.y);
+  const reach=dist(S.x,S.y,B0.x,B0.y);if(PL.tt<.05||PL.bestR==null||S!==PL.bestS){PL.bestR=reach;PL.bestS=S;PL.stall=0}if(reach<PL.bestR-.05){PL.bestR=reach;PL.stall=0}else{PL.stall+=dt;if(PL.stall>.5){S.forceCut=1;S.cutCD=0;PL.stall=0;PL.bestR=reach}}
   if(reach<(S.v>2.5?.85:.55)||(PL.tt>2.6&&reach<1.4)||PL.tt>4){if(PL.tt>4.5){B0.x=lerp(B0.x,S.x,.6);B0.y=lerp(B0.y,S.y,.6)}
     const nm=S.p.name;let msg=null;
     if(step.k==='steal'){const fwd=-dir,mates=def.filter(R=>R!==S&&R.j!==3),M=mates.sort((a,b)=>(b.x-a.x)*fwd-(a.x-b.x)*fwd)[0],tgt=M&&Math.random()<.55?clampF([M.x+fwd*1.8,M.y]):clampF([B0.x+fwd*(3+Math.random()*2),B0.y+(Math.random()-.5)*2]);
@@ -2566,6 +2571,15 @@ const _impact5=impact;impact=function(po){_impact5(po);if(Math.max(po[0],po[1])>
 // pennants fluttering along the barrier
 const _drawTilt3=drawTilt;drawTilt=function(){_drawTilt3();const P=SP.tilt;for(let k=4;k<P.length;k+=4){const a=scr(P[k][0],P[k][1]),f=Math.floor(now*8+k)%3,c=['#b8322a','#2f56a8','#e8c45a'][(k/4|0)%3];
   fx.fillStyle='#3a2616';fx.fillRect(a[0],a[1]-16,1,6);fx.fillStyle=c;fx.fillRect(a[0]+1,a[1]-16,3+(f===1?1:0),1);fx.fillRect(a[0]+1,a[1]-15,2+(f===2?1:0),1);fx.fillRect(a[0]+1,a[1]-14,1,1)}};
+// the barrier sorts with the riders, a section at a time: the far knight is hidden behind it, the near one in front
+function drawTiltSeg(k){const P=SP.tilt;if(!P||k<1||k>=P.length)return;const a=scr(P[k-1][0],P[k-1][1]),b=scr(P[k][0],P[k][1]);
+  pxl(fx,a[0],a[1]-9,b[0],b[1]-9,'#e8dcc0');pxl(fx,a[0],a[1]-8,b[0],b[1]-8,'#8a2e24');
+  const x0=Math.min(a[0],b[0]),w=Math.max(1,Math.abs(b[0]-a[0])),dy=(b[1]-a[1]);
+  for(let y=-7;y<=-2;y++){fx.fillStyle=((k>>1)%2)?(y%2?'#8a2e24':'#a8382c'):(y%2?'#2f56a8':'#3a64b8');for(let x=0;x<w;x++){const t=w>1?x/(w-1):0,yy=Math.round(lerp(a[1],b[1],a[0]<=b[0]?t:1-t));fx.fillRect(x0+x,yy+y,1,1)}}
+  if(k%4===0){fx.fillStyle='#4a3020';fx.fillRect(a[0],a[1]-10,2,10)}
+  if(k%4===0&&k>=4){const f=Math.floor(now*8+k)%3,c=['#b8322a','#2f56a8','#e8c45a'][(k/4|0)%3];fx.fillStyle='#3a2616';fx.fillRect(a[0],a[1]-16,1,6);fx.fillStyle=c;fx.fillRect(a[0]+1,a[1]-16,3+(f===1?1:0),1);fx.fillRect(a[0]+1,a[1]-15,2+(f===2?1:0),1);fx.fillRect(a[0]+1,a[1]-14,1,1)}}
+const _startSport26=startSport;startSport=function(){_startSport26.apply(this,arguments);if(card.sport!=='joust'||!SP||!SP.tilt)return;
+  objs=objs.filter(o=>o.draw!==drawTilt);const P=SP.tilt;for(let k=1;k<P.length;k++){const mx=(P[k-1][0]+P[k][0])/2,my=(P[k-1][1]+P[k][1])/2;objs.push({kind:'sport',x:mx,y:my,key:mx+my,draw:()=>drawTiltSeg(k)})}};
 
 // ===================== live betting for every sport =====================
 // Prices come from re-running each sport's own model from the current state (never from the scripted result),
