@@ -19,7 +19,7 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#13202a;font-family:"Pixelify Sans",monospace;color:#e8d39a;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   canvas.view{position:absolute;left:0;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
+  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.lendB{margin:10px 0 8px;padding:9px 10px;border:1px solid #6a5030;border-radius:6px;background:rgba(40,28,16,.6);font-size:13px;line-height:1.4}.lendB b{color:#e8c45a}.lendR{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0 4px}.lendR select{flex:1 1 40%;min-width:0;background:#1c140c;color:#efd9a0;border:1px solid #6a5030;border-radius:4px;padding:6px 4px;font-family:inherit;font-size:13px}.lendN{font-size:11.5px;color:#a89a80;margin:4px 0}.lendB .chip{margin-top:4px}.washC .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
   #vig{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(8,10,14,.38) 100%)}
   .panel{background:rgba(24,18,12,.92);border:2px solid #8a6a32;box-shadow:inset 0 0 0 2px #2e2216;border-radius:4px}
   .bl{font-family:"Jacquarda Bastarda 9",serif;font-weight:normal}
@@ -2883,7 +2883,7 @@ function pasInfo(){const el=$('pasInfo');if(!el)return;const h=G.roster.find(x=>
   let s='<div class="pasCard"><div class="shH"><i class="silk" style="'+silkCss(h.silk)+'"></i><div><b>'+h.name+'</b><small>'+(h.age<1?'Foal':h.age+'yo')+' '+(h.sex==='m'?(h.age<4?'colt':'stallion'):(h.age<4?'filly':'mare'))+' · '+COATS[h.coat][0]+' · rated '+h.or+'</small><small class="st">Looks '+clean+' and '+mood+'.</small></div><button class="chip" onclick="careerOf='+h.id+';stableTab=\'mine\';openStable()">Career</button></div>';
   s+='<div class="pasBars"><span>Condition'+pbar(h.cond,'#e8c45a')+'</span><span>Fitness'+pbar(h.fit,'#9ccf6a')+'</span><span>Clean'+pbar(h.clean,'#8ac4e8')+'</span><span>Happy'+pbar(h.mood,'#e88aa8')+'</span></div>';
   s+='<div class="shS"><span>Speed '+stars(h.abil)+'</span><span>Stamina '+stars(60+h.stam*2.2)+'</span><span>Jumping '+stars(60+h.jump*40)+'</span></div>';
-  s+='<div class="pasAct"><button class="chip" '+(done('feed')||G.purse<fc?'disabled':'')+' onclick="careAct('+h.id+',\'feed\')">🌾 Feed<small>'+(done('feed')?'fed':fc+' crowns')+'</small></button><button class="chip" '+(done('brush')?'disabled':'')+' onclick="careAct('+h.id+',\'brush\')">🪮 Brush<small>'+(done('brush')?'done':'free')+'</small></button><button class="chip" '+(done('bathe')||G.purse<5?'disabled':'')+' onclick="careAct('+h.id+',\'bathe\')">🪣 Bathe<small>'+(done('bathe')?'done':'5 crowns')+'</small></button><button class="chip" '+(done('pet')?'disabled':'')+' onclick="careAct('+h.id+',\'pet\')">♥ Pet<small>'+(done('pet')?'done':'free')+'</small></button></div>';
+  s+='<div class="pasAct"><button class="chip" '+(done('feed')||G.purse<fc?'disabled':'')+' onclick="careAct('+h.id+',\'feed\')">🌾 Feed<small>'+(done('feed')?'fed':fc+' crowns')+'</small></button><button class="chip" '+(done('brush')?'disabled':'')+' onclick="careAct('+h.id+',\'brush\')">🖌 Brush<small>'+(done('brush')?'done':'free')+'</small></button><button class="chip" '+(done('bathe')||G.purse<5?'disabled':'')+' onclick="careAct('+h.id+',\'bathe\')">🪣 Bathe<small>'+(done('bathe')?'done':'5 crowns')+'</small></button><button class="chip" '+(done('pet')?'disabled':'')+' onclick="careAct('+h.id+',\'pet\')">♥ Pet<small>'+(done('pet')?'done':'free')+'</small></button></div>';
   s+='<div class="kvn">Each can be done once between events. A clean, happy, well-fed horse races a little better; neglect shows in mud, flies and a drooping head.</div></div>';el.innerHTML=s}
 
 // ===================== the yard: your horses out in the real game world =====================
@@ -2963,6 +2963,140 @@ const _openStable24=openStable;openStable=function(){if(stableTab!=='pasture'||c
   if(!M.length)$('pasInfo').innerHTML='<div class="sNote">An empty paddock. Visit the Market to buy a racehorse, a yearling or a broodmare.</div>';else pasInfo()};
 const _closeStable24=closeStable;closeStable=function(){yardClose();$('stable').classList.remove('yardV');return _closeStable24()};
 $('stable').addEventListener('pointerdown',yardTap);
+
+// ===================== your horses: treats, a proper wash, and lending them out to any sport =====================
+// ---------- lending a horse: a knight, an archer or a polo player rides it in their event ----------
+// The horse's quality and care change the rider's chances, so the event's odds and result are worked out again.
+function horseQ(h){careInit(h);return clamp((h.abil-78)/18*.55+(h.cond-70)/30*.18+(h.fit-70)/30*.18+(h.clean-60)/40*.08+(h.mood-60)/40*.12,-.7,.8)}
+let MNT=null;// the lend in force while one event's model runs
+function mountCtx(rc){return rc&&rc.mount?{kind:rc.sport,id:rc.mount.id,j:rc.mount.j,q:rc.mount.q}:null}
+function boostK(K){if(!MNT||MNT.kind!=='joust'||!K||K._b||K.id!==MNT.id)return K;const q=MNT.q;return{...K,_b:1,aim:clamp(K.aim+.08*q,.05,.99),power:clamp(K.power+.15*q,.05,.99),seat:clamp(K.seat+.08*q,.05,.99)}}
+function boostA(A){if(!MNT||MNT.kind!=='archery'||!A||A._b||A.id!==MNT.id)return A;const q=MNT.q;return{...A,_b:1,speed:clamp(A.speed+.2*q,.05,.99),steady:clamp(A.steady+.1*q,.05,.99),acc:clamp(A.acc+.03*q,.05,.99)}}
+function boostT(T0){if(!MNT||MNT.kind!=='polo'||!T0||T0._b||T0.id!==MNT.id)return T0;const q=MNT.q,j=MNT.j;
+  return{...T0,_b:1,spd:clamp(T0.spd+.12*q,.05,.99),att:clamp(T0.att+.05*q,.05,.99),players:T0.players.map((p,k)=>k!==j?p:{...p,fin:clamp(p.fin+.12*q,.05,.99),spd:clamp((p.spd??.5)+.15*q,.05,.99)})}}
+const _passOutM=passOut;passOut=function(a,b,r){return _passOutM(boostK(a),boostK(b),r)};
+const _shootM=shoot;shoot=function(A,w,r){return _shootM(boostA(A),w,r)};
+const _archRoundM=archRound;archRound=function(Arr,w,r){return _archRoundM(Arr.map(boostA),w,r)};
+const _poloMatchM=poloMatch;poloMatch=function(A,B,r,rec){return _poloMatchM(boostT(A),boostT(B),r,rec)};
+if(typeof sportLiveProbs==='function'){const _slp=sportLiveProbs;sportLiveProbs=function(){const old=MNT;MNT=mountCtx(card);try{return _slp.apply(this,arguments)}finally{MNT=old}}}
+// the event's odds and result, worked out again with the lent horse
+function remakeSport(rc){const r=mulberry32((Math.random()*1e9)|0),rr=mulberry32((r()*1e9)|0),sims=[];MNT=mountCtx(rc);
+  try{if(rc.sport==='polo'){const[A,B]=rc.teams;for(let k=0;k<4000;k++)sims.push(poloMatch(A,B,rr,false));rc.result=poloMatch(A,B,r,true);rc.totLine=median(sims.map(s=>s.tot))+.5;
+      rc.field.forEach((e,k)=>{const p=sims.filter(s=>s.w===k).length/sims.length,dec=qDec(Math.min(40,1/(Math.max(.02,p)*HOLD.pw)));Object.assign(e,{p,dec,odds:toLadder(dec),openOdds:toLadder(dec)})})}
+    else{const comp=rc.comp,J=rc.sport==='joust';for(let k=0;k<3000;k++)sims.push(J?tourney(comp,rr):archRound(comp,rc.wind,rr));rc.result=J?tourney(comp,r):archRound(comp,rc.wind,r);
+      rc.field.forEach((e,k)=>{const p=sims.filter(s=>s.w===k).length/sims.length,dec=qDec(Math.min(80,1/(Math.max(.01,p)*HOLD.sw)));Object.assign(e,{p,dec,odds:toLadder(dec),openOdds:toLadder(dec)});
+        const C=J?boostK(comp[k]):boostA(comp[k]);e.h.or=J?kRating(C):aRating(C)});
+      rc.brkLine=median(sims.map(s=>s.brk))+.5;rc.topLine=J?0:median(sims.map(s=>s.top))+.5;rc.bullLine=J?0:median(sims.map(s=>s.bulls))+.5}
+    rc.simI=sims;rc.simS=sims;rc.favIdx=rc.field.reduce((b,e,k)=>e.p>rc.field[b].p?k:b,0);rc.pInfo=rc.field.map(e=>e.p);if(rc.sport==='polo'){rc.favT=rc.favIdx;rc.favP=rc.field[rc.favIdx].p}
+    rc.rivs=rivalPicksSport(rc,r)}finally{MNT=null}}
+function lendable(){return mineAll().filter(h=>!h.foal&&h.age>=3&&!h.retired)}
+function riderList(rc){if(rc.sport==='polo')return rc.teams.flatMap((T0,t)=>T0.players.map((p,j)=>({v:t+':'+j,n:p.name+' ('+T0.short+')'})));return rc.comp.map((C,k)=>({v:String(k),n:C.name}))}
+function refundCard(rc){for(const b of rc.bets){G.purse+=b.cost;G.stats.bets--;G.stats.staked-=b.cost}rc.bets=[]}
+function lendHorse(){const rc=card;if(!rc||!rc.sport||rc.ran||race)return;const hid=+$('lendH').value,who=$('lendR').value,h=G.roster.find(x=>x.id===hid);if(!h)return;
+  if(G.lend&&G.lend.no!==rc.no){const o=G.roster.find(x=>x.id===G.lend.hid);if(o)o.lentTo=null}
+  refundCard(rc);const q=horseQ(h);
+  if(rc.sport==='polo'){const[t,j]=who.split(':').map(Number),T0=rc.teams[t];rc.mount={hid,id:T0.id,t,j,q,rider:T0.players[j].name}}
+  else{const k=+who,C=rc.comp[k];rc.mount={hid,id:C.id,k,q,rider:C.name}}
+  G.lend={no:rc.no,hid,sport:rc.sport};h.lentTo=rc.no;remakeSport(rc);save();say&&0;renderCard()}
+function unlendHorse(){const rc=card;if(!rc||!rc.mount||rc.ran||race)return;refundCard(rc);const h=G.roster.find(x=>x.id===rc.mount.hid);if(h)h.lentTo=null;rc.mount=null;G.lend=null;remakeSport(rc);save();renderCard()}
+function lendValid(){if(!G.lend)return;const ok=(card&&card.no===G.lend.no&&!card.ran)||(typeof PEND!=='undefined'&&Object.values(PEND).some(c=>c&&c.no===G.lend.no&&!c.ran));if(!ok){const o=G.roster.find(x=>x.id===G.lend.hid);if(o)o.lentTo=null;G.lend=null}}
+function lendHtml(rc){const M=lendable();lendValid();if(!M.length&&!rc.mount)return'';
+  let s='<div class="lendB"><b>🐴 Lend a horse</b>';
+  if(rc.mount){const h=G.roster.find(x=>x.id===rc.mount.hid),q=rc.mount.q;
+    s+='<div>'+(h?h.name:'Your horse')+' carries <b>'+rc.mount.rider+'</b> today. '+(q>.15?'A real step up for him.':q>-.15?'About as good as his own mount.':'A step down from his usual mount.')+'</div><div class="lendN">You earn prize money if they win; your horse comes back tired and muddy.</div><button class="chip" onclick="unlendHorse()">Take the horse back</button></div>';return s}
+  const busy=G.lend&&G.lend.no!==rc.no?G.lend.hid:null;
+  s+='<div class="lendR"><select id="lendH">'+M.filter(h=>h.id!==busy).map(h=>'<option value="'+h.id+'">'+h.name+' ('+(h.sex==='m'?'♂':'♀')+', rated '+h.or+')</option>').join('')+'</select><span>to</span><select id="lendR">'+riderList(rc).map(o=>'<option value="'+o.v+'">'+o.n+'</option>').join('')+'</select><button class="chip" onclick="lendHorse()">Lend</button></div>';
+  s+='<div class="lendN">A better, well-kept horse gives the rider a real edge, so the odds change. Bets already on this event are refunded.'+(busy?' One horse is already lent out elsewhere.':'')+'</div></div>';return s}
+function injectLend(){const rc=card;if(!rc||!rc.sport||rc.sport==='race'||rc.ran)return;const el=$('card'),go=el&&el.querySelector('.go');if(!go||el.querySelector('.lendB'))return;go.insertAdjacentHTML('beforebegin',lendHtml(rc))}
+const _rsc=renderSportCard;renderSportCard=function(){const r=_rsc.apply(this,arguments);injectLend();return r};
+const _rpc=renderPoloCard;renderPoloCard=function(){const r=_rpc.apply(this,arguments);injectLend();return r};
+// on the day: the rider sits on your horse; everyone else's mounts get a sex too (destriers mostly stallions, polo ponies mostly mares)
+function giveMounts(){if(!SP)return;const rc=card;if(rc.sport==='polo'&&PL){for(const R of PL.riders){R.H.sex=hash2(R.team*4+R.j,rc.no,5)<.8?'f':'m';if(rc.mount&&R.team===rc.mount.t&&R.j===rc.mount.j){const h=G.roster.find(x=>x.id===rc.mount.hid);if(h){R.H.coat=h.coat;R.H.sex=h.sex;R.mine=1}}}return}
+  (SP.riders||[]).forEach((R,k)=>{const C=rc.comp[k];R.H.sex=hash2(C.id,rc.sport==='joust'?7:9,3)<(rc.sport==='joust'?.85:.5)?'m':'f';if(rc.mount&&k===rc.mount.k){const h=G.roster.find(x=>x.id===rc.mount.hid);if(h){R.H.coat=h.coat;R.H.sex=h.sex;R.mine=1}}})}
+const _startSportM=startSport;startSport=function(){const r=_startSportM.apply(this,arguments);try{giveMounts()}catch(e){}return r};
+// after the event: prize money for the owner, a tired, muddy horse, a line in its record
+const _sportSettleM=sportSettle;sportSettle=function(){const rc=race.rc,res=rc.result;let line='';
+  if(rc.mount){const h=G.roster.find(x=>x.id===rc.mount.hid);let prize=0,how='';
+    if(rc.sport==='joust'){const k=rc.mount.k;if(res.w===k){prize=120;how='won the tourney'}else if(res.sf.includes(k)){prize=40;how='reached the final'}else how='went out in the semi-final'}
+    else if(rc.sport==='archery'){const p=res.o.indexOf(rc.mount.k);prize=[100,40,20][p]||0;how='finished '+ord(p+1)}
+    else{const won=res.w===rc.mount.t,g=res.sc[rc.mount.t*4+rc.mount.j]||0;prize=(won?80:0)+g*10;how=(won?'won':'lost')+(g?' and scored '+g:'')}
+    if(h){careInit(h);h.cond=Math.max(0,h.cond-6);h.clean=Math.max(0,h.clean-30);h.mood=clamp(h.mood+(prize>=80?8:prize?3:-2),0,100);h.fit=Math.min(100,(h.fit||70)+1);h.lentTo=null;
+      (h.events||(h.events=[])).push({no:rc.no,sport:rc.sport,name:rc.name,rider:rc.mount.rider,how,prize});if(h.events.length>12)h.events.shift()}
+    G.purse+=prize;G.lend=null;line='<div class="prize">Your '+(h?h.name:'horse')+' carried '+rc.mount.rider+', who '+how+(prize?'. Your share: <b>+'+prize+'</b> crowns!':'.')+'</div>'}
+  const r=_sportSettleM.apply(this,arguments);if(line){const el=$('results'),a=el&&(el.querySelector('.purse2')||el.querySelector('.rB'));if(a)a.insertAdjacentHTML('beforebegin',line)}return r};
+// ---------- treats ----------
+const _careActC=careAct;careAct=function(id,k){if(k!=='treat')return _careActC(id,k);const h=G.roster.find(x=>x.id===id);if(!h)return;careInit(h);const used=h.care||(h.care={});
+  if((used.treat||0)>=G.raceNo*10+2)return;if(G.purse<2)return;G.purse-=2;used.treat=Math.max(used.treat||0,G.raceNo*10)+1;h.mood=Math.min(100,h.mood+9);h.cond=Math.min(100,h.cond+1);
+  const P=PAS&&PAS.horses.find(p=>p.h===h);if(P){P.act={k:'treat',t:2.6,what:['apple','carrot','sugar'][(Math.random()*3)|0]};P.st='graze';P.v=0}save();pasInfo();const pu=$('stable').querySelector('.purse b');if(pu)pu.textContent=G.purse};
+// ---------- the wash: soap him all over, then hose him off ----------
+let WASH=null;
+function horseMask(male){const m=[],U=male?1:0,add=(x0,x1,y0,y1)=>{for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)m.push([x,y])};
+  add(-4,4,-7-U,-5);add(4,5,-9-U,-7-U);add(5,7,-13-U,-12-U);add(8,8,-12-U,-12-U);add(-5,-5,-7-U,-5-U);for(const x of[3,2,-3,-2])add(x,x,-4,-1);return m}
+function washStart(id){const h=G.roster.find(x=>x.id===id),P=PAS&&PAS.horses.find(p=>p.h===h);if(!h||!P)return;careInit(h);const used=h.care||(h.care={});if(used.bathe===G.raceNo)return;if(G.purse<5)return;G.purse-=5;
+  P.act={k:'wash',t:1e9};P.st='graze';P.v=0;P.walk=false;P.vx=.01;P.vy=-.01;P.f=1;
+  const dirt=clamp((100-h.clean)/100,0,1);WASH={P,h,tool:'soap',down:false,mask:horseMask(h.sex==='m').map(([x,y])=>({x,y,d:clamp(dirt*(.4+Math.random()*.9),0,1),s:0,w:0})),bub:[],spray:[],px:0,py:0,done:0,sndT:0};
+  pasInfo();save()}
+function washTool(t){if(!WASH)return;if(t==='hose'&&washSoap()<.85)return;WASH.tool=t;pasInfo()}
+function washSoap(){const M=WASH.mask;return M.reduce((a,c)=>a+Math.min(1,c.s),0)/M.length}
+function washLeft(){const M=WASH.mask;return M.reduce((a,c)=>a+Math.min(1,c.s)+c.d*.5,0)/M.length}
+function washEnd(keep){if(!WASH)return;const{P,h}=WASH;if(keep){h.clean=100;h.mood=Math.min(100,h.mood+6);(h.care||(h.care={})).bathe=G.raceNo;save()}P.act=keep?{k:'shake',t:1.4}:null;WASH=null;pasInfo()}
+// screen to canvas, with the yard's zoom
+function yardPt(ev){const W=innerWidth,H=innerHeight,z=YARD&&YARD.z||2.1;return[AW/2+(ev.clientX-W/2)/z*(AW/W),AH/2+(ev.clientY-H/2)/z*(AH/H)]}
+function washAt(ax,ay,dt){const W=WASH,[sx,sy]=scr(W.P.x,W.P.y),R=W.tool==='soap'?2.4:3.2;let touched=0;
+  for(const c of W.mask){const d=Math.hypot(sx+c.x+.5-ax,sy+c.y+.5-ay);if(d>R)continue;const k=(1-d/R);touched++;
+    if(W.tool==='soap'){c.s=Math.min(1.6,c.s+k*dt*7);if(Math.random()<k*dt*6)W.bub.push({x:sx+c.x+Math.random(),y:sy+c.y,vy:-4-Math.random()*6,t:.9})}
+    else{const was=c.s;c.s=Math.max(0,c.s-k*dt*5);c.d=Math.max(0,c.d-k*dt*(1.2+was*3));c.w=Math.min(1,c.w+k*dt*4)}}
+  if(W.tool==='hose')for(let k=0;k<3;k++)W.spray.push({x:ax+(Math.random()-.5)*2,y:ay+(Math.random()-.5)*2,vx:(Math.random()-.5)*14,vy:-6-Math.random()*10,t:.45});
+  W.sndT-=dt;if(W.sndT<=0&&AC&&!muted){W.sndT=W.tool==='soap'?.11:.07;noiseHit(AC.currentTime,W.tool==='soap'?.06:.09,W.tool==='soap'?3200:5200,1,W.tool==='soap'?.018:.03)}
+  if(touched&&W.tool==='soap'&&washSoap()>=.85&&!W.soapSaid){W.soapSaid=1;pasInfo()}
+  if(W.tool==='hose'&&washLeft()<.06&&!W.done){W.done=1;race;if(AC&&!muted){pluck(mf(76),.5,.05);pluck(mf(81),.6,.05,.12)}setTimeout(()=>washEnd(true),300)}
+  if(W.tool==='hose'&&!W.done&&Math.random()<dt*3)pasInfo()}
+let washLast=0;
+$('stable').addEventListener('pointerdown',ev=>{if(!WASH||ev.target!==$('stable'))return;WASH.down=true;const[x,y]=yardPt(ev);WASH.px=x;WASH.py=y;washLast=performance.now()/1000;washAt(x,y,.03);ev.preventDefault()});
+$('stable').addEventListener('pointermove',ev=>{if(!WASH||!WASH.down)return;const[x,y]=yardPt(ev),t=performance.now()/1000,dt=Math.min(.06,t-washLast);washLast=t;
+  // fill in between fast strokes so a quick swipe still covers the coat
+  const n=Math.max(1,Math.ceil(Math.hypot(x-WASH.px,y-WASH.py)/1.2));for(let k=1;k<=n;k++)washAt(WASH.px+(x-WASH.px)*k/n,WASH.py+(y-WASH.py)*k/n,dt/n);WASH.px=x;WASH.py=y;ev.preventDefault()});
+addEventListener('pointerup',()=>{if(WASH)WASH.down=false});addEventListener('pointercancel',()=>{if(WASH)WASH.down=false});
+// the coat as you work: mud, lather, a wet sheen; the hose and its spray
+function drawWash(P){const W=WASH;if(!W||W.P!==P)return;const[sx,sy]=scr(P.x,P.y);
+  for(const c of W.mask){const x=sx+c.x,y=sy+c.y;if(c.d>.05){fx.globalAlpha=Math.min(.85,c.d*.9);fx.fillStyle=(c.x+c.y)%3?'#5a4226':'#4a361e';fx.fillRect(x,y,1,1)}
+    if(c.w>.05&&c.s<.3){fx.globalAlpha=c.w*.28;fx.fillStyle='#bfe2ff';fx.fillRect(x,y,1,1)}
+    if(c.s>.05){fx.globalAlpha=Math.min(1,c.s*1.1);fx.fillStyle=(c.x*3+c.y+Math.floor(now*3))%5?'#f6f8fa':'#d8e6f0';fx.fillRect(x,y,1,1)}}
+  fx.globalAlpha=1;
+  for(const b of W.bub){b.t-=1/60;b.y+=b.vy/60;fx.fillStyle='rgba(240,248,255,'+(b.t).toFixed(2)+')';fx.fillRect(Math.round(b.x),Math.round(b.y),1,1)}W.bub=W.bub.filter(b=>b.t>0);
+  if(W.tool==='hose'&&W.down){const hx=Math.round(AW*.18),hy=Math.round(AH*.98),mx=Math.round(W.px-5),my=Math.round(W.py+6);fx.strokeStyle='#2e5a28';fx.lineWidth=2;fx.beginPath();fx.moveTo(hx,hy);fx.quadraticCurveTo(hx+10,my+10,mx,my);fx.stroke();fx.fillStyle='#8a8f98';fx.fillRect(mx-1,my-1,3,2)}
+  for(const d of W.spray){d.t-=1/60;d.x+=d.vx/60;d.y+=d.vy/60;d.vy+=40/60;fx.fillStyle=d.t>.25?'#e6f4ff':'#9cc8f0';fx.fillRect(Math.round(d.x),Math.round(d.y),1,1)}W.spray=W.spray.filter(d=>d.t>0)}
+const _yardOverC=yardOver;yardOver=function(P){_yardOverC(P);drawWash(P);
+  // a treat in hand by the horse's nose
+  if(P.act&&P.act.k==='treat'&&P.act.t>1.5){const[sx,sy]=scr(P.x,P.y),f=P.f||1,x=sx+(f>0?10:-12),y=sy-12,w=P.act.what;fx.fillStyle=w==='apple'?'#c8302a':w==='carrot'?'#e8822a':'#f4f2ea';fx.fillRect(x,y,2,2);if(w==='carrot'){fx.fillRect(x+2,y,1,1);fx.fillStyle='#4a8a2a';fx.fillRect(x-1,y,1,1)}else if(w==='apple'){fx.fillStyle='#4a8a2a';fx.fillRect(x+1,y-1,1,1)}fx.fillStyle='#d9a07a';fx.fillRect(x-1,y+2,4,1)}};
+// in the yard loop: the washed horse stands; treats bring hearts and munching; a good shake after the hose
+const _yardStepC=yardStep;yardStep=function(dt){_yardStepC(dt);if(!PAS)return;
+  for(const P of PAS.horses){const a=P.act;if(!a)continue;if(a.k==='wash'){P.v=0;P.walk=false}
+    if(a.k==='treat'&&a.t<1.5&&Math.random()<dt*3)PAS.fx.push({x:P.x,y:P.y,z:16,vz:12,c:'#e86080',t:1.2,heart:1});
+    if(a.k==='treat'&&a.t<1.5&&Math.random()<dt*5&&AC&&!muted)knock(900+Math.random()*300,.02);
+    if(a.k==='shake'&&Math.random()<dt*30)PAS.fx.push({x:P.x+(Math.random()-.5)*.7,y:P.y+(Math.random()-.5)*.7,z:8+Math.random()*8,vz:6+Math.random()*10,c:Math.random()<.5?'#cfe8ff':'#ffffff',t:.5})}
+  // the camera and zoom glide in close for the wash, and back out after
+  const zt=WASH?5.6:2.1;YARD.z=YARD.z||2.1;YARD.z+=(zt-YARD.z)*(1-Math.exp(-dt*3));setZoomCSS(YARD.z);$('stable').style.touchAction=WASH?'none':''};
+const _yardCamC=yardCam;yardCam=function(){if(!WASH||!YARD)return _yardCamC();const P=WASH.P,z=YARD.z||2.1;return{x:isoX(P.x,P.y)-AW/2+1,y:isoY(P.x,P.y)-hz(P.x,P.y)-7-(AH/2+(AH*.36-AH/2)/z)}};
+// taps pick horses only when not washing, and use the live zoom
+yardTap=function(ev){if(WASH||!YARD||ev.target!==$('stable'))return;const[ax,ay]=yardPt(ev);let best=null,bd=22;for(const P of PAS.horses){const[sx,sy]=scr(P.x,P.y),d=Math.hypot(sx-ax,sy-8-ay);if(d<bd){bd=d;best=P}}
+  pasSel=best?best.h.id:null;if(best&&!best.act){best.st='graze';best.stT=2.5;best.v=0}pasInfo()};
+const _yardCloseC=yardClose;yardClose=function(){if(WASH)washEnd(false);return _yardCloseC()};
+// ---------- the horse's card in the yard ----------
+const _pasInfoC=pasInfo;pasInfo=function(){const el=$('pasInfo');if(!el)return;
+  if(WASH){const W=WASH,sp=washSoap(),left=washLeft(),soapOK=sp>=.85;
+    el.innerHTML='<div class="pasCard washC"><div class="shH"><div><b>Washing '+W.h.name+'</b><small class="st">'+(W.tool==='soap'?(soapOK?'Lathered all over. Grab the hose and rinse him off!':'Drag across '+(W.h.sex==='m'?'him':'her')+' to scrub the soap in.'):'Drag the hose over the suds to rinse them off.')+'</small></div></div>'+
+      '<div class="pasBars"><span>Soap'+pbar(sp*100,'#f0f4f8')+'</span><span>Rinsed'+pbar(W.tool==='hose'?Math.max(0,(1-left)*100):0,'#8ac4e8')+'</span></div>'+
+      '<div class="pasAct"><button class="chip'+(W.tool==='soap'?' on':'')+'" onclick="washTool(\'soap\')">🧼 Soap</button><button class="chip'+(W.tool==='hose'?' on':'')+'" '+(soapOK?'':'disabled')+' onclick="washTool(\'hose\')">🚿 Hose</button><button class="chip" onclick="washEnd(false)">Stop</button></div></div>';return}
+  _pasInfoC();const h=G.roster.find(x=>x.id===pasSel&&x.mine);if(!h)return;const act=el.querySelector('.pasAct');if(!act)return;const used=h.care||{},tr=Math.max(0,(used.treat||0)-G.raceNo*10),washed=used.bathe===G.raceNo;
+  // swap the old one-tap bath for the hands-on wash, and add treats
+  const bathe=[...act.querySelectorAll('button')].find(b=>/Bathe/.test(b.textContent));const wash='<button class="chip" '+(washed||G.purse<5?'disabled':'')+' onclick="washStart('+h.id+')">🧽 Wash<small>'+(washed?'done':'5 crowns')+'</small></button>';
+  if(bathe)bathe.outerHTML=wash;else act.insertAdjacentHTML('beforeend',wash);
+  act.insertAdjacentHTML('beforeend','<button class="chip" '+(tr>=2||G.purse<2?'disabled':'')+' onclick="careAct('+h.id+',\'treat\')">🍎 Treat<small>'+(tr>=2?'enough!':'2 crowns')+'</small></button>');
+  if(h.lentTo)act.insertAdjacentHTML('afterend','<div class="kvn">Lent out for event '+h.lentTo+'.</div>');
+  if(h.events&&h.events.length){const e=h.events[h.events.length-1];act.insertAdjacentHTML('afterend','<div class="kvn">Last outing: carried '+e.rider+' ('+({joust:'jousting',archery:'archery',polo:'polo'})[e.sport]+'), who '+e.how+'.</div>')}};
+// yard horses carry their sex so stallions are drawn a touch bigger
+const _yardOpenC=yardOpen;yardOpen=function(){const r=_yardOpenC.apply(this,arguments);if(PAS)for(const P of PAS.horses)P.H.sex=P.h.sex;if(YARD)YARD.z=2.1;return r};
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
@@ -3292,20 +3426,20 @@ function drawHorse(h,sh){if(sh)return;const[sx,gy]=scr(h.x,h.y),co=COATS[h.H.coa
   if(h.fallen&&h.ftm<2.4){// down on its side, rider sat up beside it
     r(-4,-3,9,3,bc);r(-3,-3,7,1,shade(bc,1.15));r(5,-3,3,2,bc);r(7,-2,1,1,dk);r(-5,-3,1,2,dk);r(-2,0,1,1,dk);r(1,0,1,1,dk);r(3,-1,2,1,dk);
     r(-8,-4,2,3,s1);r(-8,-6,2,2,cap);r(-6,-2,2,1,'#e8e0cc');return}
-  const run=h.v>3.1&&!h.finished,F=h.jt!=null?JUMPF:h.v<.4&&!h.walk?STAND:!run?TROT[Math.floor(h.gait*1.6)%2]:GAL[Math.floor(h.gait)%4],b=F.b,riderless=h.fallen||h.unhorsed;
-  const leg=(L,c)=>{for(let k=0;k<L.length;k++){const[x,y]=L[k];r(x,y-b,1,1,k===L.length-1&&y-b>=-1?'#1a1410':c)}};
+  const run=h.v>3.1&&!h.finished,F=h.jt!=null?JUMPF:h.v<.4&&!h.walk?STAND:!run?TROT[Math.floor(h.gait*1.6)%2]:GAL[Math.floor(h.gait)%4],b=F.b,riderless=h.fallen||h.unhorsed,U=h.H&&h.H.sex==='m'?1:0,bU=b+U;// stallions and colts stand a pixel taller, deeper through the chest
+  const leg=(L,c)=>{if(U)r(L[0][0],L[0][1]-b-1,1,1,c);for(let k=0;k<L.length;k++){const[x,y]=L[k];r(x,y-b,1,1,k===L.length-1&&y-b>=-1?'#1a1410':c)}};
   leg(F.L[1],shade(dk,.8));leg(F.L[3],shade(dk,.8));
-  r(-4,-7-b,9,3,bc);r(-3,-7-b,7,1,shade(bc,1.15));r(-3,-5-b,6,1,shade(bc,.85));
+  r(-4,-7-bU,9,3+U,bc);r(-3,-7-bU,7,1,shade(bc,1.15));r(-3,-5-bU+U,6,1,shade(bc,.85));if(U)r(-1,-4-b,2,1,shade(bc,.68));// a glimpse of the sheath
   const hy=F.hd===2?-2:F.hd;// head carriage: up when standing, low and long at a gallop
-  r(4,-9-b+(hy>0?1:0),2,3,bc);r(5,-11-b+hy+(hy===-2?0:1),3,2,bc);r(8,-10-b+hy+(hy===-2?0:1),1,1,shade(bc,.8));r(5,-12-b+hy+(hy===-2?0:1),1,1,shade(bc,.9));r(7,-11-b+hy+(hy===-2?0:1),1,1,'#120c08');
-  r(4,-10-b+(hy>0?1:0),1,2,dk);
-  const tw=Math.floor(h.gait*2)%2;if(run||h.jt!=null){r(-6,-8-b+tw,2,1,dk);r(-7,-7-b+tw,1,1,dk);r(-5,-7-b,1,1,dk)}else{r(-5,-7-b,1,3,dk);r(-6,-5-b+Math.round(Math.sin(now*3+h.ph)),1,1,dk)}
+  r(4,-9-bU+(hy>0?1:0),2,3,bc);r(5,-11-bU+hy+(hy===-2?0:1),3,2,bc);r(8,-10-bU+hy+(hy===-2?0:1),1,1,shade(bc,.8));r(5,-12-bU+hy+(hy===-2?0:1),1,1,shade(bc,.9));r(7,-11-bU+hy+(hy===-2?0:1),1,1,'#120c08');
+  r(4,-10-bU+(hy>0?1:0),1,2,dk);
+  const tw=Math.floor(h.gait*2)%2;if(run||h.jt!=null){r(-6,-8-bU+tw,2,1,dk);r(-7,-7-bU+tw,1,1,dk);r(-5,-7-bU,1,1,dk)}else{r(-5,-7-bU,1,3,dk);r(-6,-5-bU+Math.round(Math.sin(now*3+h.ph)),1,1,dk)}
   leg(F.L[0],dk===bc?shade(bc,.9):dk);leg(F.L[2],dk===bc?shade(bc,.9):dk);
-  if(h.capar)drawCapar(r,b,h);
-  if(!riderless&&h.knight)drawKnightR(r,b,h,run);else if(!riderless&&h.archer)drawArcherR(r,b,h,run);else if(!riderless&&h.polo)drawPoloR(r,b,h,run);else if(!riderless){const crouch=run||h.jt!=null,rb=crouch?0:-1,whip=h.dist/race.D>.86&&run&&Math.floor(now*6+h.ph)%2;
-    r(-2,-8-b,2,1,'#e8e0cc');r(0,-8-b,1,1,'#e8e0cc');r(0,-7-b,1,1,'#2a1e14');
-    if(crouch){r(-2,-10-b,4,2,s1);r(-2,-10-b,4,1,shade(s1,1.15));r(2,-10-b,2,1,s2);r(4,-9-b,1,1,'#d9a07a');r(2,-12-b,2,2,cap);r(3,-11-b,1,1,'#d9a07a');r(4,-12-b,1,1,shade(cap,.8));if(whip){r(-3,-12-b,1,2,'#3a2616');r(-4,-13-b,1,1,'#3a2616')}}
-    else{r(-1,-11-b+rb,2,3,s1);r(1,-10-b+rb,2,1,s2);r(-1,-13-b+rb,2,2,cap);r(0,-12-b+rb,1,1,'#d9a07a')}}
+  if(h.capar)drawCapar(r,bU,h);
+  if(!riderless&&h.knight)drawKnightR(r,bU,h,run);else if(!riderless&&h.archer)drawArcherR(r,bU,h,run);else if(!riderless&&h.polo)drawPoloR(r,bU,h,run);else if(!riderless){const crouch=run||h.jt!=null,rb=crouch?0:-1,whip=h.dist/race.D>.86&&run&&Math.floor(now*6+h.ph)%2;
+    r(-2,-8-bU,2,1,'#e8e0cc');r(0,-8-bU,1,1,'#e8e0cc');r(0,-7-bU,1,1,'#2a1e14');
+    if(crouch){r(-2,-10-bU,4,2,s1);r(-2,-10-bU,4,1,shade(s1,1.15));r(2,-10-bU,2,1,s2);r(4,-9-bU,1,1,'#d9a07a');r(2,-12-bU,2,2,cap);r(3,-11-bU,1,1,'#d9a07a');r(4,-12-bU,1,1,shade(cap,.8));if(whip){r(-3,-12-bU,1,2,'#3a2616');r(-4,-13-bU,1,1,'#3a2616')}}
+    else{r(-1,-11-bU+rb,2,3,s1);r(1,-10-bU+rb,2,1,s2);r(-1,-13-bU+rb,2,2,cap);r(0,-12-bU+rb,1,1,'#d9a07a')}}
   if(race&&race.state!=='done'&&!h.finished&&!h.fallen&&!h.noLabel){const mine=myNos().has(h.no);drawNum(h.no,sx,sy-23-(mine?6:0),h.H.silk[0],(SILKC.indexOf(h.H.silk[0])===4||SILKC.indexOf(h.H.silk[0])===2)?'#1a120a':'#fff');
     if(mine){const y=sy-22+Math.round(Math.sin(now*5));fx.fillStyle='#1a120a';fx.fillRect(sx-3,y-1,7,4);fx.fillStyle='#e8c45a';fx.fillRect(sx-2,y,5,1);fx.fillRect(sx-1,y+1,3,1);fx.fillRect(sx,y+2,1,1)}}}
 // brush hurdles across the course
