@@ -3539,7 +3539,6 @@ function bigHorseSprite(h){const male=h.sex==='m',key=h.id+':'+h.coat+':'+male;b
   put(48,7,'e');put(49,7,'e');put(49,6,'h');put(48,8,'s');put(58,13,'n');put(57,13,'s');put(55,15,'d');put(56,15,'d');put(50,10,'h');put(51,10,'h');put(52,11,'h');
   // a stallion stands a little bigger: one more row of leg and one more column of barrel
   g.splice(38,0,g[38].slice());if(male){g.splice(37,0,g[37].slice());for(const r of g)r.splice(27,0,r[27])}
-  if(male)for(let x=27;x<=29;x++)if(g[29][x]==='.'&&g[28][x]!=='.')g[29][x]=x===28?'d':'s';// the sheath: a small bulge flush under the belly, in the belly's own shadow
   const W=g[0].length,Hh=g.length,ax=male?29:28,ay=Hh,co=COATS[h.coat],bc=co[1],dk=co[2];
   const col={b:bc,h:shade(bc,1.2),s:shade(bc,.84),d:shade(bc,.68),z:shade(bc,.56),l:dk,L:shade(dk,1.4),f:shade(bc,.62),F:shade(dk,.78),m:dk,M:shade(dk,1.5),e:'#120c08',n:'#1a1210',k:'#3a2e26',K:'#2a201a',S:shade(bc,.6)};
   const mx=male?1:0,isHead=(x,y)=>(y<=12&&x>=40+mx)||(y<=16&&x>=47+mx);
@@ -3547,7 +3546,7 @@ function bigHorseSprite(h){const male=h.sex==='m',key=h.id+':'+h.coat+':'+male;b
   for(let y=0;y<Hh;y++)for(let x=0;x<W;x++){const k=g[y][x];if(k==='.')continue;const t=isHead(x,y)?xh:x2;t.fillStyle=col[k]||bc;t.fillRect(x,y,1,1)}
   const mask=[];for(let y=0;y<Hh;y++)for(let x=0;x<W;x++){const k=g[y][x];if(k!=='.'&&k!=='k'&&k!=='K')mask.push([x-ax,y-ay,isHead(x,y)?1:0])}
   for(const y in BH_TAIL){const[a,b]=BH_TAIL[y],yy=+y+(+y>=38?1:0)+(male&&+y>=37?1:0);for(let x=a;x<=b;x++)mask.push([x-ax,yy-ay,0])}
-  const eye=[48+mx+.5-ax,7.5-ay],sheath=[];
+  const eye=[48+mx+.5-ax,7.5-ay],sheath=male?[[27-ax,29-ay,col.s],[28-ax,29-ay,col.d],[29-ax,29-ay,col.s]]:[];// a small bulge flush under the belly; it swings on its own, sideways only
   return bigHorseSprite.c[key]={c,ch,B:{W,H:Hh,ax,ay,sc:1,eye,male,sheath,tail:BH_TAIL,mane:col.m,maneH:col.M},mask}}
 // ----- the stall: plank walls, a beam, a window letting in a shaft of light, straw underfoot, a hay net, a bucket, a lantern
 let STALL=null;const stc=document.createElement('canvas');stc.id='stall';stc.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;display:none;image-rendering:pixelated;touch-action:none';
@@ -3592,7 +3591,7 @@ function stallLoop(){if(!STALL)return;STALL.raf=requestAnimationFrame(stallLoop)
   g.fillStyle='rgba(20,12,6,.35)';g.fillRect(x0+12,S.ay-1,sh.B.W-20,2);g.fillRect(x0+16,S.ay+1,sh.B.W-28,1);
   {const B=sh.B,sw=Math.sin(S.t*1.5)*1.4+(S.flick>0?Math.sin(S.t*30)*2:0)-F.v*.3;if(Math.random()<.004)S.flick=.5;S.flick=(S.flick||0)-1/60;for(const y in B.tail){const[a,b]=B.tail[y],k=(+y-15)/18,dx=Math.round(sw*k*k*2),yy=+y+(+y>=38?1:0)+(B.male&&+y>=37?1:0);for(let x=a;x<=b;x++){g.fillStyle=(x+ +y)%4===0?B.maneH:B.mane;g.fillRect(x0+x+dx,y0+yy,1,1)}}}
   g.drawImage(sh.c,x0,y0);g.drawImage(sh.ch,x0,y0+S.hdy);
-  for(const[px,py,c]of sh.B.sheath){g.fillStyle=c;g.fillRect(S.ax+ox+shake+px+Math.round(F.sh*.6),S.ay+py+(Math.abs(F.sh)>.8?1:0),1,1)}
+  {const sw=clamp(Math.round(F.sh*.7),-1,1);for(const[px,py,c]of sh.B.sheath){g.fillStyle=c;g.fillRect(S.ax+ox+shake+px+sw,S.ay+py,1,1)}}
   S.blink-=dt;if(S.blink<-3.5-Math.random()*3)S.blink=.15;if(S.blink>0){const ex=Math.round(S.ax+sh.B.eye[0])+ox+shake,ey=Math.round(S.ay+sh.B.eye[1])+S.hdy;g.fillStyle=shade(COATS[W?W.h.coat:0][1],.7);g.fillRect(ex-1,ey,2,1)}
   for(const q of S.straw||[]){q.t-=dt;q.vy+=160*dt;q.x+=q.vx*dt;q.y=Math.min(S.ay+1,q.y+q.vy*dt);g.fillStyle='#e8c86a';g.fillRect(Math.round(q.x),Math.round(q.y),1,1)}if(S.straw)S.straw=S.straw.filter(q=>q.t>0);
   if(S.shk>0)S.shk-=dt;
