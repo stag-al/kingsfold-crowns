@@ -19,7 +19,7 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#13202a;font-family:"Pixelify Sans",monospace;color:#e8d39a;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   canvas.view{position:absolute;left:0;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:12px;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
+  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
   #vig{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(8,10,14,.38) 100%)}
   .panel{background:rgba(24,18,12,.92);border:2px solid #8a6a32;box-shadow:inset 0 0 0 2px #2e2216;border-radius:4px}
   .bl{font-family:"Jacquarda Bastarda 9",serif;font-weight:normal}
@@ -2275,7 +2275,7 @@ function drawDown(d){const t=d.t;let x=d.x+d.vx*Math.min(t,.75)*1.4,y=d.y+d.vy*M
   else{const up=t>2.2&&Math.floor(now*2)%2;R(-3,-3,6,2,'#8a8f98');R(3,-4,2,2,'#a8adb6');R(-4,-5,3,3,d.silk[0]);if(up){R(5,-6,1,2,'#8a8f98')}}}
 const _drawSportFX2=drawSportFX;drawSportFX=function(){if(!SP||card.sport!=='joust')return _drawSportFX2();
   for(const d of SP.down||[])drawDown(d);if(SP.a&&SP.b){const far=SP.a.y+SP.a.x<SP.b.y+SP.b.x?[SP.a,SP.b]:[SP.b,SP.a];for(const R of far)drawLance(R,R===SP.a?SP.b:SP.a)}
-  (SP.jpops||[]).forEach((P,i)=>{const[sx,sy]=scr(P.x,P.y),y=sy-34-i*10-Math.round(P.t*8);fx.globalAlpha=clamp(1.6-P.t,0,1);drawTxt(P.txt,sx,y,P.c);fx.globalAlpha=1});
+  const J0=(SP.jpops||[])[0];(SP.jpops||[]).forEach((P,i)=>{const[sx,sy]=scr(J0.x,J0.y),y=sy-34-i*12-Math.round(P.t*8);fx.globalAlpha=clamp(1.6-P.t,0,1);drawTxt(P.txt,sx,y,P.c);fx.globalAlpha=1});
   if(SP.star&&now-SP.star.t<.35){const q=(now-SP.star.t)/.35,[sx,sy0]=scr(SP.star.x,SP.star.y),sy=sy0-11,L=Math.round((SP.star.big?15:11)*(1-q*.4)),c=q<.4?'#ffffff':'#ffe9a0';fx.fillStyle=c;
     for(let k=-L;k<=L;k++){const w=Math.abs(k)<L*.45?2:1;fx.fillRect(sx+k,sy-(w>1?1:0),1,w);fx.fillRect(sx-(w>1?1:0),sy+k,w,1);if(Math.abs(k)<L*.55){fx.fillRect(sx+k,sy+k,1,1);fx.fillRect(sx+k,sy-k,1,1)}}fx.fillStyle='#fff8e0';fx.fillRect(sx-2,sy-2,5,5);fx.fillStyle='rgba(255,240,190,.35)';fx.beginPath();fx.arc(sx,sy,L*.8,0,6.283);fx.fill()}
   if(SP.flash>0){fx.fillStyle='rgba(255,244,214,'+(SP.flash*.22).toFixed(3)+')';fx.fillRect(0,0,AW,AH)}};
@@ -2690,13 +2690,14 @@ const SPL={m:1,on:false,ZS:2.5,ZP:2.5,L:null,R:null,names:''};
 const splc=document.getElementById('split'),splg=splc?splc.getContext('2d'):null;
 const _setSizesS=setSizes;setSizes=function(){_setSizesS.apply(this,arguments);if(splc){splc.width=AW;splc.height=AH;splc.style.width=(AW*K/dpr)+'px';splc.style.height=(AH*K/dpr)+'px';splg.imageSmoothingEnabled=false}};
 const spSm=x=>{x=clamp(x,0,1);return x*x*(3-2*x)};
-function splitActive(){return !!(race&&race.sport==='joust'&&card&&card.sport==='joust'&&SP&&SP.a&&SP.b&&race.state!=='done')}
+function splitActive(){return !!(race&&race.sport==='joust'&&card&&card.sport==='joust'&&SP&&SP.a&&SP.b)}
 // how merged the two halves should be right now: apart while they wait and charge, one picture once both fit in a close shot
-function splitTarget(){if(!splitActive())return 1;if(SP.phase==='ready')return 0;if(SP.phase!=='charge'&&SP.phase!=='turn')return 1;if(SP.phase==='charge'&&Math.abs(SP.a.sx-SP.b.sx)<3.4)return 1;// whole for the clash itself// apart as they wait, together for the clash, apart again as they ride back to their ends
+function splitTarget(){if(!splitActive())return 1;if(typeof rescueOn==='function'&&rescueOn())return 1;// one picture on the fallen knight and his squire
+  if(SP.phase!=='charge'&&SP.phase!=='turn')return 0;if(SP.phase==='charge'&&Math.abs(SP.a.sx-SP.b.sx)<3.4)return 1;// whole for the clash itself// apart as they wait, together for the clash, apart again as they ride back to their ends
   const a=scr(SP.a.x,SP.a.y),b=scr(SP.b.x,SP.b.y),sep=Math.max(Math.abs(a[0]-b[0])+28,Math.abs(a[1]-b[1])*1.9+40),zfit=AW*.86/sep;
   return spSm((zfit-SPL.ZS*.42)/(SPL.ZS*.58))}
 // keep the close zoom while the screen is split, so the merged shot matches the halves exactly
-const _joustZoomS=joustZoom;joustZoom=function(){_joustZoomS.apply(this,arguments);if(SP&&splitActive()&&SPL.m<.995)SP.zt=SPL.ZS};
+const _joustZoomS=joustZoom;joustZoom=function(){_joustZoomS.apply(this,arguments);if(SP&&splitActive()&&(SPL.m<.995||(typeof rescueOn==='function'&&rescueOn())))SP.zt=SPL.ZS};
 function riderName(R){const i=SP.riders.indexOf(R),C=card.comp&&card.comp[i];return C?C.name:''}
 function riderSilk(R){const i=SP.riders.indexOf(R),C=card.comp&&card.comp[i];return C&&C.silk?C.silk[0]:'#e8c45a'}
 // a half-camera: puts its knight at a spot in his half, riding into open space toward the middle
@@ -2707,13 +2708,14 @@ function paneCam(R,side,z){const p=scr(R.x,R.y),cl=spSm((10.5-Math.abs(SP.a.sx-S
   const dY=AH*.45;return{x:ox+p[0]-cX,y:oy+p[1]-11-(AH/2+(dY-AH/2)/z)}}
 let splLastT=0;
 function splitPost(){const t=performance.now()/1000,dt=Math.min(.1,t-(splLastT||t));splLastT=t;
-  const mt=splitTarget(),lock=SP&&SP.phase==="charge"&&SP.a&&Math.abs(SP.a.sx-SP.b.sx)<3.4;if(mt===0&&SP&&SP.phase==='ready'&&SPL.m>.05){SPL.m=0;SPL.pc=null;SP.zc=SP.zt=SPL.ZS;setZoomCSS(SPL.ZS)}// a clean cut to the split as they line up
+  const mt=splitTarget(),lock=SP&&SP.phase==="charge"&&SP.a&&Math.abs(SP.a.sx-SP.b.sx)<3.4;if(SPL.race!==race&&splitActive()){SPL.race=race;SPL.m=0;SPL.pc=null;SP.zc=SP.zt=SPL.ZS;setZoomCSS(SPL.ZS)}// the tourney opens already split
   SPL.m+=(mt-SPL.m)*(1-Math.exp(-dt*(mt>SPL.m?(lock?6:3.5):2.6)));if(lock&&Math.abs(SP.a.sx-SP.b.sx)<.9)SPL.m=1;
-  if(SP&&SP.phase==='between'&&SPL.m<1){SPL.m=1}// the bout is decided: a clean cut to the whole picture
   if(mt>=1&&SPL.m>.995)SPL.m=1;if(mt<=0&&SPL.m<.005)SPL.m=0;
   // whoever is on the left of the screen gets the left half; they swap sides as they pass, which happens while the picture is whole
   if(splitActive()&&(SPL.m>.99||!SPL.L)){const ax=isoX(SP.a.x,SP.a.y),bx=isoX(SP.b.x,SP.b.y);SPL.L=ax<=bx?SP.a:SP.b;SPL.R=SPL.L===SP.a?SP.b:SP.a;SPL.pc=null}
-  const show=!!(splitActive()&&SPL.m<.995&&splg);
+  // the halves never move faster than a set speed; the picture only becomes whole once they have caught up exactly
+  const lag=SPL.disp?Math.max(0,...SPL.disp.filter(Boolean).map(D=>Math.hypot(D.x-cam.x,D.y-cam.y))):0;
+  const show=!!(splitActive()&&(SPL.m<.995||(SPL.on&&lag>1.5))&&splg);if(!show)SPL.disp=null;
   if(show!==SPL.on){SPL.on=show;splc.style.display=show?'block':'none';$('splitN').style.display=show?'block':'none'}
   if(!show)return;
   // which knight is on the left of the screen this pass (they never cross before the halves have merged)
@@ -2722,7 +2724,7 @@ function splitPost(){const t=performance.now()/1000,dt=Math.min(.1,t-(splLastT||
   // both halves get the same vertical nudge, so the knights ride at eye level and the lists still line up
   const PL0=paneCam(SPL.L,-1,z),PR0=paneCam(SPL.R,1,z),kk=1-Math.exp(-dt*9);if(!SPL.pc)SPL.pc=[{...PL0},{...PR0}];for(const[i,P]of[[0,PL0],[1,PR0]]){SPL.pc[i].x+=(P.x-SPL.pc[i].x)*kk;SPL.pc[i].y+=(P.y-SPL.pc[i].y)*kk}const PL={...SPL.pc[0]},PR={...SPL.pc[1]},yk=(R,P)=>scr(R.x,R.y)[1]-(P.y-Math.round(oy)),cY=AH/2+(AH*.47-AH/2)/z+9,dy=(yk(SPL.L,PL)+yk(SPL.R,PR))/2-cY;PL.y+=dy;PR.y+=dy;
   const shk=SP.shake||0,jx=(Math.random()-.5)*shk,jy=(Math.random()-.5)*shk;
-  try{for(const[R,side,P]of[[SPL.L,-1,PL],[SPL.R,1,PR]]){const cx=lerp(P.x+jx,ox,m),cy=lerp(P.y+jy,oy,m);cam.x=cx;cam.y=cy;renderAt(cx,cy);
+  try{for(const[R,side,P]of[[SPL.L,-1,PL],[SPL.R,1,PR]]){const tx=lerp(P.x+jx,ox,m),ty=lerp(P.y+jy,oy,m),hi=side<0?0:1;if(!SPL.disp)SPL.disp=[null,null];let D=SPL.disp[hi];if(!D)D=SPL.disp[hi]={x:tx,y:ty};else{const dx=tx-D.x,dy=ty-D.y,l=Math.hypot(dx,dy),mx=AW*1.2*dt;if(l>mx){D.x+=dx/l*mx;D.y+=dy/l*mx}else{D.x=tx;D.y=ty}}const cx=D.x,cy=D.y;cam.x=cx;cam.y=cy;renderAt(cx,cy);
       const half=side<0?0:1;for(const c of[glc,fxc])splg.drawImage(c,sx0+half*sw/2,sy0,sw/2,sh,half*AW/2,0,AW/2,AH)}}
   finally{cam.x=ox;cam.y=oy}
   // the divider: a carved, gilded post that narrows and fades as the halves come together
@@ -2733,7 +2735,7 @@ function splitPost(){const t=performance.now()/1000,dt=Math.min(.1,t-(splLastT||
     splg.fillStyle=riderSilk(SPL.L);splg.fillRect(sx-4,cy-5,4,9);splg.fillStyle=riderSilk(SPL.R);splg.fillRect(sx,cy-5,4,9);splg.fillStyle='#e8c45a';splg.fillRect(sx-3,cy+4,6,1);splg.fillRect(sx-1,cy+5,2,1);
     splg.globalAlpha=1}
   // name plates under each knight
-  const nm=riderName(SPL.L)+'|'+riderName(SPL.R);if(nm!==SPL.names){SPL.names=nm;const s=$('splitN').children;s[0].textContent=riderName(SPL.L);s[1].textContent=riderName(SPL.R);s[0].style.borderBottomColor=riderSilk(SPL.L);s[1].style.borderBottomColor=riderSilk(SPL.R)}
+  const nm=riderName(SPL.L)+'|'+riderName(SPL.R);if(nm!==SPL.names){SPL.names=nm;const s=$('splitN').children;s[0].textContent=riderName(SPL.L).split(' of ')[0];s[1].textContent=riderName(SPL.R).split(' of ')[0];s[0].style.borderBottomColor=riderSilk(SPL.L);s[1].style.borderBottomColor=riderSilk(SPL.R)}
   const N=$('splitN');N.style.opacity=Math.max(0,1-m*1.8).toFixed(2);N.children[0].style.left=(25-m*8)+'%';N.children[1].style.left=(75+m*8)+'%'}
 const _frame0S=frame0;frame0=function(t){_frame0S.apply(this,arguments);try{splitPost()}catch(e){console.warn('split',e);SPL.on=false;if(splc)splc.style.display='none'}};
 const _nextRaceS=nextRace;nextRace=function(){SPL.m=1;SPL.L=SPL.R=null;if(SPL.on){SPL.on=false;splc.style.display='none';$('splitN').style.display='none'}return _nextRaceS.apply(this,arguments)};
@@ -2742,6 +2744,76 @@ const _sportCamS=sportCam;sportCam=function(){const c=_sportCamS.apply(this,argu
 // the Bets button always sits just above the commentary box, however many lines it's showing
 (function(){const c=$('comm'),r=$('rc');if(!c||!r)return;const fit=()=>{if(c.style.display==='none'||!c.offsetHeight){r.style.bottom='';return}r.style.bottom='calc('+(c.offsetHeight+16)+'px + env(safe-area-inset-bottom))'};
   try{new ResizeObserver(fit).observe(c)}catch(e){}setInterval(fit,400)})();
+
+// ===================== no teleporting, no camera jumps =====================
+// After each clash the knights pull up, turn round and canter back to their marks. Between bouts the old pair rides
+// out of the lists while the next pair rides in; in archery the last archer canters on off the course. Every sport
+// camera has a top speed, so nothing ever whips across the field.
+const JMARK=5.4;
+function freshLance(R){R.lance=0;R.broken=false;R.rec=0;R.hitT=-9;R.res=null}
+function jSettle(R){const p=SP.G.at(R.sx,R.lat);R.x=p[0];R.y=p[1];R.i=p[2];R.vx=R.dirS*.01*Math.cos(SP.G.dir);R.vy=R.dirS*.01*Math.sin(SP.G.dir)}
+// ----- after the pass: brake, turn, canter back to the mark (or, if the bout is decided, just pull up)
+const _joustSim4=joustSim;joustSim=function(dt){if(!SP||!SP.a)return _joustSim4(dt);
+  for(const R of SP.exit||[])moveRider(R,dt,2.8);if(SP.exit)SP.exit=SP.exit.filter(R=>Math.abs(R.sx)<13);
+  if(SP.phase==='turn'){const B=card.result.bouts[SP.bout],over=SP.boutOver||SP.pass+1>=B.passes;let done=true;
+    for(const R of[SP.a,SP.b]){
+      if(!R.tb){moveRider(R,dt,0);if(R.v<.12){R.v=0;R.tb=1;if(!over){R.dirS*=-1;R.mark=Math.sign(R.sx)*Math.max(JMARK,Math.min(Math.abs(R.sx),JMARK))}}done=false;continue}
+      if(R.tb===1&&!over){const left=(R.mark-R.sx)*R.dirS;if(left>.02){moveRider(R,dt,Math.min(2.4,left*2.2+.5));done=false;if((R.mark-R.sx)*R.dirS<=0){R.sx=R.mark;R.v=0;jSettle(R);R.tb=2}}else{R.sx=R.mark;R.v=0;jSettle(R);R.tb=2}}}
+    if(over&&SP.t>1.1&&SP.a.tb&&SP.b.tb)done=true;
+    if(done&&SP.t>.6){SP.pass++;for(const R of[SP.a,SP.b]){R.tb=0;freshLance(R)}if(over){endBout();return}SP.phase='ready';SP.t=.4}return}
+  // the bout is decided: both knights walk out of the lists while the crowd cheers
+  if(SP.phase==='between'){for(const R of[SP.a,SP.b]){if(!R.outing){R.outing=1;R.dirS=Math.sign(R.sx)||1}moveRider(R,dt,Math.min(2.6,.6+SP.t*1.4))}}
+  // the next pair rides in to their marks
+  if(SP.phase==='enter'){let all=true;for(const R of[SP.a,SP.b]){const left=(R.mark-R.sx)*R.dirS;if(left>.02){moveRider(R,dt,Math.min(3.6,left*2+.6));all=false;if((R.mark-R.sx)*R.dirS<=0){R.sx=R.mark;R.v=0;R.dirS=-Math.sign(R.mark);jSettle(R)}}else if(R.v||R.dirS!==-Math.sign(R.mark)){R.sx=R.mark;R.v=0;R.dirS=-Math.sign(R.mark);jSettle(R)}}
+    if(all){SP.phase='ready';SP.t=0}return}
+  return _joustSim4(dt)};
+// ----- a new bout: whoever is leaving rides on out; the new pair come in from beyond the ends (or from where they are)
+const _layBout4=layBout;layBout=function(){const old=SP.a?[SP.a,SP.b]:[],vis=new Map();
+  for(const R of old.concat(SP.exit||[]))if(Math.abs(R.sx)<13.5)vis.set(R,{sx:R.sx,lat:R.lat});// everyone still in sight, and where
+  _layBout4.apply(this,arguments);const A=SP.a,Bk=SP.b;
+  SP.exit=(SP.exit||[]).concat(old).filter(R=>R!==A&&R!==Bk);for(const R of SP.exit){R.dirS=Math.sign(R.sx)||1;R.outing=1}
+  // a knight still in sight keeps his side of the barrier and comes back from where he is; swap the ends if that's shorter
+  for(const C of[A,Bk]){const k=vis.get(C);if(!k)continue;const O=C===A?Bk:A;if(Math.sign(k.sx)!==Math.sign(C.sx)){const s=C.sx;C.sx=O.sx;O.sx=s}if(Math.sign(k.lat)!==Math.sign(C.lat)){O.lat=-k.lat;C.lat=k.lat}}
+  for(const R of[A,Bk]){R.mark=R.sx;R.unhorsed=false;R.tb=0;R.outing=0;freshLance(R);const k=vis.get(R);
+    R.sx=k?k.sx:R.mark+Math.sign(R.mark)*3.4;R.dirS=Math.sign(R.mark-R.sx)||-Math.sign(R.mark);R.v=0;jSettle(R)}
+  if(typeof SPL!=='undefined'){const ax=isoX(...SP.G.at(A.mark,A.lat).slice(0,2)),bx=isoX(...SP.G.at(Bk.mark,Bk.lat).slice(0,2));SPL.L=ax<=bx?A:Bk;SPL.R=SPL.L===A?Bk:A}// each half picks up the knight coming to its end
+  SP.phase='enter';SP.t=0};
+// ----- archery: the archer who has finished canters on and off the course instead of vanishing
+const _layArcher4=layArcher;layArcher=function(){if(SP&&SP.k>0){const P=SP.riders[SP.k-1];if(P){P.dirS=1;SP.exit=(SP.exit||[]).concat([P])}}return _layArcher4.apply(this,arguments)};
+const _archSim4=archSim;archSim=function(dt){for(const R of SP.exit||[])moveRider(R,dt,3);if(SP.exit)SP.exit=SP.exit.filter(R=>R.sx<16);return _archSim4(dt)};
+const _sportObjs4=sportObjs;sportObjs=function(){const o=_sportObjs4();if(SP&&card&&card.sport==='archery'&&SP.riders&&SP.k>=SP.riders.length){const L=SP.riders[SP.riders.length-1];if(L&&!o.some(q=>q.h===L))o.push({kind:'horse',h:L,key:L.x+L.y})}if(SP&&SP.exit&&card&&card.sport!=='polo')for(const R of SP.exit)if(!o.some(q=>q.h===R))o.push({kind:'horse',h:R,key:R.x+R.y});return o};
+// ----- every sport camera has a top speed and eases in and out, so it glides instead of jumping
+const SCAM={x:null,y:null,vx:0,vy:0,race:null,t:0};
+const _sportCam4=sportCam;sportCam=function(){let raw=_sportCam4.apply(this,arguments);
+  // the fallen knight: the camera stays on him and his squire
+  if(raw&&race&&race.sport==='joust'&&SP&&SP.down&&typeof rescueOn==='function'&&rescueOn()){const d=SP.down.find(d=>d.bout===SP.bout&&!d.gone);if(d){const p=d.res?[(d.res.kx+d.res.x)/2,(d.res.ky+d.res.y)/2]:downRest(d);raw={...raw,x:isoX(p[0],p[1])-AW/2,y:isoY(p[0],p[1])-AH/2-hz(p[0],p[1])-8}}}if(!raw||!race)return raw;
+  const t=performance.now()/1000,dt=Math.min(.1,Math.max(0,t-(SCAM.t||t)));SCAM.t=t;
+  if(SCAM.race!==race||SCAM.x==null){SCAM.race=race;SCAM.x=raw.x;SCAM.y=raw.y;SCAM.vx=SCAM.vy=0;return raw}
+  const sh=(SP&&SP.shake)||0,w=4.2,ax=(raw.x-SCAM.x)*w*w-2*w*SCAM.vx,ay=(raw.y-SCAM.y)*w*w-2*w*SCAM.vy;SCAM.vx+=ax*dt;SCAM.vy+=ay*dt;
+  const vmax=AW*1.15,sp=Math.hypot(SCAM.vx,SCAM.vy);if(sp>vmax){SCAM.vx*=vmax/sp;SCAM.vy*=vmax/sp}SCAM.x+=SCAM.vx*dt;SCAM.y+=SCAM.vy*dt;
+  return{...raw,x:SCAM.x+(Math.random()-.5)*sh,y:SCAM.y+(Math.random()-.5)*sh}};
+// ----- an unhorsed knight is helped up by his squire, who runs out, gets him on his feet and walks him off
+function downRest(d){return[d.x+d.vx*1.05,d.y+d.vy*1.05]}
+const _impactRes=impact;impact=function(po){const n0=(SP.down||[]).length;_impactRes(po);for(let i=n0;i<(SP.down||[]).length;i++){const d=SP.down[i],O=[SP.a,SP.b].find(R=>R.unhorsed);d.bout=SP.bout;d.side=O&&O.lat?Math.sign(O.lat):1}};
+function rescueOn(){return!!(SP&&SP.down&&SP.down.some(d=>d.bout===SP.bout&&!(d.res&&d.res.ph==='walk'&&d.res.t>1.3)))}
+function squireStep(d,dt){const[kx,ky]=downRest(d),G0=SP.G,nx=-Math.sin(G0.dir)*d.side,ny=Math.cos(G0.dir)*d.side,ox=kx+nx*3.6,oy=ky+ny*3.6;
+  if(!d.res){if(d.t<1.3)return;d.res={ph:'run',t:0,x:ox,y:oy,kx,ky};say(pick(['His squire sprints out to help him up.','The squire runs to his knight.','A squire hurries out across the sand.']))}
+  const S=d.res;S.t+=dt;
+  if(S.ph==='run'){const dx=kx+nx*.35-S.x,dy=ky+ny*.35-S.y,l=Math.hypot(dx,dy);if(l<.08){S.ph='help';S.t=0}else{const v=Math.min(l,3.2*dt);S.x+=dx/l*v;S.y+=dy/l*v}}
+  else if(S.ph==='help'){if(S.t>1){S.ph='walk';S.t=0;race.cheer=Math.max(race.cheer,.7);if(typeof crowd==='function')crowd(.5);say('He\'s up! The crowd applauds as he\'s helped from the lists.')}}
+  else if(S.ph==='walk'){const v=1.5*dt;S.x+=nx*v;S.y+=ny*v;S.kx+=nx*v;S.ky+=ny*v;if(S.t>4)d.gone=1}}
+const _sportSim4=sportSim;sportSim=function(dt){_sportSim4(dt);if(race&&race.sport==='joust'&&SP&&SP.down)for(const d of SP.down)if(!d.gone)squireStep(d,dt)};
+// hold the next bout until the fallen knight has been helped off
+const _joustSim4b=joustSim;joustSim=function(dt){if(SP&&SP.phase==='between'&&rescueOn())SP.t=Math.min(SP.t,1.9);return _joustSim4b(dt)};
+function fig(x,y,walk,kind,silk,pose){const[sx,sy]=scr(x,y),R=(a,b,w,h,c)=>{fx.fillStyle=c;fx.fillRect(sx+a,sy+b,w,h)},f=walk?Math.floor(now*6)%2:0;
+  fx.fillStyle='rgba(10,16,6,.35)';fx.fillRect(sx-2,sy,5,1);
+  if(kind==='sq'){const k=pose==='kneel'?2:0;R(-1-f,-3+k,1,3-k,'#4a3a28');R(1+f,-3+k,1,3-k,'#4a3a28');R(-1,-7+k,3,4,'#5a7a3a');R(-1,-9+k,3,2,'#d9a07a');R(-1,-10+k,3,1,'#3a5a2a');if(pose==='kneel')R(2,-6+k,2,1,'#d9a07a');return}
+  if(pose==='sit'){R(-2,-2,5,2,'#6a6f78');R(-1,-6,3,4,'#8a8f98');R(-1,-5,3,2,silk);R(-1,-9,3,3,'#a8adb6');return}
+  R(-1-f,-3,1,3,'#6a6f78');R(1+f,-3,1,3,'#6a6f78');R(-1,-8,3,5,'#8a8f98');R(-1,-7,3,3,silk);R(-1,-11,3,3,'#a8adb6');R(0,-10,1,1,'#3a3f48')}
+const _drawDown4=drawDown;drawDown=function(d){if(d.gone)return;const S=d.res;
+  if(!S||S.ph==='run'){_drawDown4(d);if(S)fig(S.x,S.y,true,'sq');return}
+  const silk=d.silk[0];if(S.ph==='help'){fig(S.kx,S.ky,false,'k',silk,S.t<.5?'sit':'stand');const G0=SP.G,nx=-Math.sin(G0.dir)*d.side*.35,ny=Math.cos(G0.dir)*d.side*.35;fig(S.kx+nx,S.ky+ny,false,'sq',null,S.t<.6?'kneel':'stand');return}
+  const G0=SP.G,nx=-Math.sin(G0.dir)*d.side*.35,ny=Math.cos(G0.dir)*d.side*.35;fig(S.kx,S.ky,true,'k',silk,'stand');fig(S.kx+nx,S.ky+ny,true,'sq')};
 
 // ===================== live betting for every sport =====================
 // Prices come from re-running each sport's own model from the current state (never from the scripted result),
