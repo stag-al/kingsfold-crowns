@@ -19,7 +19,7 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#13202a;font-family:"Pixelify Sans",monospace;color:#e8d39a;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   canvas.view{position:absolute;left:0;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.lendB{margin:10px 0 8px;padding:9px 10px;border:1px solid #6a5030;border-radius:6px;background:rgba(40,28,16,.6);font-size:13px;line-height:1.4}.lendB b{color:#e8c45a}.lendR{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0 4px}.lendR select{flex:1 1 40%;min-width:0;background:#1c140c;color:#efd9a0;border:1px solid #6a5030;border-radius:4px;padding:6px 4px;font-family:inherit;font-size:13px}.lendN{font-size:11.5px;color:#a89a80;margin:4px 0}.lendB .chip{margin-top:4px}.washC .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.yTog{display:flex;gap:6px;margin:4px 0 8px}.yTog button{flex:1;padding:7px 6px;border-radius:5px;border:1px solid #6a5030;background:#22180e;color:#a89a80;font-size:13px}.yTog button.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.lendR .chip.on,.pasAct .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.row.mine{box-shadow:inset 3px 0 0 #e8c45a}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
+  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.lendB{margin:10px 0 8px;padding:9px 10px;border:1px solid #6a5030;border-radius:6px;background:rgba(40,28,16,.6);font-size:13px;line-height:1.4}.lendB b{color:#e8c45a}.lendR{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0 4px}.lendR select{flex:1 1 40%;min-width:0;background:#1c140c;color:#efd9a0;border:1px solid #6a5030;border-radius:4px;padding:6px 4px;font-family:inherit;font-size:13px}.lendN{font-size:11.5px;color:#a89a80;margin:4px 0}.lendB .chip{margin-top:4px}.washC .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.yTog{display:flex;gap:6px;margin:4px 0 8px}.yTog button{flex:1;padding:7px 6px;border-radius:5px;border:1px solid #6a5030;background:#22180e;color:#a89a80;font-size:13px}.yTog button.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.lendR .chip.on,.pasAct .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.row.mine{box-shadow:inset 3px 0 0 #e8c45a}.fstrip{display:inline-flex;gap:2px;margin-left:4px;vertical-align:middle}.fstrip i{font-style:normal;font-size:9px;line-height:11px;width:11px;text-align:center;border-radius:2px;color:#140e08;font-weight:700}.fkey{font-size:11px;color:#a89a80;margin:6px 0 4px;line-height:1.5}.fkey i{font-style:normal;font-size:9px;padding:0 3px;border-radius:2px;color:#140e08;font-weight:700}.ftab{margin:8px 0;padding:8px 9px;border:1px solid #5a4430;border-radius:6px;background:rgba(30,22,14,.6)}.fth{font-weight:700;color:#e8c45a;margin-bottom:4px}.ftab .fr{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;margin:3px 0}.ftab .fr b{width:12px;text-align:center}.ftab .fr i{font-style:normal;color:#a89a80;margin-right:5px}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
   #vig{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(8,10,14,.38) 100%)}
   .panel{background:rgba(24,18,12,.92);border:2px solid #8a6a32;box-shadow:inset 0 0 0 2px #2e2216;border-radius:4px}
   .bl{font-family:"Jacquarda Bastarda 9",serif;font-weight:normal}
@@ -888,7 +888,7 @@ function snapPhoto(){try{const c=document.createElement('canvas'),w=Math.min(AW,
 // Bookmakers open on a blend of public opinion and the form book. As money comes in,
 // prices move toward the insiders' view. Starting price (SP) is where they finish.
 const fitAdj=h=>{if(h.mine&&typeof stableAdj==='function')return stableAdj(h);const d=lastRun(h);if(d==null)return-.04;return d>40?-.1:d>24?-.05:d<3?-.05:d>=6&&d<=16?.03:0};
-function courseAff(h,c){if(!h.ca)h.ca={};if(h.ca[c]==null){const r=mulberry32(h.id*97+c.length*13+c.charCodeAt(0));h.ca[c]=gauss(r)*.05}return h.ca[c]}
+function courseAff(h,c){if(!h.ca)h.ca={};if(h.ca[c]==null){const r=mulberry32(h.id*97+c.length*13+c.charCodeAt(0));h.ca[c]=gauss(r)*.08}return h.ca[c]}
 function paceMap(rc){const fr=rc.field.filter(e=>e.h.style==='front');rc.fr=fr.length;rc.leaders=fr.map(e=>e.no);
   rc.paceTxt=fr.length>=3?'Strong: '+fr.length+' natural front-runners will take each other on':fr.length===2?'Even: two want to lead':fr.length===1?'Steady: '+fr[0].h.name+' may get an easy lead':'Slow: nobody wants to make it'}
 function mc(rc,useDn,IT,seed){const r=mulberry32(seed),n=rc.field.length,W=new Float64Array(n),P=new Float64Array(n),FC=Array.from({length:n},()=>new Float64Array(n));
@@ -897,14 +897,14 @@ function mc(rc,useDn,IT,seed){const r=mulberry32(seed),n=rc.field.length,W=new F
   return{w:[...W].map(x=>(x+.3)/(IT+.3*n)),p:[...P].map(x=>x/IT),fc:FC.map(row=>[...row].map(x=>x/IT))}}
 function pubModel(rc){const avg=rc.field.reduce((a,e)=>a+e.h.or,0)/rc.field.length;
   const sc=rc.field.map(e=>{const R=e.h.runs.slice(-3);let s=(e.h.or-avg)*.11+e.jsk*.6;for(const x of R)s+=x.fell?-.3:x.p===1?.55:x.p===2?.3:x.p===3?.15:x.p>5?-.15:0;if(cdOf(e.h,rc))s+=.2;return s});
-  const ex=sc.map(s=>Math.exp(s)),t=ex.reduce((a,b)=>a+b,0);return ex.map(x=>x/t)}
+  const ex=sc.map(s=>Math.exp(s*.72)),t=ex.reduce((a,b)=>a+b,0);return ex.map(x=>x/t)}
 const norm=a=>{const t=a.reduce((x,y)=>x+y,0);return a.map(x=>x/t)};
 function toLadder(dec){const fv=dec-1;let best=LADDER[0];for(const L of LADDER)if(oval(L)<=fv)best=L;return best}
-function bookify(p){const q=norm(p.map(x=>Math.pow(Math.max(x,.002),.92)));return q.map(x=>toLadder(1/(x*1.17)))}
+function bookify(p){const q=norm(p.map(x=>Math.pow(Math.max(x,.002),.92)));return q.map(x=>toLadder(1/(x*1.13)))}
 function openMarket(rc){paceMap(rc);const s=(Math.random()*1e9)|0,I=mc(rc,false,2400,s),S=mc(rc,true,2400,s+7),pub=pubModel(rc);
-  rc.simI=simsFor(rc,false,1500,s+11);rc.simS=simsFor(rc,true,1500,s+11);rc.pInfo=I.w;rc.pIn=S.w;rc.pInP=S.p;rc.fc=S.fc;rc.open=norm(rc.field.map((e,k)=>.72*pub[k]+.28*I.w[k]));rc.mt=0;
+  rc.simI=simsFor(rc,false,1500,s+11);rc.simS=simsFor(rc,true,1500,s+11);rc.pInfo=I.w;rc.pIn=S.w;rc.pInP=S.p;rc.fc=S.fc;rc.pubP=pub;rc.open=norm(rc.field.map((e,k)=>.72*pub[k]+.28*I.w[k]));rc.mt=0;
   const o=bookify(rc.open);rc.field.forEach((e,k)=>{e.odds=o[k];e.openOdds=o[k];e.prev=o[k];e.pw=1/(oval(o[k])+1);e.mv=0});boardFor(rc)}
-function marketMix(rc,t,noise){const tgt=norm(rc.field.map((e,k)=>.45*rc.pInfo[k]+.55*rc.pIn[k]));return norm(rc.open.map((p,k)=>Math.max(.002,lerp(p,tgt[k],.42*Math.pow(t,.8))*(1+(noise?gauss(Math.random)*.035:0)))))}
+function marketMix(rc,t,noise){const pub=rc.pubP||rc.open,tgt=norm(rc.field.map((e,k)=>.3*pub[k]+.5*rc.pInfo[k]+.2*rc.pIn[k]));return norm(rc.open.map((p,k)=>Math.max(.002,lerp(p,tgt[k],.42*Math.pow(t,.8))*(1+(noise?gauss(Math.random)*.035:0)))))}
 function marketTick(){if(!card||race||card.mt>=.85)return;const rc=card;rc.mt=Math.min(.85,rc.mt+.06);const o=bookify(marketMix(rc,rc.mt,true));
   rc.field.forEach((e,k)=>{const old=oval(e.odds),nw=oval(o[k]);e.mv=nw<old-1e-9?-1:nw>old+1e-9?1:0;e.prev=e.odds;e.odds=o[k];e.pw=1/(nw+1)});updateOdds()}
 function goSP(rc){rc.mt=1;const o=bookify(marketMix(rc,1,false));rc.field.forEach((e,k)=>{e.sp=o[k];e.odds=o[k]});rc.spP=norm(rc.field.map(e=>1/(oval(e.sp)+1)))}
@@ -2595,7 +2595,7 @@ function drawFinishLine(){if(!T||!T.C||(race&&race.sport))return;const{C,NM}=T,i
 const _buildObjs11=buildObjs;buildObjs=function(){_buildObjs11.apply(this,arguments);objs.push({kind:'sport',key:-1e9,draw:drawFinishLine})};
 // ----- the paddock: a free look at the runners before the off. Right more often than not.
 function paddockNotes(rc){if(rc.paddock)return rc.paddock;const r=mulberry32(rc.no*131+7),F=rc.field,notes=[];
-  const q=F.map((e,i)=>({e,s:(rc.pIn[i]+.003)/(rc.pInfo[i]+.003)*(1+gauss(r)*.5)})).sort((a,b)=>b.s-a.s);
+  const q=F.map((e,i)=>({e,s:(rc.pIn[i]+.003)/(rc.pInfo[i]+.003)*(1+gauss(r)*1.6)})).sort((a,b)=>b.s-a.s);
   const good=['looks bright-eyed and on its toes','is striding out beautifully','has a glossy coat and looks ready','is pulling its lad around, full of beans'],bad=['is sweating up badly','looks dull and lifeless','is walking stiffly','keeps tossing its head, unsettled'];
   if(q[0].s>1.12)notes.push('<b class="g">'+q[0].e.h.name+'</b> '+good[(r()*4)|0]);if(q[1]&&q[1].s>1.2&&r()<.5)notes.push('<b class="g">'+q[1].e.h.name+'</b> '+good[(r()*4)|0]);
   const w=q[q.length-1];if(w.s<.88)notes.push('<b class="r">'+w.e.h.name+'</b> '+bad[(r()*4)|0]);
@@ -3649,6 +3649,51 @@ const _yardCloseS=yardClose;yardClose=function(){stallClose();return _yardCloseS
 // the yard camera glides to whichever horse you've picked, and comes in close
 const _yardCamS=yardCam;yardCam=function(){if(!WASH&&YARD&&PAS&&pasSel){const P=PAS.horses.find(P=>P.h.id===pasSel);if(P){const z=YARD.z||2.4;return{x:isoX(P.x,P.y)-AW/2,y:isoY(P.x,P.y)-hz(P.x,P.y)-8-(AH/2+(AH*.32-AH/2)/z)}}}return _yardCamS()};
 
+// ===================== research that pays: today's factors on every runner, and FanDuel-style markets everywhere =====================
+// The race model really runs on going, trip, course, hills, pace, fitness and the jockey. The betting crowd mostly prices
+// reputation (rating, recent results), so a horse that suits today better than its reputation is where the value is.
+function factorsOf(e,rc){const H=e.h,F=[],add=(k,ab,v,s)=>F.push({k,ab,v,s});
+  const gd=Math.abs(rc.g-H.gp);add('Going','G',gd===0?'Loves '+GOING[rc.g].toLowerCase()+' ground':gd===1?'Handles it; prefers '+GOING[H.gp].toLowerCase():'Wants '+GOING[H.gp].toLowerCase()+'; today is '+GOING[rc.g].toLowerCase(),gd===0?1:gd===1?0:-1);
+  const over=rc.fur-H.stam;add('Trip','T',over<=0?'Stays '+furs(rc.fur)+' well':over<=1.5?'Stamina a question at '+furs(rc.fur):'Unlikely to stay '+furs(rc.fur),over<=0?1:over<=1.5?0:-1);
+  const ca=typeof courseAff==='function'?courseAff(H,rc.course):0,cr=recOn(H,r=>r.c===rc.course);add('Course','C',ca>.05?'Goes well here ('+cr+')':ca<-.05?'Never runs to form here ('+cr+')':'No strong view of this track ('+cr+')',ca>.05?1:ca<-.05?-1:0);
+  if(rc.hilly>.45)add('Hills','H',H.hp>.3?'Strong on the climbs':H.hp<-.3?'Struggles on undulations':'Copes with the hills',H.hp>.3?1:H.hp<-.3?-1:0);
+  const fr=rc.fr??2,st=H.style;let pv='Pace should be neutral for him',ps=0;
+  if(st==='front'){if(fr>=3){pv='Too many front-runners: likely to be taken on';ps=-1}else if(fr===1){pv='Should get an easy lead';ps=1}else pv='Will share the lead'}
+  else if(st==='closer'){if(fr>=3){pv='A fast pace will set it up for his finish';ps=1}else if(fr<=1){pv='A slow pace blunts his finish';ps=-1}else pv='Needs the pace to hold up'}
+  add('Pace','P',pv,ps);
+  const fa=typeof fitAdj==='function'?fitAdj(H):0,ld=lastRun(H);add('Fitness','F',(fa>=.03?'Race-fit':fa<=-.05?(ld==null?'Debut: may need the run':ld>24?'Off '+ld+' days: may need it':'Ran '+ld+' days ago: may be stale'):'Fit enough')+(ld!=null?' · last ran '+ld+' days ago':''),fa>=.03?1:fa<=-.05?-1:0);
+  const js=e.jsk??.6;add('Jockey','J',JOCK[e.j][0]+(js>=.8?': one of the best':js<=.45?': inexperienced':': solid'),js>=.8?1:js<=.45?-1:0);
+  add('Reliability','R',H.cons>.7?'Runs to his mark every time':H.cons<.3?'In-and-out: can run well below his best':'Usually runs his race',H.cons>.7?1:H.cons<.3?-1:0);
+  return F}
+const FGCOL={1:'#5fb04a',0:'#c8a040','-1':'#c8503a'},FGICON={1:'✓',0:'~','-1':'✗'};
+function factorStrip(e,rc){return'<span class="fstrip">'+factorsOf(e,rc).filter(f=>f.ab!=='R').map(f=>'<i style="background:'+FGCOL[f.s]+'" title="'+f.k+'">'+f.ab+'</i>').join('')+'</span>'}
+function factorTable(e,rc){return'<div class="ftab"><div class="fth">Today\'s factors</div>'+factorsOf(e,rc).map(f=>'<div class="fr"><b style="color:'+FGCOL[f.s]+'">'+FGICON[f.s]+'</b><span><i>'+f.k+'</i>'+f.v+'</span></div>').join('')+'<div class="kvn">The crowd mostly backs reputation: rating and recent results. Horses that suit today better than their reputation are where the value is.</div></div>'}
+const _buildInfoR=buildInfo;buildInfo=function(){_buildInfoR.apply(this,arguments);const rc=card;if(!rc||rc.sport&&rc.sport!=='race')return;const e=rc.field[slipH-1],el=$('slip'),c=el&&el.querySelector('.cmt');if(c&&!el.querySelector('.ftab'))c.insertAdjacentHTML('beforebegin',factorTable(e,rc))};
+const _renderCardR=renderCard;renderCard=function(){_renderCardR.apply(this,arguments);const rc=card;if(!rc||rc.sport&&rc.sport!=='race'||!rc.fr&&rc.fr!==0)return;
+  for(const b of $('card').querySelectorAll('.row .rinfo')){const m=(b.getAttribute('onclick')||'').match(/showInfo\((\d+)\)/);if(!m)continue;const e=rc.field[+m[1]-1];if(!e)continue;const nm=b.querySelector('.nm');if(nm&&!nm.querySelector('.fstrip'))nm.insertAdjacentHTML('beforeend',factorStrip(e,rc))}
+  const th=$('card').querySelector('.tHead');if(th&&!$('card').querySelector('.fkey'))th.insertAdjacentHTML('beforebegin','<div class="fkey">Form guide: <i style="background:'+FGCOL[1]+'">✓</i> suits <i style="background:'+FGCOL[0]+'">~</i> neutral <i style="background:'+FGCOL[-1]+'">✗</i> against · G going · T trip · C course · H hills · P pace · F fitness · J jockey. Tap a horse for the detail.</div>')};
+// ---------- clearer markets in every sport ----------
+// polo: a handicap and each side's goals
+Object.assign(HOLD,{pspr:1.06,pteam:1.07,jb:1.06,atot:1.07});
+Object.assign(SPORTOK,{pspr:(L,s)=>{const d=s.g[L.t]-s.g[1-L.t]+L.h;return d===0?null:d>0},pteam:(L,s)=>(s.g[L.t]>L.line)===!!L.side,
+  jb:(L,s)=>s.pair[L.b][s.bouts[L.b].w]===L.a,atot:(L,s)=>(s.tot[L.a]>L.line)===!!L.side});
+Object.assign(SPORTLAB,{pspr:(L,rc)=>rc.teams[L.t].short+' '+(L.h>0?'+':'')+L.h,pteam:(L,rc)=>rc.teams[L.t].short+' '+(L.side?'over ':'under ')+L.line+' goals',
+  jb:(L,rc)=>rc.comp[L.a].name+' wins '+(L.b===0?'the first semi-final':L.b===1?'the second semi-final':'the final'),atot:(L,rc)=>rc.comp[L.a].name+' '+(L.side?'over ':'under ')+L.line+' points'});
+// a line where both sides are close to even money
+function evenLine(vals,lo,hi){let best=lo+.5,bd=9;for(let L=lo+.5;L<=hi;L+=1){const p=vals.filter(v=>v>L).length/vals.length,d=Math.abs(p-.5);if(d<bd){bd=d;best=L}}return best}
+function poloLines(rc){if(rc.sprL)return;const S=rc.simS||[];if(!S.length)return;const fav=rc.favIdx??0,d=S.map(s=>s.g[fav]-s.g[1-fav]);rc.sprT=fav;rc.sprL=-evenLine(d,0,6);
+  rc.teamL=[0,1].map(t=>evenLine(S.map(s=>s.g[t]),0,14))}
+const _rpcR=renderPoloCard;renderPoloCard=function(){const rc=card;poloLines(rc);_rpcR.apply(this,arguments);if(cardTab!=='win')return;const box=$('card').querySelector('.spG');if(!box||$('card').querySelector('.sprG'))return;
+  const[A,B]=rc.teams,f=rc.sprT,l=rc.sprL,grp=(t,arr,c)=>'<div class="spG '+(c||'')+'"><div class="spT">'+t+'</div><div class="spB">'+arr.map(([L,txt])=>oddBtn(L,txt)).join('')+'</div></div>';
+  const h=grp('Handicap (spread)',[[{m:'pspr',t:f,h:l},rc.teams[f].short+' '+l],[{m:'pspr',t:1-f,h:-l},rc.teams[1-f].short+' +'+(-l)]],'sprG')+grp(A.short+' goals ('+rc.teamL[0]+')',[[{m:'pteam',t:0,side:1,line:rc.teamL[0]},'Over'],[{m:'pteam',t:0,side:0,line:rc.teamL[0]},'Under']])+grp(B.short+' goals ('+rc.teamL[1]+')',[[{m:'pteam',t:1,side:1,line:rc.teamL[1]},'Over'],[{m:'pteam',t:1,side:0,line:rc.teamL[1]},'Under']]);
+  box.insertAdjacentHTML('beforebegin',h)};
+// jousting: a moneyline on each semi-final; archery: an over/under on every archer's score
+const _rscR=renderSportCard;renderSportCard=function(){const r=_rscR.apply(this,arguments);const rc=card;if(!rc||(rc.sport!=='joust'&&rc.sport!=='archery')||cardTab!=='spec')return r;const sp=$('card').querySelector('.spG');if(!sp||$('card').querySelector('.mlG'))return r;
+  const grp=(t,arr)=>'<div class="spG mlG"><div class="spT">'+t+'</div><div class="spB">'+arr.map(([L,txt])=>oddBtn(L,txt)).join('')+'</div></div>';let h='';
+  if(rc.sport==='joust'){const P=rc.result.pair;for(const b of[0,1])h+=grp((b?'Second':'First')+' semi-final',[[{m:'jb',b,a:P[b][0]},rc.comp[P[b][0]].name.split(' of ')[0]],[{m:'jb',b,a:P[b][1]},rc.comp[P[b][1]].name.split(' of ')[0]]])}
+  else{if(!rc.atL){rc.atL=rc.comp.map((A,k)=>evenLine(rc.simS.map(s=>s.tot[k]),10,60))}rc.comp.forEach((A,k)=>{h+=grp(A.name+' points ('+rc.atL[k]+')',[[{m:'atot',a:k,side:1,line:rc.atL[k]},'Over'],[{m:'atot',a:k,side:0,line:rc.atL[k]},'Under']])})}
+  sp.insertAdjacentHTML('beforebegin',h);return r};
+
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
 const GPACE=[1.03,1.015,1,.982,.958,.932];
@@ -3681,18 +3726,18 @@ function newGame(){const r=mulberry32((Math.random()*1e9)|0),used=new Set(),rost
   for(const h of roster)h.runs.sort((a,b)=>a.day-b.day);save()}
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(G))}catch(e){}}
 function load(){try{const s=localStorage.getItem(SAVE);if(s){G=JSON.parse(s);return true}}catch(e){}return false}
-const sigOf=h=>.085+.13*(1-h.cons);
+const sigOf=h=>.035+.065*(1-h.cons);// on-the-day form: real, but smaller than the things you can study
 // the true running model: what a horse can do over a trip, before traffic and luck in running
 function paceAt(h,rc,f,dn,wt,jsk){
   // horses are close in speed: every edge is a percent or two, which is why races are tight and odds matter
-  let b=(h.abil-80)*.019-(wt-126)*.009+jsk*.12-Math.abs(rc.g-h.gp)*.05+h.hp*rc.hilly*.1+dn+(G?fitAdj(h):0)+(rc.course?courseAff(h,rc.course):0);
+  let b=(h.abil-80)*.019-(wt-126)*.009+jsk*.12-Math.abs(rc.g-h.gp)*.088+h.hp*rc.hilly*.15+dn+(G?fitAdj(h):0)+(rc.course?courseAff(h,rc.course):0);
   const fr=rc.fr??2;
   // the shape of the race: a crowded lead burns front-runners out and sets it up for the closers
   if(h.style==='front')b+=f<.55?.3:f>.72?-.14-Math.max(0,fr-2)*.1+(fr===1?.12:0):0;
   else if(h.style==='closer')b+=f<.62?-.24:f>.7?.2+Math.max(0,fr-2)*.07-(fr<=1?.1:0):0;
   else if(fr===0&&f>.7)b+=.04;
   if(f>.78)b+=h.kick*.55*sstep(.78,.95,f);
-  const over=rc.fur-h.stam;if(over>0)b-=Math.min(5,over)*.06*sstep(.35,1,f)*(1+Math.max(0,rc.g-3)*.3);
+  const over=rc.fur-h.stam;if(over>0)b-=Math.min(5,over)*.092*sstep(.35,1,f)*(1+Math.max(0,rc.g-3)*.3);
   return(8.6*GPACE[rc.g]+b*.35)*SPD}
 const SPD=.74;// a believable gallop on screen
 function estTime(h,rc,dn,wt,jsk,draw){let t=0;for(let k=0;k<16;k++)t+=(rc.fur/16)*30/paceAt(h,rc,(k+.5)/16,dn,wt,jsk);return t+(draw?(draw-1)*.12*Math.min(1,8/rc.fur):0)}
@@ -3709,7 +3754,7 @@ function makeRace(force){const r=mulberry32((Math.random()*1e9)|0);G.raceNo++;
   const handicap=!cup&&r()<.6;
   const rc={no:G.raceNo,day:G.day,course,fur:d[0],laps:d[1],g,hilly:th.hilly,handicap,hurdle,jumps:hurdle?Math.round(d[1]*4):0,name:(hurdle?HNAMES[(r()*HNAMES.length)|0]:RNAMES[(r()*RNAMES.length)|0]).replace('{c}',th.name.split(' ')[0]),prize:cup?1500:[200,300,400,600,1000][(r()*5)|0],cup,
     field:hs.map((h,k)=>({h,no:k+1,draw:draws[k]+1,j:jk[k],jsk:JOCK[jk[k]][1],wt:handicap?clamp(136-(maxOR-h.or),112,136):126+(h.age===3?-7:0)})),bets:[]};
-  rc.field.sort((a,b)=>b.wt-a.wt||a.no-b.no);rc.field.forEach((e,k)=>{e.no=k+1;e.dn=gauss(r)*sigOf(e.h)+gauss(r)*.06});if(cup)rc.name='★ The '+SE.n+' Crown Cup';
+  rc.field.sort((a,b)=>b.wt-a.wt||a.no-b.no);rc.field.forEach((e,k)=>{e.no=k+1;e.dn=gauss(r)*sigOf(e.h)+gauss(r)*.035});if(cup)rc.name='★ The '+SE.n+' Crown Cup';
   rc.tod=wpick(r,['morning','midday','afternoon','evening'],[2,2,2,2.5]);rc.time=TOD[rc.tod].times[(r()*3)|0];rc.wx=pickWeather(rc,r);if(['rain','storm'].includes(rc.wx))rc.g=Math.max(rc.g,4);if(rc.wx==='showers')rc.g=Math.max(rc.g,3);
   openMarket(rc);ensureCareer();rc.tip=makeTip(rc,r);rc.rivs=rivalPicks(rc,r);return rc}
 
