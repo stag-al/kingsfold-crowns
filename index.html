@@ -19,7 +19,7 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#13202a;font-family:"Pixelify Sans",monospace;color:#e8d39a;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   canvas.view{position:absolute;left:0;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.lendB{margin:10px 0 8px;padding:9px 10px;border:1px solid #6a5030;border-radius:6px;background:rgba(40,28,16,.6);font-size:13px;line-height:1.4}.lendB b{color:#e8c45a}.lendR{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0 4px}.lendR select{flex:1 1 40%;min-width:0;background:#1c140c;color:#efd9a0;border:1px solid #6a5030;border-radius:4px;padding:6px 4px;font-family:inherit;font-size:13px}.lendN{font-size:11.5px;color:#a89a80;margin:4px 0}.lendB .chip{margin-top:4px}.washC .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.yTog{display:flex;gap:6px;margin:4px 0 8px}.yTog button{flex:1;padding:7px 6px;border-radius:5px;border:1px solid #6a5030;background:#22180e;color:#a89a80;font-size:13px}.yTog button.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.lendR .chip.on,.pasAct .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.row.mine{box-shadow:inset 3px 0 0 #e8c45a}.fstrip{display:inline-flex;gap:2px;margin-left:4px;vertical-align:middle}.fstrip i{font-style:normal;font-size:9px;line-height:11px;width:11px;text-align:center;border-radius:2px;color:#140e08;font-weight:700}.fkey{font-size:11px;color:#a89a80;margin:6px 0 4px;line-height:1.5}.fkey i{font-style:normal;font-size:9px;padding:0 3px;border-radius:2px;color:#140e08;font-weight:700}.ftab{margin:8px 0;padding:8px 9px;border:1px solid #5a4430;border-radius:6px;background:rgba(30,22,14,.6)}.fth{font-weight:700;color:#e8c45a;margin-bottom:4px}.ftab .fr{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;margin:3px 0}.ftab .fr b{width:12px;text-align:center}.ftab .fr i{font-style:normal;color:#a89a80;margin-right:5px}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
+  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.lendB{margin:10px 0 8px;padding:9px 10px;border:1px solid #6a5030;border-radius:6px;background:rgba(40,28,16,.6);font-size:13px;line-height:1.4}.lendB b{color:#e8c45a}.lendR{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0 4px}.lendR select{flex:1 1 40%;min-width:0;background:#1c140c;color:#efd9a0;border:1px solid #6a5030;border-radius:4px;padding:6px 4px;font-family:inherit;font-size:13px}.lendN{font-size:11.5px;color:#a89a80;margin:4px 0}.lendB .chip{margin-top:4px}.washC .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.yTog{display:flex;gap:6px;margin:4px 0 8px}.yTog button{flex:1;padding:7px 6px;border-radius:5px;border:1px solid #6a5030;background:#22180e;color:#a89a80;font-size:13px}.yTog button.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.lendR .chip.on,.pasAct .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.row.mine{box-shadow:inset 3px 0 0 #e8c45a}.fstrip .fmore{font-style:normal;font-size:9px;line-height:11px;color:#d8b860;background:none;margin-left:4px;text-decoration:underline;width:auto;height:auto;display:inline}.tm .fstrip{margin:4px 0 2px;justify-content:center}.tm .mv,.nm .mv{display:block;font-size:10px}.fstrip{cursor:pointer;display:inline-flex;gap:2px;margin-left:4px;vertical-align:middle}.fstrip i{font-style:normal;font-size:9px;line-height:11px;width:11px;text-align:center;border-radius:2px;color:#140e08;font-weight:700}.fkey{font-size:11px;color:#a89a80;margin:6px 0 4px;line-height:1.5}.fkey i{font-style:normal;font-size:9px;padding:0 3px;border-radius:2px;color:#140e08;font-weight:700}.ftab{margin:8px 0;padding:8px 9px;border:1px solid #5a4430;border-radius:6px;background:rgba(30,22,14,.6)}.fth{font-weight:700;color:#e8c45a;margin-bottom:4px}.ftab .fr{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;margin:3px 0}.ftab .fr b{width:12px;text-align:center}.ftab .fr i{font-style:normal;color:#a89a80;margin-right:5px}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
   #vig{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(8,10,14,.38) 100%)}
   .panel{background:rgba(24,18,12,.92);border:2px solid #8a6a32;box-shadow:inset 0 0 0 2px #2e2216;border-radius:4px}
   .bl{font-family:"Jacquarda Bastarda 9",serif;font-weight:normal}
@@ -2453,7 +2453,7 @@ function whisperText(rc,k){const F=rc.field;
   if(k==='valet'){rc.whN=rc.whN||F.map(()=>Math.exp(gauss(Math.random)*.3));const r=F.map((e,i)=>({e,p:(rc.pIn[i]*.6+rc.pInfo[i]*.4)*rc.whN[i]})).sort((a,b)=>b.p-a.p).slice(0,3);return'The weighing room fancies '+r.map(x=>'<b>'+x.e.h.name+'</b> ('+Math.round(x.p*100)+'%)').join(', ')+'.'}
   if(k==='groom'){const D=rc.result&&rc.result.day;if(!D)return'Nothing to report.';return rc.teams.map((T0,t)=>{const m=D.mood[t]+gauss(Math.random)*.04;return'<b>'+T0.short+'</b> '+(m>.12?'<b class="g">look razor-sharp</b>':m<-.12?'<b class="r">look flat and sluggish</b>':'look their usual selves')}).join('; ')+'.'}
   if(k==='physio'){const D=rc.result&&rc.result.day;if(!D)return'Nothing to report.';const nm=i=>rc.teams[i>>2].players[i&3].name;const a=D.hot.map(i=>'<b class="g">'+nm(i)+'</b> is buzzing'),b=D.cold.map(i=>'<b class="r">'+nm(i)+'</b> looks off-colour');return(a.concat(b).join('; ')||'Everyone looks about normal')+'.'}
-  if(k==='squire'||k==='fletch'){const r=F.map(e=>({e,p:e.p})).sort((a,b)=>b.p-a.p);return'The smart talk is on <b>'+r[0].e.h.name+'</b>; <b class="r">'+r[r.length-1].e.h.name+'</b> has been fretting all morning.'}
+  if(k==='squire'||k==='fletch'){rc.whN=rc.whN||F.map(()=>Math.exp(gauss(Math.random)*.25));const r=F.map((e,i)=>({e,p:(rc.pInfo?rc.pInfo[i]:e.p)*rc.whN[i]})).sort((a,b)=>b.p-a.p);return'The smart talk is on <b>'+r[0].e.h.name+'</b>; <b class="r">'+r[r.length-1].e.h.name+'</b> has been fretting all morning.'}
   return''}
 function whisperHtml(rc){const L=WH[rc.sport||'race']||[];if(!L.length)return'';rc.wh=rc.wh||{};
   let h='<div class="whs"><div class="whT">Informants <small>pay for a whisper before you bet</small></div>';
@@ -3691,8 +3691,118 @@ const _rpcR=renderPoloCard;renderPoloCard=function(){const rc=card;poloLines(rc)
 const _rscR=renderSportCard;renderSportCard=function(){const r=_rscR.apply(this,arguments);const rc=card;if(!rc||(rc.sport!=='joust'&&rc.sport!=='archery')||cardTab!=='spec')return r;const sp=$('card').querySelector('.spG');if(!sp||$('card').querySelector('.mlG'))return r;
   const grp=(t,arr)=>'<div class="spG mlG"><div class="spT">'+t+'</div><div class="spB">'+arr.map(([L,txt])=>oddBtn(L,txt)).join('')+'</div></div>';let h='';
   if(rc.sport==='joust'){const P=rc.result.pair;for(const b of[0,1])h+=grp((b?'Second':'First')+' semi-final',[[{m:'jb',b,a:P[b][0]},rc.comp[P[b][0]].name.split(' of ')[0]],[{m:'jb',b,a:P[b][1]},rc.comp[P[b][1]].name.split(' of ')[0]]])}
-  else{if(!rc.atL){rc.atL=rc.comp.map((A,k)=>evenLine(rc.simS.map(s=>s.tot[k]),10,60))}rc.comp.forEach((A,k)=>{h+=grp(A.name+' points ('+rc.atL[k]+')',[[{m:'atot',a:k,side:1,line:rc.atL[k]},'Over'],[{m:'atot',a:k,side:0,line:rc.atL[k]},'Under']])})}
+  else{if(!rc.atL){rc.atL=rc.comp.map((A,k)=>evenLine((rc.simI||rc.simS).map(s=>s.tot[k]),10,60))}rc.comp.forEach((A,k)=>{h+=grp(A.name+' points ('+rc.atL[k]+')',[[{m:'atot',a:k,side:1,line:rc.atL[k]},'Over'],[{m:'atot',a:k,side:0,line:rc.atL[k]},'Under']])})}
   sp.insertAdjacentHTML('beforebegin',h);return r};
+
+// ===================== research that pays in every sport =====================
+// Every event now has day factors you can read on the card: mounts, rest, falls, weather, the draw,
+// team news, home ground, the course. They feed the real model. The betting crowd prices reputation
+// (rating and recent results), and the market only drifts part of the way toward the truth before
+// the off, so a competitor whose day looks better than their reputation is where the value is.
+HOLD.sw=1.12;
+const RSW0=.1,RSW1=.34;
+const wetDay=rc=>(WEATHERS[rc.wx].rain||0)>=.45||(WEATHERS[rc.wx].snow||0)>=.5;
+function rsRand(){let h=2166136261;for(const x of arguments){const s=String(x);for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}}return mulberry32(h>>>0)}
+function gapOf(C,rc,key){if(C.lastNo==null){const r=rsRand('gap',key,C.id);C.lastNo=rc.no-3-((r()*10)|0)}return rc.no-C.lastNo}
+function hypeOf(rc,C){const av=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+  if(rc.sport==='joust'||rc.sport==='polo')return av((C.form||[]).slice(-4).map(x=>x==='W'?1:-1));
+  if(rc.sport==='archery')return av((C.form||[]).slice(-3).map(x=>clamp((3-x)/2,-1,1)));
+  return av((C.ribbons||[]).slice(-4).map(x=>x===1?1:x===2?.5:x===3?0:-.6))}
+function priceF(hb){return hb>.4?{k:'Price',ab:'V',v:'Recent results flatter: the crowd will over-back',s:-1}:hb<-.4?{k:'Price',ab:'V',v:'Poor recent results put the crowd off: often overpriced',s:1}:{k:'Price',ab:'V',v:'Recent results are a fair guide to the price',s:0}}
+function restF(g,what,d,keys,amt){if(g<=2){for(const k of keys)d[k]-=amt;return{k:'Rest',ab:'R',v:what+' just '+g+' event'+(g>1?'s':'')+' ago: tired and sore',s:-1}}
+  if(g>=16){for(const k of keys)d[k]-=amt;return{k:'Rest',ab:'R',v:'Not out for '+g+' events: may be rusty',s:-1}}
+  if(g>=4&&g<=11){for(const k of keys)d[k]+=amt*.5;return{k:'Rest',ab:'R',v:'Well rested: last out '+g+' events ago',s:1}}
+  return{k:'Rest',ab:'R',v:'Last out '+g+' events ago',s:0}}
+const bigDay=rc=>rsRand('big',rc.no)()<.5;
+// ----- jousting
+function dxJoust(rc,k){const K=rc.comp[k],O=rc.comp[k^1],r=rsRand('j',rc.no,K.id),F=[],d={aim:0,power:0,seat:0,nerve:0},add=(kk,ab,v,s)=>F.push({k:kk,ab,v,s}),on=O.name.split(' of ')[0];
+  const m=r();if(m<.22){d.power+=.08;d.seat+=.04;add('Charger','C','His charger is fresh and moving well',1)}else if(m>.78){d.power-=.09;d.seat-=.05;add('Charger','C','His charger looked short and sore in the warm-up',-1)}else add('Charger','C','In normal order',0);
+  const e1=K.power-O.seat,e2=O.power-K.seat;add('Draw','D',e1>.2&&e1-e2>.1?'Hits harder than '+on+' can sit: an unhorsing is on':e2>.2&&e2-e1>.1?on+' hits harder than he can sit':(K.aim-O.aim>.18?'Truer aim than '+on+': should win on points':O.aim-K.aim>.18?on+' is the truer lance':'An even match-up with '+on),e1>.2&&e1-e2>.1||K.aim-O.aim>.18&&!(e2>.2)?1:e2>.2&&e2-e1>.1||O.aim-K.aim>.18?-1:0);
+  if(K.fellNo!=null&&rc.no-K.fellNo<=8){d.seat-=.06;d.nerve-=.1;add('Falls','U','Unhorsed '+(rc.no-K.fellNo)+' events ago: may ride tentatively',-1)}else add('Falls','U','No recent falls',0);
+  F.push(restF(gapOf(K,rc,'k'),'Jousted',d,['aim','power'],.04));
+  if(wetDay(rc)){if(K.seat<.45){d.seat-=.06;add('Ground','G','Wet ground and a loose seat: a fall risk',-1)}else if(K.seat>.75){d.seat+=.02;add('Ground','G','Wet ground, but his seat is rock solid',1)}else add('Ground','G','Wet ground: should cope',0)}else add('Ground','G','Good footing in the lists',0);
+  if(bigDay(rc)){if(K.nerve<.5){d.aim-=.07;add('Nerve','N','Royal box is full: his nerve can go',-1)}else if(K.nerve>.8){d.aim+=.03;add('Nerve','N','Thrives on a big crowd',1)}else add('Nerve','N','Big crowd: should handle it',0)}else add('Nerve','N','A quiet day in the stands',0);
+  const hb=hypeOf(rc,K);F.push(priceF(hb));return{F,d,hb}}
+function dayK(K,x,pub){if(pub){const c=clamp(K.aim*.4+K.power*.3+K.seat*.3+.07*x.hb,.05,.99);return{...K,aim:c,power:c,seat:c,nerve:.65}}const d=x.d;return{...K,aim:clamp(K.aim+d.aim,.05,.99),power:clamp(K.power+d.power,.05,.99),seat:clamp(K.seat+d.seat,.05,.99),nerve:clamp(K.nerve+d.nerve,.05,.99)}}
+// ----- mounted archery
+function dxArch(rc,k){const A=rc.comp[k],r=rsRand('a',rc.no,A.id),F=[],d={acc:0,speed:0,steady:0},add=(kk,ab,v,s)=>F.push({k:kk,ab,v,s});
+  if(rc.wind>1){if(A.steady>.7)add('Wind','W','Strong wind: rock steady in a crosswind',1);else if(A.steady<.45)add('Wind','W','Strong wind will push his arrows wide',-1);else add('Wind','W','Strong wind: copes',0)}else if(rc.wind>.6)add('Wind','W',A.steady<.35?'Fresh wind: even this can unsettle him':'Fresh wind: manageable',A.steady<.35?-1:0);else add('Wind','W','Light wind: no excuses',0);
+  const m=r();if(m<.22){d.speed+=.12;d.steady+=.06;add('Mount','M','His horse is fresh and galloping smoothly',1)}else if(m>.78){d.speed-=.12;d.steady-=.08;add('Mount','M','His horse looked fractious in the warm-up',-1)}else add('Mount','M','In normal order',0);
+  const sun=rsRand('sun',A.id)()-.5;if(rc.tod==='evening'||rc.tod==='morning'){if(Math.abs(sun)>.2){d.acc+=sun*.2;add('Light','L',sun>0?'Low sun: has always shot well in poor light':'Low sun: has struggled in poor light before',sun>0?1:-1)}else add('Light','L','Low sun: no strong record either way',0)}else add('Light','L','Good light',0);
+  if(wetDay(rc)){if(A.speed>.6){d.speed-=.14;add('Ground','G','Wet going: can\'t gallop flat out for the time bonus',-1)}else if(A.speed<.4)add('Ground','G','Wet going barely bothers a steady galloper',1);else add('Ground','G','Wet going: should cope',0)}else add('Ground','G','Good going',0);
+  F.push(restF(gapOf(A,rc,'a'),'Shot',d,['acc'],.05));
+  const hb=hypeOf(rc,A);F.push(priceF(hb));return{F,d,hb}}
+function dayA(A,x,pub){if(pub){const c=clamp(A.acc*.6+A.speed*.2+A.steady*.2+.07*x.hb,.05,.99);return{...A,acc:c,speed:c,steady:c}}const d=x.d;return{...A,acc:clamp(A.acc+d.acc,.05,.99),speed:clamp(A.speed+d.speed,.05,.99),steady:clamp(A.steady+d.steady,.05,.99)}}
+// ----- polo
+const PHOME=['meadow','royal','harvest','coast','fen','pine'];
+function dxPolo(rc,t){const T0=rc.teams[t],O=rc.teams[1-t],r=rsRand('p',rc.no,T0.id),F=[],d={att:0,def:0,spd:0,knock:-1},add=(kk,ab,v,s)=>F.push({k:kk,ab,v,s});
+  const g=gapOf(T0,rc,'p'),m=r();let ps=0,pv='In normal order';if(m<.22){d.spd+=.15;ps=1;pv='A fresh string of ponies'}else if(m>.8){d.spd-=.16;ps=-1;pv='Several ponies came back lame last week'}
+  if(g<=3){d.spd-=.08;ps-=1;pv+='; played just '+g+' events ago'}add('Ponies','P',pv,clamp(ps,-1,1));
+  if(r()<.2){const j=T0.players.reduce((b,p,k)=>p.sk>T0.players[b].sk?k:b,0);d.att-=.14;d.knock=j;add('Team news','N','Their best player '+T0.players[j].name+' is carrying a knock',-1)}else add('Team news','N','Full-strength four',0);
+  const home=PHOME[T0.id%6];if(rc.course===home){d.att+=.1;d.def+=.08;add('Home','H','Home ground: they know every bump',1)}else add('Home','H','Away from home',0);
+  if(wetDay(rc)){d.spd-=(T0.spd-.5)*.9;add('Ground','G',T0.spd>.65?'Heavy ground blunts their quick ponies':T0.spd<.4?'Heavy ground suits their grinding game':'Heavy ground: no great effect',T0.spd>.65?-1:T0.spd<.4?1:0)}else add('Ground','G','Fast, firm ground',0);
+  const ma=T0.att-O.def,mb=O.att-T0.def;add('Match-up','M',ma>.2?'Their attack should cut through '+O.short+'\'s defence':mb>.2?O.short+' attack is too sharp for their defence':'Evenly matched in attack and defence',ma>.2&&ma>mb?1:mb>.2&&mb>ma?-1:0);
+  const hb=hypeOf(rc,T0);F.push(priceF(hb));return{F,d,hb}}
+function dayT(T0,x,pub){if(pub){const c=clamp(T0.att*.4+T0.def*.35+T0.spd*.25+.1*x.hb,.05,.99);return{...T0,att:c,def:c,spd:c}}const d=x.d;
+  return{...T0,att:clamp(T0.att+d.att,.05,.99),def:clamp(T0.def+d.def,.05,.99),spd:clamp(T0.spd+d.spd,.05,.99),players:d.knock<0?T0.players:T0.players.map((p,k)=>k!==d.knock?p:{...p,sk:p.sk*.55})}}
+// ----- Hunter/Jumper
+function dxShow(rc,k){const H=rc.comp[k],r=rsRand('s',rc.no,H.id),F=[],d={scope:0,careful:0,speed:0,temp:0},add=(kk,ab,v,s)=>F.push({k:kk,ab,v,s}),HU=rc.cls==='hunter',tu=rc.turn?rc.turn[k]:.72;
+  add('Turnout','T',tu>.8?'Turned out immaculately'+(HU?': the judge will notice':''):tu<.62?'Scruffy turnout today'+(HU?': it costs marks':''):'Neatly turned out',HU?(tu>.8?1:tu<.62?-1:0):(tu>.88?1:tu<.55?-1:0));
+  if(rsRand('bigc',rc.no)()<.45){if(H.scope>.75){d.scope+=.045;add('Course','C','A big, airy course: plenty of scope for it',1)}else if(H.scope<.5){d.scope-=.1;add('Course','C','A big, airy course: may run out of scope',-1)}else add('Course','C','A big course: should cope',0)}else add('Course','C','A standard-height course',0);
+  if(wetDay(rc)){if(H.careful<.5){d.careful-=.1;add('Ground','G','Wet ground: likely to slip and rub poles',-1)}else add('Ground','G','Wet ground: careful enough to cope',0)}else add('Ground','G','Good ground in the ring',0);
+  const m=r();if(m<.22){d.careful+=.075;d.temp+=.06;add('Warm-up','W','Bright and fresh in the warm-up',1)}else if(m>.78){d.careful-=.09;d.temp-=.075;add('Warm-up','W','Flat and lazy in the warm-up',-1)}else add('Warm-up','W','Warmed up normally',0);
+  if(rsRand('crowd',rc.no)()<.4){if(H.temp<.45){d.temp-=.12;add('Crowd','A','Packed stands: a spooky horse may stop',-1)}else if(H.temp>.8)add('Crowd','A','Packed stands: bold enough not to care',1);else add('Crowd','A','Packed stands: should be fine',0)}else add('Crowd','A','A quiet ring',0);
+  if(HU){const q=(H.scope+H.careful)/2;add('Class','K',q>.72?'A lovely, careful jumper: judges will like it':q<.45?'Jumps untidily for a hunter class':'A workmanlike round expected',q>.72?1:q<.45?-1:0)}
+  else add('Class','K',H.speed>.72?'Quick against the clock if it comes to a jump-off':H.speed<.4?'Slow if it comes to a jump-off':'Average speed against the clock',H.speed>.72?1:H.speed<.4?-1:0);
+  const hb=hypeOf(rc,H);F.push(priceF(hb));return{F,d,hb}}
+function dayS(H,x,pub){if(pub){const c=clamp(H.scope*.35+H.careful*.3+H.speed*.2+H.temp*.15+.08*x.hb,.05,.99);return{...H,scope:c,careful:c,speed:c,temp:c}}const d=x.d;
+  return{...H,scope:clamp(H.scope+d.scope,.05,.99),careful:clamp(H.careful+d.careful,.05,.99),speed:clamp(H.speed+d.speed,.05,.99),temp:clamp(H.temp+d.temp,.05,.99)}}
+// ----- pricing: the crowd's sims (reputation) and the true sims (today's factors)
+function rsDx(rc){const S=rc.sport;if(S==='polo')return[0,1].map(t=>dxPolo(rc,t));return rc.comp.map((C,k)=>S==='joust'?dxJoust(rc,k):S==='archery'?dxArch(rc,k):dxShow(rc,k))}
+function rsPrice(rc,keepMt){const S=rc&&rc.sport;if(!S||S==='race')return;const r=mulberry32((Math.random()*1e9)|0),rT=mulberry32((r()*1e9)|0),rP=mulberry32((r()*1e9)|0);
+  rc.dx=rsDx(rc);const old=MNT;MNT=mountCtx(rc);const sT=[],sP=[];
+  try{if(S==='joust'){const T=rc.comp.map((K,k)=>dayK(K,rc.dx[k],0)),P=rc.comp.map((K,k)=>dayK(K,rc.dx[k],1));for(let i=0;i<3000;i++){sT.push(tourney(T,rT));sP.push(tourney(P,rP))}rc.result=tourney(T,r);rc.brkLine=median(sP.map(s=>s.brk))+.5}
+    else if(S==='archery'){const T=rc.comp.map((A,k)=>dayA(A,rc.dx[k],0)),P=rc.comp.map((A,k)=>dayA(A,rc.dx[k],1));for(let i=0;i<3000;i++){sT.push(archRound(T,rc.wind,rT));sP.push(archRound(P,rc.wind,rP))}rc.result=archRound(T,rc.wind,r);
+      rc.topLine=median(sP.map(s=>s.top))+.5;rc.bullLine=median(sP.map(s=>s.bulls))+.5}
+    else if(S==='polo'){const T=rc.teams.map((X,t)=>dayT(X,rc.dx[t],0)),P=rc.teams.map((X,t)=>dayT(X,rc.dx[t],1));for(let i=0;i<4000;i++){sT.push(poloMatch(T[0],T[1],rT,false));sP.push(poloMatch(P[0],P[1],rP,false))}rc.result=poloMatch(T[0],T[1],r,true);rc.totLine=median(sP.map(s=>s.tot))+.5}
+    else if(S==='show'){const T=rc.comp.map((H,k)=>dayS(H,rc.dx[k],0)),P=rc.comp.map((H,k)=>dayS(H,rc.dx[k],1)),pt=rc.comp.map(()=>.72);for(let i=0;i<2500;i++){sT.push(showRound(T,rc.turn,rT,null,rc.cls));sP.push(showRound(P,pt,rP,null,rc.cls))}rc.result=showRound(T,rc.turn,r,null,rc.cls);
+      rc.railLine=median(sP.map(s=>s.railsTot))+.5;rc.topLine=rc.cls==='hunter'?Math.round(median(sP.map(s=>s.top)))+.5:0}}
+  finally{MNT=old}
+  rc.simS=sT;rc.simI=sP;rc.sportMkt=1;if(!keepMt)rc.mt=0;delete rc.sprL;delete rc.teamL;delete rc.atL;rc.fgOpen=-1;
+  const wm=S==='polo'?'pw':'sw',m0=rc.mt;rc.mt=0;rc.open0=rc.field.map((e,k)=>legDec({m:wm,a:k},rc));rc.mt=m0;
+  rc.field.forEach((e,k)=>{const L={m:wm,a:k};e.p=probOf([L],rc);e.dec=legDec(L,rc);e.odds=e.openOdds=toLadder(e.dec)});
+  rc.pInfo=rc.field.map((e,k)=>sT.filter(s=>s.w===k).length/sT.length);rc.favIdx=rc.field.reduce((b,e,k)=>e.p>rc.field[b].p?k:b,0);if(S==='polo'){rc.favT=rc.favIdx;rc.favP=rc.field[rc.favIdx].p}
+  rc.rivs=rivalPicksSport(rc,r)}
+const _probOfS=probOf;probOf=function(legs,rc){if(!rc||!rc.sportMkt||!rc.simI||!rc.simI.length)return _probOfS(legs,rc);const w=RSW0+RSW1*Math.pow(Math.min(1,(rc.mt||0)/.85),.8);let a=0,b=0;
+  for(const s of rc.simI){let ok=true;for(const L of legs){if(legOK(L,s,rc)===false){ok=false;break}}if(ok)a++}
+  for(const s of rc.simS){let ok=true;for(const L of legs){if(legOK(L,s,rc)===false){ok=false;break}}if(ok)b++}
+  return(1-w)*(a/rc.simI.length)+w*(b/rc.simS.length)};
+const _makeSportS=makeSport;makeSport=function(kind,force){const rc=_makeSportS(kind,force);if(rc&&rc.sport!=='show')rsPrice(rc);return rc};
+const _figureShowS=figureShow;figureShow=function(rc,r){_figureShowS(rc,r);rsPrice(rc)};
+const _remakeSportS=remakeSport;remakeSport=function(rc){_remakeSportS(rc);rsPrice(rc,true)};
+const _marketTickS=marketTick;marketTick=function(){const rc=card;if(rc&&rc.sportMkt){if(race||rc.ran||rc.mt>=.85)return;rc.mt=Math.min(.85,rc.mt+.06);updateOdds();return}return _marketTickS.apply(this,arguments)};
+// lines for the extra markets come from the crowd's view, not the truth
+poloLines=function(rc){if(rc.sprL)return;const S=rc.simI||[];if(!S.length)return;const fav=rc.favIdx??0,d=S.map(s=>s.g[fav]-s.g[1-fav]);rc.sprT=fav;rc.sprL=-evenLine(d,0,6);rc.teamL=[0,1].map(t=>evenLine(S.map(s=>s.g[t]),0,14))};
+// remember who rode, and who fell, for the rest and falls factors
+function rsAfter(rc){if(!rc||!rc.sport||rc.sport==='race'||rc._rsDone)return;rc._rsDone=1;const no=rc.no;if(rc.sport==='polo')rc.teams.forEach(T0=>T0.lastNo=no);else for(const C of rc.comp)C.lastNo=no;
+  if(rc.sport==='joust')rc.result.bouts.forEach((B,k)=>{const P=rc.result.pair[k];for(const[oa,ob]of B.P){if(oa===3)rc.comp[P[1]].fellNo=no;if(ob===3)rc.comp[P[0]].fellNo=no}})}
+const _sportSettleS=sportSettle;sportSettle=function(){try{rsAfter(race&&race.rc)}catch(e){}return _sportSettleS.apply(this,arguments)};
+const _poloSettleS=poloSettle;poloSettle=function(){try{rsAfter(race&&race.rc)}catch(e){}return _poloSettleS.apply(this,arguments)};
+const _showSettleS=showSettle;showSettle=function(){try{rsAfter(race&&race.rc)}catch(e){}return _showSettleS.apply(this,arguments)};
+// ----- on the card: a form strip on every competitor, the detail on tap, and how the price has moved
+const FKEYS={joust:'C charger · D draw · U falls · R rest · G ground · N nerve · V price',archery:'W wind · M mount · L light · G ground · R rest · V price',polo:'P ponies · N team news · H home · G ground · M match-up · V price',show:'T turnout · C course · G ground · W warm-up · A crowd · K class · V price'};
+function sportStrip(rc,k){return'<span class="fstrip" onclick="event.stopPropagation();fgTog('+k+')">'+rc.dx[k].F.map(f=>'<i style="background:'+FGCOL[f.s]+'" title="'+f.k+'">'+f.ab+'</i>').join('')+'<u class="fmore">'+(rc.fgOpen===k?'hide':'why?')+'</u></span>'}
+function sportTable(rc,k){const nm=rc.sport==='polo'?rc.teams[k].name:rc.comp[k].name;return'<div class="ftab"><div class="fth">Today\'s factors: '+nm+'</div>'+rc.dx[k].F.map(f=>'<div class="fr"><b style="color:'+FGCOL[f.s]+'">'+FGICON[f.s]+'</b><span><i>'+f.k+'</i>'+f.v+'</span></div>').join('')+'<div class="kvn">The crowd prices reputation: rating and recent results. Today\'s factors are what actually decide it, and prices only move part of the way before the off.</div></div>'}
+function fgTog(k){if(!card||!card.dx)return;card.fgOpen=card.fgOpen===k?-1:k;renderCard()}
+function moveTag(rc,k){const wm=rc.sport==='polo'?'pw':'sw',o=rc.open0&&rc.open0[k];if(!o)return'';const n=legDec({m:wm,a:k},rc),d=n-o;if(Math.abs(d)<o*.03)return'<small class="mv">opened '+amer(o)+'</small>';return'<small class="mv '+(d<0?'in':'out')+'">'+(d<0?'▼ ':'▲ ')+'from '+amer(o)+'</small>'}
+const _renderCardS=renderCard;renderCard=function(){const r=_renderCardS.apply(this,arguments);try{rsDecorate()}catch(e){console.error(e)}return r};
+function rsDecorate(){const rc=card,el=$('card');if(!rc||!rc.sportMkt||!rc.dx||!el)return;
+  if(rc.sport==='polo'){const tms=el.querySelectorAll('.vsRow .tm');tms.forEach((tm,t)=>{if(tm.querySelector('.fstrip'))return;const sm=tm.querySelectorAll('small');(sm[sm.length-1]||tm.querySelector('b')).insertAdjacentHTML('afterend',sportStrip(rc,t)+(cardTab==='win'?moveTag(rc,t):''))});
+    const vr=el.querySelector('.vsRow');if(vr&&rc.fgOpen>=0&&!el.querySelector('.ftab'))vr.insertAdjacentHTML('afterend',sportTable(rc,rc.fgOpen));if(vr&&!el.querySelector('.fkey'))vr.insertAdjacentHTML('beforebegin',fkeyHtml(rc))}
+  else{let first=null;for(const row of el.querySelectorAll('.row')){const nb=row.querySelector('.no b'),nm=row.querySelector('.nm');if(!nb||!nm)continue;const k=+nb.textContent-1;if(!rc.dx[k])continue;first=first||row;
+      if(!nm.querySelector('.fstrip'))nm.insertAdjacentHTML('beforeend',sportStrip(rc,k)+(cardTab==='win'?moveTag(rc,k):''));if(rc.fgOpen===k&&!el.querySelector('.ftab'))row.insertAdjacentHTML('afterend',sportTable(rc,k))}
+    if(first&&!el.querySelector('.fkey'))first.insertAdjacentHTML('beforebegin',fkeyHtml(rc))}}
+function fkeyHtml(rc){return'<div class="fkey">Form guide: <i style="background:'+FGCOL[1]+'">✓</i> helps <i style="background:'+FGCOL[0]+'">~</i> neutral <i style="background:'+FGCOL[-1]+'">✗</i> hurts · '+FKEYS[rc.sport]+'. Tap a strip for the detail.</div>'}
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
