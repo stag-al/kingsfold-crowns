@@ -19,7 +19,7 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#13202a;font-family:"Pixelify Sans",monospace;color:#e8d39a;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   canvas.view{position:absolute;left:0;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:12px;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
+  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:12px;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
   #vig{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(8,10,14,.38) 100%)}
   .panel{background:rgba(24,18,12,.92);border:2px solid #8a6a32;box-shadow:inset 0 0 0 2px #2e2216;border-radius:4px}
   .bl{font-family:"Jacquarda Bastarda 9",serif;font-weight:normal}
@@ -807,7 +807,7 @@ function buildSprites(){
 function carSprites(ci){if(!SPR.car[ci])SPR.car[ci]=Array.from({length:NH},(_,h)=>carSpr(CARCOL[ci][1],h));return SPR.car[ci]}
 
 // ===================== making it fun: live betting, cheering, drama, a career =====================
-const TITLES=[[0,'Peasant punter'],[300,'Yeoman of the ring'],[800,'Squire of the stands'],[2000,'Knight of the turf'],[5000,'Lord of the Downs'],[12000,'King of Kingsfold']];
+const TITLES=[[0,'Peasant punter'],[300,'Yeoman of the ring'],[800,'Squire of the stands'],[2000,'Knight of the turf'],[5000,'Lord of the Crowns'],[12000,'King of Kingsfold']];
 const titleOf=p=>{let t=TITLES[0][1];for(const[v,n]of TITLES)if(p>=v)t=n;return t};
 function wpick(r,list,ws){let tot=ws.reduce((a,b)=>a+b,0),x=r()*tot;for(let k=0;k<list.length;k++){if((x-=ws[k])<=0)return list[k]}return list[list.length-1]}
 function ensureCareer(){ensureRivals();if(G.peak==null)G.peak=G.purse;if(!G.tipLog)G.tipLog=[]}
@@ -1075,8 +1075,11 @@ function stepBits(dt){stepRipples(dt);for(const b of bits){if(b.z>0||b.vz>0){b.v
 function drawBits(){for(const b of bits){const[sx,sy]=scr(b.x,b.y);if(sx<-2||sy<-2||sx>AW+2||sy>AH+2)continue;fx.globalAlpha=b.z>0?1:Math.min(1,b.life*3);fx.fillStyle=b.c;fx.fillRect(sx,Math.round(sy-b.z),b.s,b.s)}fx.globalAlpha=1}
 
 // ===================== the TV director: cuts between shots like a racing broadcast =====================
-const SHOTS={track:{len:[8,11],w:3},tight:{len:[6,8],w:2.5},pack:{len:[6,8],w:2},ahead:{len:[6,9],w:1.5},mine:{len:[5,7],w:1.5},rail:{len:[6,8],w:1.2}};
-function kFor(dk){const b=race.baseK||K,lo=Math.max(1,Math.round(dpr*.6)),hi=Math.max(3,Math.round(dpr*1.8));return clamp(b+dk,lo,hi)}
+const SHOTS={track:{len:[7,10],w:3},tight:{len:[6,10],w:2.5},pack:{len:[6,10],w:2},ahead:{len:[6,9],w:1.5},mine:{len:[6,9],w:1.5},rail:{len:[6,9],w:1.2}};
+const MINCUT=6;// a broadcast never cuts sooner than this
+// when the horses have passed a fixed camera too soon to cut, the operator just pans to follow them instead
+function panOn(d){d.shot='track';d.still=false;d.len=Math.max(d.len,MINCUT)}
+function kFor(dk){const b=race.camK||race.baseK||K,lo=Math.max(1,Math.round(dpr*.6)),hi=Math.max(3,Math.round(dpr*1.8),b+1);return clamp(b+dk,lo,hi)}
 function setK(k){if(k!==K){K=k;setSizes()}}
 function cutTo(shot){const d=race.dir,R=rankNow(),live=R.filter(h=>!h.fallen&&!h.finished),L=live[0]||R[0],{S,ds,C}=T;d.shot=shot;d.t=0;d.t0=now;d.snap=true;d.still=false;
   const sh=SHOTS[shot];d.len=sh?sh.len[0]+Math.random()*(sh.len[1]-sh.len[0]):99;
@@ -1089,17 +1092,18 @@ function nextShot(){const d=race.dir,mine=myNos(),my=horses.find(h=>mine.has(h.n
   for(const k in SHOTS){if(k===d.shot)continue;if(k==='mine'&&!my)continue;pool.push([k,SHOTS[k].w])}
   let tot=pool.reduce((a,b)=>a+b[1],0),x=Math.random()*tot;for(const[k,w]of pool)if((x-=w)<=0)return k;return'track'}
 function center(hs,lead){let x=0,y=0,vx=0,vy=0;for(const h of hs){x+=h.x;y+=h.y;vx+=h.vx;vy+=h.vy}const n=hs.length||1;x/=n;y/=n;vx/=n;vy/=n;return[x+vx*lead,y+vy*lead,hz(x,y)]}
-function director(dt){if(!race.dir)race.dir={shot:'gate',t:0,len:99,snap:false};const d=race.dir;d.t=now-(d.t0??now);if(d.t0==null)d.t0=now;d.snap=false;
+function director(dt){if(!race.dir){race.dir={shot:'gate',t:0,len:99,snap:false};setK(kFor(0))}const d=race.dir;d.t=now-(d.t0??now);if(d.t0==null)d.t0=now;d.snap=false;
   const R=rankNow(),live=R.filter(h=>!h.fallen&&!h.finished),L=live[0]||R[0],mine=myNos(),my=R.find(h=>mine.has(h.no)&&!h.fallen);
   if(camMode!=='tv'){if(d.shot!=='manual'){d.shot='manual';d.still=false;setK(kFor(0))}const p=camMode==='mine'&&my?center([my],.35):center(live.length?live.slice(0,3):R.slice(0,3),.35);return at(p)}
   if(race.state==='run'){const left=(race.D-L.dist)/(T.L/8);
-    if(left<1.3&&!L.finished&&!['post','final','final2'].includes(d.shot))cutTo(left<.75?'post':'final');
-    else if(d.shot==='final'&&left<.75)cutTo('post');
-    else if(d.shot==='final'&&d.t>4.5){cutTo('tight');d.shot='final2';d.t0=now}
-    else if(d.shot==='gate'&&race.t>1.2)cutTo('track');
-    else if(d.shot==='ahead'){const ah=((d.pi-L.i+T.S)%T.S)*T.ds;if(ah>T.L/2&&ah<T.L-2.5||d.t>d.len)cutTo(nextShot())}
-    else if(d.shot==='rail'){const ah=((d.pi-L.i+T.S)%T.S)*T.ds;if(ah>T.L/2&&ah<T.L-3)cutTo(nextShot());else if(d.t>d.len)cutTo(nextShot())}
-    else if(!['post','final','final2','gate'].includes(d.shot)&&d.t>d.len)cutTo(nextShot())}
+    const ok=d.t>=MINCUT;
+    if(left<1.3&&!L.finished&&!['post','final','final2'].includes(d.shot)){if(ok)cutTo(left<.75?'post':'final');else if(d.still)panOn(d)}
+    else if(d.shot==='final'&&left<.75&&ok)cutTo('post');
+    else if(d.shot==='final'&&ok){cutTo('tight');d.shot='final2';d.t0=now}
+    else if(d.shot==='gate'&&race.t>1.2&&ok)cutTo('track');
+    else if(d.shot==='ahead'){const ah=((d.pi-L.i+T.S)%T.S)*T.ds;if(ah>T.L/2&&ah<T.L-2.5||d.t>d.len){if(ok)cutTo(nextShot());else panOn(d)}}
+    else if(d.shot==='rail'){const ah=((d.pi-L.i+T.S)%T.S)*T.ds;if(ah>T.L/2&&ah<T.L-3){if(ok)cutTo(nextShot());else panOn(d)}else if(d.t>d.len&&ok)cutTo(nextShot())}
+    else if(!['post','final','final2','gate'].includes(d.shot)&&d.t>d.len&&ok)cutTo(nextShot())}
   if(race.state==='done'&&d.shot!=='post'&&d.shot!=='after'){d.shot='after';d.still=false}
   let p;switch(d.shot){
     case'gate':p=center(R,0);break;
@@ -1741,7 +1745,8 @@ function startPolo(){closeSlip();$('slipBar').style.display='none';$('betslip').
   say('Welcome to '+th.name+' for '+A.name+' against '+B.name+'. Four chukkas of polo!');audioStart();bugle();poloHud()}
 function homeSpot(R){const F=PL.F,dir=R.team?-1:1,cx=(F.x0+F.x1)/2,lane=[-1.4,1.4,-.6,0][R.j];return[cx-dir*[1.2,1.2,3,5][R.j],PL.midY+lane]}
 function resetPositions(snap){for(const R of PL.riders){const[x,y]=homeSpot(R);R.tx=x;R.ty=y;if(snap){R.x=x;R.y=y;R.vx=R.team?-.01:.01;R.vy=0}}PL.ball={x:(PL.F.x0+PL.F.x1)/2,y:PL.midY,z:0,vx:0,vy:0,vz:0};PL.carrier=null}
-const goalX=t=>t?PL.F.x0:PL.F.x1;// team 0 attacks toward x1
+const goalX=t=>(t^(PL.flip||0))?PL.F.x0:PL.F.x1;// team 0 attacks toward x1, until they change ends
+const tdir=t=>(t^(PL.flip||0))?-1:1;// which way a team is attacking right now
 function steer(R,dt,tx,ty,vmax){const dx=tx-R.x,dy=ty-R.y,d=Math.hypot(dx,dy),want=d<.15?0:Math.min(vmax,d*2.2);let vx=d>1e-4?dx/d*want:0,vy=d>1e-4?dy/d*want:0;
   for(const o of PL.riders){if(o===R)continue;const ex=R.x-o.x,ey=R.y-o.y,e=Math.hypot(ex,ey);if(e<.55&&e>1e-4){vx+=ex/e*(.55-e)*6;vy+=ey/e*(.55-e)*6}}
   const k=1-Math.exp(-dt*3.2);R.vx+=(vx-R.vx)*k;R.vy+=(vy-R.vy)*k;R.x=clamp(R.x+R.vx*dt,PL.F.x0-1,PL.F.x1+1);R.y=clamp(R.y+R.vy*dt,PL.F.y0-.4,PL.F.y1+.4);R.v=Math.hypot(R.vx,R.vy);R.gait+=R.v*dt*(R.v>3?1.3:1.9);R.swing=Math.max(0,R.swing-dt*3)}
@@ -1822,16 +1827,16 @@ function nearestOpp(R){let b=null,d=1e9;for(const o of PL.riders)if(o.team!==R.t
 // horses can't spin on the spot: heading turns at a limited rate, faster when slow
 function steer(R,dt,tx,ty,vmax){const F=PL.F;let dx=tx-R.x,dy=ty-R.y,d=Math.hypot(dx,dy);let want=d<.12?0:Math.min(vmax,d*2.4);
   let ux=d>1e-4?dx/d:0,uy=d>1e-4?dy/d:0;for(const o of PL.riders){if(o===R)continue;const ex=R.x-o.x,ey=R.y-o.y,e=Math.hypot(ex,ey);if(e<.6&&e>1e-4){ux+=ex/e*(.6-e)*2.2;uy+=ey/e*(.6-e)*2.2}}
-  if(R.hd==null)R.hd=Math.atan2(R.vy||0,R.vx||(R.team?-1:1));const wh=Math.atan2(uy,ux),turn=(3.4-Math.min(2.2,R.v*.38))*dt,dh=wrapA(wh-R.hd);
+  if(R.hd==null)R.hd=Math.atan2(R.vy||0,R.vx||tdir(R.team));const wh=Math.atan2(uy,ux),turn=(3.4-Math.min(2.2,R.v*.38))*dt,dh=wrapA(wh-R.hd);
   if(want>.05)R.hd+=clamp(dh,-turn,turn);if(Math.abs(dh)>1.6)want*=.45;// big turns need slowing down
   const acc=want>R.v?3.2:6;R.v+=clamp(want-R.v,-acc*dt,acc*dt);R.vx=Math.cos(R.hd)*R.v;R.vy=Math.sin(R.hd)*R.v;
   R.x=clamp(R.x+R.vx*dt,F.x0-1.2,F.x1+1.2);R.y=clamp(R.y+R.vy*dt,F.y0-.5,F.y1+.5);R.gait+=R.v*dt*(R.v>3?1.3:1.9);R.swing=Math.max(0,R.swing-dt*3)}
 function resetPositions(snap){const F=PL.F,cx=(F.x0+F.x1)/2;for(const R of PL.riders){// the throw-in: two lines of four at halfway
-    const x=cx+(R.team?.45:-.45),y=PL.midY+(R.j-1.5)*.55;R.tx=x;R.ty=y;if(snap){R.x=x;R.y=y;R.hd=R.team?Math.PI:0;R.v=0}}
-  PL.ball={x:cx,y:F.y1+.2,z:0,vx:0,vy:0,vz:0};PL.carrier=null;PL.tgt={}}
-function homeSpot(R){const F=PL.F,cx=(F.x0+F.x1)/2;return[cx+(R.team?.45:-.45),PL.midY+(R.j-1.5)*.55]}
+    const x=cx-tdir(R.team)*.45,y=PL.midY+(R.j-1.5)*.55;R.tx=x;R.ty=y;if(snap){R.x=x;R.y=y;R.hd=tdir(R.team)<0?Math.PI:0;R.v=0}}
+  PL.ball={x:cx,y:PL.midY,z:0,vx:0,vy:0,vz:0};PL.carrier=null;PL.tgt={}}
+function homeSpot(R){const F=PL.F,cx=(F.x0+F.x1)/2;return[cx-tdir(R.team)*.45,PL.midY+(R.j-1.5)*.55]}
 // where each attacker wants to be: a sensible base spot, nudged into the most open grass nearby
-function supportSpot(R,e,B0){const F=PL.F,dir=e.t?-1:1,gx=goalX(e.t),base=R.j<2?[B0.x+dir*2.4,PL.midY+(R.j?1:-1)*1.3]:R.j===2?[B0.x-dir*1.4,B0.y+(B0.y>PL.midY?-1.5:1.5)]:[B0.x-dir*3.4,PL.midY];
+function supportSpot(R,e,B0){const F=PL.F,dir=tdir(e.t),gx=goalX(e.t),base=R.j<2?[B0.x+dir*2.4,PL.midY+(R.j?1:-1)*1.3]:R.j===2?[B0.x-dir*1.4,B0.y+(B0.y>PL.midY?-1.5:1.5)]:[B0.x-dir*3.4,PL.midY];
   if(Math.abs(B0.x-gx)<5&&R.j<2)base[0]=gx-dir*(1.2+R.j*.6);let best=base,bs=-1e9;
   for(let k=0;k<9;k++){const a=k*.785,r=k?1:0,p=[clamp(base[0]+Math.cos(a)*r,F.x0+.4,F.x1-.4),clamp(base[1]+Math.sin(a)*r,F.y0+.4,F.y1-.4)];let m=9;for(const o of PL.riders)if(o.team!==R.team)m=Math.min(m,dist(o.x,o.y,p[0],p[1]));
     const s=Math.min(m,2.5)-dist(p[0],p[1],base[0],base[1])*.5+laneOpen(B0.x,B0.y,p[0],p[1],R.team)*.6;if(s>bs){bs=s;best=p}}return best}
@@ -1980,7 +1985,7 @@ function clampF(p,m=.45){const F=PL.F;return[clamp(p[0],F.x0+m,F.x1-m),clamp(p[1
 function hitBall(R,tx,ty,kind,loft){const B0=PL.ball;if(kind!=='shot'){const ddx=tx-B0.x,ddy=ty-B0.y,dd=Math.hypot(ddx,ddy);if(dd>6){tx=B0.x+ddx/dd*6;ty=B0.y+ddy/dd*6}}const dx=tx-B0.x,dy=ty-B0.y,d=Math.hypot(dx,dy)||1;let sp=kind==='shot'?Math.max(8.5,d*FRIC*1.25):d*FRIC*1.12;sp=Math.min(sp,13);
   B0.vx=dx/d*sp;B0.vy=dy/d*sp;B0.vz=loft!=null?loft:(d>5?3+Math.random()*2:d>2.5?1.2:0);R.swing=1;R.hitT=now;crack2();
   // what kind of stroke was it, relative to the way the horse is going?
-  const hh=Math.atan2(R.vy||0,R.vx||(R.team?-1:1)),a=Math.abs(wrapA(Math.atan2(dy,dx)-hh));return a<.6?'forehand':a<1.9?'neck shot':'backhand'}
+  const hh=Math.atan2(R.vy||0,R.vx||tdir(R.team)),a=Math.abs(wrapA(Math.atan2(dy,dx)-hh));return a<.6?'forehand':a<1.9?'neck shot':'backhand'}
 const POLOSAY={pass:[(a,b,s)=>a+' with a '+s+' to '+b+'.',(a,b)=>'Long ball from '+a+', '+b+' runs onto it!',(a,b,s)=>'Lovely '+s+' by '+a+' into space for '+b+'.',(a,b)=>a+' finds '+b+' on the run.'],
   tap:[(a)=>a+' taps it on.',(a)=>a+' takes it up the line.',(a)=>a+' dribbles past his man.'],
   give:[(a,b)=>'One-two! '+a+' plays it to '+b+' and goes for the return.']};
@@ -2004,7 +2009,7 @@ function liveStriker(step,att,B0){if(!step||!step.free)return;const pool=att.fil
   // the man we meant to feed is now the one on the ball: he just takes it on himself
   if(step.k==='pass'&&step.to===step.R){step.k='tap';step.to=null}}
 // a receiving spot: ahead of the receiver, into open grass, in range of goal for the scorer
-function passSpot(from,to,e,shooter){const F=PL.F,dir=e.t?-1:1,gx=goalX(e.t);let base=[to.x+dir*(2.2+Math.random()*1.2)+(to.vx||0)*.45,to.y+(to.vy||0)*.3];
+function passSpot(from,to,e,shooter){const F=PL.F,dir=tdir(e.t),gx=goalX(e.t);let base=[to.x+dir*(2.2+Math.random()*1.2)+(to.vx||0)*.45,to.y+(to.vy||0)*.3];
   if(shooter){base=[lerp(to.x+dir*1.8+(to.vx||0)*.3,gx-dir*4,.3),lerp(to.y+(to.vy||0)*.3,PL.midY,.25)]}
   let best=base,bs=-1e9;for(let k=0;k<10;k++){const a=k*.628,r=k?.9:0,p=clampF([base[0]+Math.cos(a)*r,base[1]+Math.sin(a)*r]);let m=9;for(const o of PL.riders)if(o.team!==from.team)m=Math.min(m,dist(o.x,o.y,p[0],p[1]));
     const s=Math.min(m,2.6)+laneOpen(PL.ball.x,PL.ball.y,p[0],p[1],from.team)*.7-dist(p[0],p[1],base[0],base[1])*.4;if(s>bs){bs=s;best=p}}
@@ -2038,11 +2043,11 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
   if(PL.phase!=='shot'&&PL.phase!=='celebrate'){if(B0.y<F.y0+.15||B0.y>F.y1-.15){B0.vy*=-.4;B0.y=clamp(B0.y,F.y0+.15,F.y1-.15)}if(B0.x<F.x0+.1||B0.x>F.x1-.1){B0.vx*=-.3;B0.x=clamp(B0.x,F.x0+.1,F.x1-.1)}}
   const e=nextEvent();
   if(PL.phase==='kickoff'){for(const R of PL.riders)steer(R,dt,...homeSpot(R),3.6);if(PL.t>1){PL.phase='throw';PL.t=0;B0.x=(F.x0+F.x1)/2;B0.y=F.y1+.2;B0.vx=0;B0.vy=-5.2;B0.vz=5;blip(660,.08,'square',.05);if(race.t-race.lastC>1)sayP('The umpire bowls it in between the lines!')}return}
-  if(PL.phase==='throw'){for(const R of PL.riders)steer(R,dt,B0.x+(R.team?.35:-.35),B0.y+(R.j-1.5)*.4,3);if(PL.t>.55)startPhase();return}
+  if(PL.phase==='throw'){for(const R of PL.riders)steer(R,dt,B0.x-tdir(R.team)*.35,B0.y+(R.j-1.5)*.4,3);if(PL.t>.55)startPhase();return}
   if(PL.phase==='pause'){for(const R of PL.riders)steer(R,dt,...homeSpot(R),2.4);if(PL.t>PL.pauseT){if(!e){endMatch();return}PL.phase='kickoff';PL.t=0;resetPositions(false)}return}
-  if(PL.phase==='celebrate'){for(const R of PL.riders){const own=R.team===PL.lastT;steer(R,dt,own?clamp(R.x+(R.team?-.6:.6),F.x0,F.x1):R.x,R.y+(own?Math.sin(now*3+R.j)*.4:0),own?2.5:1)}if(PL.t>1.2){PL.ei++;afterEvent(true)}return}
+  if(PL.phase==='celebrate'){for(const R of PL.riders){const own=R.team===PL.lastT;steer(R,dt,own?clamp(R.x+tdir(R.team)*.6,F.x0,F.x1):R.x,R.y+(own?Math.sin(now*3+R.j)*.4:0),own?2.5:1)}if(PL.t>1.2){PL.ei++;afterEvent(true)}return}
   if(!e){endMatch();return}
-  const att=PL.riders.filter(R=>R.team===e.t),def=PL.riders.filter(R=>R.team!==e.t),gx=goalX(e.t),dir=e.t?-1:1,ownG=goalX(1-e.t),step=PL.plan&&PL.plan[PL.pi];if(thinking&&PL.phase==='chase'&&step&&step.free)liveStriker(step,att,B0);const S=step?step.R:null;
+  const att=PL.riders.filter(R=>R.team===e.t),def=PL.riders.filter(R=>R.team!==e.t),gx=goalX(e.t),dir=tdir(e.t),ownG=goalX(1-e.t),step=PL.plan&&PL.plan[PL.pi];if(thinking&&PL.phase==='chase'&&step&&step.free)liveStriker(step,att,B0);const S=step?step.R:null;
   // where the ball will be: everyone reads the line of the ball
   const bs=ballStop(B0),bspd=Math.hypot(B0.vx,B0.vy);
   // ----- the defence
@@ -2068,13 +2073,13 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
     if(thinking||!PL.tgt[R.j])PL.tgt[R.j]=supportSpot(R,e,{x:bs[0]+dir*.8,y:bs[1]});ride(R,dt,...PL.tgt[R.j],R.j===3?3.8:4.5,R.j===3?1.6:2.2)}
   if(!step){PL.ei++;afterEvent(false);return}
   // ----- shot in flight
-  if(PL.phase==='shot'){S&&steer(S,dt,S.x+dir*1.5,S.y,3.5);const crossed=e.t?B0.x<=F.x0:B0.x>=F.x1;
+  if(PL.phase==='shot'){S&&steer(S,dt,S.x+dir*1.5,S.y,3.5);const crossed=dir<0?B0.x<=F.x0:B0.x>=F.x1;
     if(PL.shotT==='save'){const D=def.find(R=>R.j===3)||def[0],ip=ballAt(B0,.25);steer(D,dt,ip[0],ip[1],5.2);
       if(dist(D.x,D.y,B0.x,B0.y)<.7||PL.t>.45){const st=hitBall(D,B0.x-dir*4,clamp(B0.y+(Math.random()-.5)*3,F.y0+.5,F.y1-.5),'clear',2.5);PL.phase='loose';PL.t=0;sayP(pick(['Saved! '+D.p.name+' gets across and backs it away!','What a stop by '+D.p.name+'!',D.p.name+' blocks it on the line with a '+st+'!']));race.cheer=.8;crowd(.6);return}}
     if(crossed){if(PL.shotT==='goal'){PL.g[e.t]++;PL.lastT=e.t;const sc=PL.shooter,as=PL.assist||null;PL.scorers.push({t:e.t,name:sc.p.name,k:e.k,as:as?as.p.name:null});PL.flash=1.2;race.cheer=2;crowd(1);goalRumble();
         for(let q=0;q<24;q++)bits.push({x:B0.x,y:B0.y,z:6,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,vz:30+Math.random()*50,c:[card.teams[e.t].c1,card.teams[e.t].c2,'#ffe9b0'][q%3],s:Math.random()<.5?2:1,life:1.8,rest:.9});jingle();
         sayP('GOAL! '+sc.p.name+(as?', set up by '+as.p.name:'')+'! '+card.teams[0].short+' '+PL.g[0]+'–'+PL.g[1]+' '+card.teams[1].short);PL.phase='celebrate';PL.t=0;PL.assist=null;poloHud();return}
-      else{sayP(pick(['Wide! Just past the post.','It drifts wide!','So close, wide of the posts!']));race.cheer=.6;crowd(.5);B0.x=e.t?F.x0+.2:F.x1-.2;B0.y=clamp(B0.y,F.y0+.4,F.y1-.4);B0.vx=B0.vy=0;B0.vz=0;PL.knock=true;PL.ei++;afterEvent(false);return}}
+      else{sayP(pick(['Wide! Just past the post.','It drifts wide!','So close, wide of the posts!']));race.cheer=.6;crowd(.5);B0.x=gx-dir*.2;B0.y=clamp(B0.y,F.y0+.4,F.y1-.4);B0.vx=B0.vy=0;B0.vz=0;PL.knock=true;PL.ei++;afterEvent(false);return}}
     if(PL.t>2.4){PL.ei++;afterEvent(false)}return}
   if(PL.phase==='loose'){if(PL.t>.45){PL.ei++;afterEvent(false)}return}
   // ----- the striker: whoever can reach it first (unless this touch is one the bets depend on)
@@ -2142,6 +2147,77 @@ const _poloHud5=poloHud;poloHud=function(){_poloHud5();const C=PL&&PL.carrier;if
 poloCam=function(){const B0=PL.ball,st=ballStop(B0),t=performance.now()/1000,dt=Math.min(.1,t-(PL.camT||t));PL.camT=t;
   const tx=lerp(B0.x,st[0],.35),ty=lerp(B0.y,st[1],.35);if(PL.cx==null){PL.cx=tx;PL.cy=ty}const k=1-Math.exp(-dt*2.2);PL.cx+=(tx-PL.cx)*k;PL.cy+=(ty-PL.cy)*k;
   return{x:isoX(PL.cx,PL.cy)-AW/2,y:isoY(PL.cx,PL.cy)-AH/2-hz(PL.cx,PL.cy)+AH*.05}};
+
+// ===================== polo by the book: umpires, the throw-in at the centre, changing ends, fouls and penalties =====================
+// Two mounted umpires in black and white keep up with the play. Every chukka and every goal restarts with a throw-in:
+// the teams line up in two lines of four at the centre and the umpire bowls the ball in between them. Ends are changed
+// after every goal (and at half time if nobody has scored). Fouls on the line of the ball are whistled and the fouled
+// side gets a penalty hit: Penalty 2 (30 yards, defended from the backline), 3 (40 yards, goal undefended) or 4 (60 yards).
+// All of it is staged around the match the model has already decided, so every goal, scorer and assist still settles bets.
+function mkUmp(k){return{...mkRider({coat:k?3:1,silk:['#f4f2ea','#1c1c1c','#f4f2ea',1]},'p'),polo:true,ump:k,team:-1,j:-1,p:{name:'Umpire'},x:0,y:0,v:0,swing:0,lat:99,i:0}}
+function umpSpot(k){const F=PL.F,cx=(F.x0+F.x1)/2;return k?[cx+.3,PL.midY+2.15]:[cx-.4,PL.midY-2.5]}// the bowling umpire stands off the end of the lines
+const _startPolo6=startPolo;startPolo=function(){_startPolo6.apply(this,arguments);if(!PL)return;PL.flip=0;PL.pen=null;PL.umps=[mkUmp(0),mkUmp(1)];
+  for(const U of PL.umps){const[x,y]=umpSpot(U.ump);U.x=x;U.y=y;U.hd=-Math.PI/2;U.vx=.01;U.vy=0}holdBall()};
+const _poloObjs6=poloObjs;poloObjs=function(){const o=_poloObjs6();if(PL&&PL.umps)for(const U of PL.umps)o.push({kind:'horse',h:U,key:U.x+U.y});return o};
+// the ball sits in the bowling umpire's hand until the throw
+function holdBall(){if(!PL||!PL.umps)return;const U=PL.umps[1],B0=PL.ball;B0.x=U.x-.05;B0.y=U.y-.28;B0.z=1.3;B0.vx=B0.vy=B0.vz=0}
+function whistle(n){if(typeof AC==='undefined'||!AC)return;for(let k=0;k<(n||1);k++){blip(2800,.12,'square',.035,k*.2);blip(2950,.12,'square',.03,k*.2+.01)}}
+// ----- umpires: one each side of the play, a little behind it, never in the way
+function umpTick(dt){if(!PL.umps)return;const B0=PL.ball,F=PL.F,ph=PL.phase;
+  for(const U of PL.umps){let tx,ty,v=4.2;
+    if(ph==='kickoff'||ph==='pause'||ph==='throw'){[tx,ty]=umpSpot(U.ump);v=ph==='throw'?1.2:4.6}
+    else if(ph==='penset'||ph==='pentake'){const P=PL.pen;tx=P.x-P.dir*(1.4+U.ump*.6);ty=PL.midY+(U.ump?2.2:-2.2);v=3}
+    else{const e=nextEvent(),dir=e?tdir(e.t):1,side=U.ump?1:-1;tx=clamp(B0.x-dir*(1.2+U.ump*.8),F.x0+.3,F.x1-.3);ty=clamp(B0.y+side*1.9,F.y0+.2,F.y1-.2)}
+    if(dist(U.x,U.y,tx,ty)<.35&&ph!=='chase'){U.v=Math.max(0,U.v-dt*6);U.gait+=U.v*dt*1.9;continue}
+    steer(U,dt,tx,ty,v)}}
+// ----- the throw-in: from the umpire's hand, bowled in between the lines to land at the centre spot
+const _poloSim6=poloSim;poloSim=function(dt){if(!PL)return _poloSim6(dt);const B0=PL.ball,F=PL.F,cx=(F.x0+F.x1)/2,ph0=PL.phase;
+  if(PL.phase==='kickoff'||PL.phase==='pause'){const r=penOrRun(dt);if(r)return;// pauses and line-ups run as before, ball in hand
+    if(PL.phase==='kickoff'){PL.koW=(PL.koW||0)+dt;const U=PL.umps[1],sp=umpSpot(1),far=dist(U.x,U.y,sp[0],sp[1])>.35||PL.riders.some(R=>dist(R.x,R.y,...homeSpot(R))>.45);if(far&&PL.koW<4&&PL.t>.9)PL.t=.9}else PL.koW=0;// nobody bowls until the lines and the umpire are set
+    _poloSim6(dt);umpTick(dt);if(PL.phase==='kickoff'||PL.phase==='pause')holdBall();
+    else if(PL.phase==='throw'&&ph0==='kickoff'){// bowled in: the umpire's arm swings, the ball skips along the gap and stops on the spot
+      const U=PL.umps[1];B0.x=U.x-.05;B0.y=U.y-.3;B0.z=1.2;const d=B0.y-PL.midY;B0.vx=(cx-B0.x)*FRIC;B0.vy=-d*FRIC*1.08;B0.vz=3.2;whistle(1)}
+    return}
+  if(penOrRun(dt))return;_poloSim6(dt);umpTick(dt);
+  // ends are changed after every goal: the celebration is over, so swap the goals before lining up again
+  if(ph0==='celebrate'&&(PL.phase==='kickoff'||PL.phase==='pause')){PL.flip^=1;resetPositions(false);holdBall();if(Math.random()<.7)sayP(pick(['The teams change ends.','Ends changed, back to the centre for the throw-in.','They swap ends and line up again.']))}
+  if(ph0!=='pause'&&PL.phase==='pause'){holdBall();if(PL.chuk===3&&PL.g[0]+PL.g[1]===0){PL.flip^=1;sayP('Half time, still goalless. The teams change ends.')}else if(PL.chuk===3)sayP('Half time. Spectators walk out to tread in the divots.')}};
+// ----- fouls: crossing the line of the ball, a dangerous ride-off, a hook across the pony
+const FOULS=['crosses the line of the ball','rides in at a dangerous angle','hooks across the pony','zig-zags in front of the man on the ball','bumps at too sharp an angle'];
+const PENS={2:{yd:30,name:'Penalty 2',d:'30 yards, defended'},3:{yd:40,name:'Penalty 3',d:'40 yards, open goal'},4:{yd:60,name:'Penalty 4',d:'60 yards, open goal'}};
+const _startPhase6=startPhase;startPhase=function(){const wasKnock=!!PL.knock;PL.koW=0;_startPhase6.apply(this,arguments);const e=nextEvent();PL.penWant=null;
+  if(!e||wasKnock||PL.phase!=='chase'||!PL.plan)return;
+  // only possessions that end in a shot can become penalties, and a goal only if nobody is credited with the assist
+  const ok=(e.out==='goal'&&!(e.a>=0))||e.out==='miss'||e.out==='save';if(!ok||Math.random()>.22)return;
+  const typ=e.out==='save'?2:Math.random()<.45?2:Math.random()<.7?3:4;PL.penWant={typ,at:.6+Math.random()*.9}};
+function penOrRun(dt){const P=PL.pen,B0=PL.ball,F=PL.F;
+  // the whistle goes mid-possession
+  if(PL.penWant&&PL.phase==='chase'&&PL.t>PL.penWant.at){const step=PL.plan&&PL.plan[PL.pi];if(!step){PL.penWant=null;return false}
+    const e=nextEvent(),C=PL.carrier,def=PL.riders.filter(R=>R.team!==e.t),D=def.reduce((a,b)=>dist(b.x,b.y,C.x,C.y)<dist(a.x,a.y,C.x,C.y)?b:a),dir=tdir(e.t),gx=goalX(e.t),typ=PL.penWant.typ,L=F.x1-F.x0,yd=L/300;
+    const J=PL.riders.find(R=>R.team===e.t&&R.j===e.j);PL.pen={typ,e,J,D,dir,gx,x:clamp(gx-dir*PENS[typ].yd*yd*1.3,F.x0+1,F.x1-1),y:PL.midY,t:0};PL.penWant=null;PL.phase='foul';PL.t=0;PL.carrier=J;poloHud();
+    whistle(2);race.cheer=.6;crowd(.4);sayP('Whistle! '+D.p.name+' '+pick(FOULS)+'. '+PENS[typ].name+' to '+card.teams[e.t].short+': '+PENS[typ].d+'.');return true}
+  if(!P)return false;P.t+=dt;PL.t+=dt;race.cheer=Math.max(0,race.cheer-dt*.2);
+  const e=P.e,att=PL.riders.filter(R=>R.team===e.t),def=PL.riders.filter(R=>R.team!==e.t);
+  if(PL.phase==='foul'){// play stops: everyone pulls up
+    for(const R of PL.riders){R.v=Math.max(0,R.v-dt*5);R.x+=Math.cos(R.hd||0)*R.v*dt*.5;R.y+=Math.sin(R.hd||0)*R.v*dt*.5;R.gait+=R.v*dt*1.6}
+    B0.vx*=Math.exp(-dt*4);B0.vy*=Math.exp(-dt*4);B0.x+=B0.vx*dt;B0.y+=B0.vy*dt;umpTick(dt);
+    if(P.t>1.2){PL.phase='penset';P.t=0}return true}
+  if(PL.phase==='penset'){// the ball is spotted; the taker lines up his run, the defence goes behind its own backline
+    B0.x=lerp(B0.x,P.x,1-Math.exp(-dt*4));B0.y=lerp(B0.y,P.y,1-Math.exp(-dt*4));B0.z=0;B0.vx=B0.vy=0;
+    for(const R of att){const k=R===P.J?0:(R.j+1);const tx=R===P.J?P.x-P.dir*2.2:P.x-P.dir*(2.4+k*.5),ty=R===P.J?P.y+.25:PL.midY+(k-2)*1.1;steer(R,dt,tx,ty,3.4)}
+    def.forEach((R,i)=>{const und=P.typ>2,bx=P.gx+P.dir*(.7+(i%2)*.3),by=und?PL.midY+(i<2?-1:1)*(1.6+(i%2)*.5):PL.midY+(i-1.5)*.55;steer(R,dt,bx,by,4)});
+    umpTick(dt);if(P.t>2.3){PL.phase='pentake';P.t=0;if(Math.random()<.6)sayP(P.J.p.name+' to take it...')}return true}
+  if(PL.phase==='pentake'){// the run-up and the strike at full canter
+    const J=P.J;steer(J,dt,B0.x+P.dir*1.6,B0.y,4.2);for(const R of def){const bx=P.gx+P.dir*.8;steer(R,dt,bx,R.y,1.5)}for(const R of att)if(R!==J)steer(R,dt,R.x+P.dir*.6,R.y,1.6);umpTick(dt);
+    if(dist(J.x,J.y,B0.x,B0.y)<.6||P.t>3){const out=e.out,aimY=out==='goal'?PL.midY+(Math.random()-.5)*1.2:out==='miss'?PL.midY+(Math.random()<.5?-1:1)*(1.6+Math.random()*.9):PL.midY+(Math.random()-.5)*.9;
+      hitBall(J,P.gx+P.dir*.8,aimY,'shot',out==='save'?2.5:1.2+Math.random()*2);PL.plan=[{R:J,k:'shot',out,fixed:1}];PL.pi=0;PL.carrier=J;PL.shooter=J;PL.shotT=out;PL.assist=null;PL.phase='shot';PL.t=0;PL.dest=null;PL.pen=null;
+      if(Math.random()<.5)sayP(J.p.name+' strikes the penalty...');poloHud()}return true}
+  return false}
+// a penalty goal is still a goal for the scorer (no assist), so bets settle exactly as the match model says
+// umpires: white shirt with black hoops, black helmet, no mallet, a whistle at the lips
+const _drawPoloR6=drawPoloR;drawPoloR=function(r,b,h,run){if(!h.ump)return _drawPoloR6(r,b,h,run);
+  r(-1,-12-b,3,4,'#f4f2ea');r(-1,-11-b,3,1,'#1c1c1c');r(-1,-9-b,3,1,'#1c1c1c');r(-1,-15-b,3,2,'#1c1c1c');r(-1,-13-b,3,1,'#d9a07a');r(1,-13-b,1,1,'#c08a68');r(2,-12-b,1,1,'#c8c8c8');
+  if(PL&&(PL.phase==='kickoff'||PL.phase==='throw')&&h.ump===1){const up=PL.phase==='throw'&&PL.t<.25;r(2,(up?-15:-10)-b,1,up?3:2,'#d9a07a')}};
 
 // ===================== jousting you can see: couched lances that really strike, close camera, hit-stop =====================
 const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
@@ -2222,7 +2298,8 @@ function rumble(o){const P=o===3?[700,60,450,60,230]:o===2?[500,70,350,70,300,70
 // a vibration envelope: the motor is pulsed on and off, so a short 'on' share in each beat feels softer, a long one harder
 function envPat(dur,i0,i1,per,lead){const P=[];if(lead){P.push(lead,30)}let t=0;while(t<dur){const f=t/dur,I=clamp(i0+(i1-i0)*f,0,1),on=Math.max(10,Math.round(per*I));P.push(on,Math.max(8,per-on));t+=per}return P}
 function hapEnv(dur,i0,i1){let t=0;const n=Math.max(3,Math.round(dur/90));for(let k=0;k<n;k++){const f=k/n,I=i0+(i1-i0)*f;if(Math.random()<I+.15)setTimeout(hapTick,t);t+=dur/n}}
-function buzz(P,dur,i0,i1){try{if(navigator.vibrate)navigator.vibrate(P);else hapEnv(dur,i0,i1)}catch(e){}}
+// every vibration goes through here, scaled by the Rumble slider (0 = off)
+function buzz(P,dur,i0,i1){if(typeof SND!=='undefined'&&SND.vib===false)return;const r=1;try{if(navigator.vibrate)navigator.vibrate(P.map((v,i)=>i%2?v:Math.max(6,Math.round(v*(.35+.65*r)))));else hapEnv(dur,i0*r,i1*r)}catch(e){}}
 // the harder the hit, the harder and longer the phone shakes
 function joustRumble(po){const[a,b]=po,big=Math.max(a,b),both=Math.min(a,b);if(big<=0)return;
   if(big===3)return buzz(envPat(1500,.95,.12,70,260).concat([120,40,160]),1700,1,.15);// unhorsed: a heavy slam, a long shudder, then he hits the ground
@@ -2324,7 +2401,7 @@ const ESTATE=[
   {n:'A farmstead',ic:'🌾',cost:900,stalls:2,feed:.8,train:.75,live:.17,inc:8,wh:.9,d:'Your own gallops: cheaper training. Tenants pay a little rent.'},
   {n:'A manor house',ic:'🏠',cost:2500,stalls:3,feed:.7,train:.6,live:.2,inc:18,wh:.8,d:'The bookmakers take you seriously: bigger in-running limits.'},
   {n:'A great hall',ic:'🏛',cost:6000,stalls:4,feed:.6,train:.5,live:.22,inc:40,wh:.65,d:'Servants hear everything. Informants come cheaper.'},
-  {n:'Kingsfold Castle',ic:'🏰',cost:15000,stalls:6,feed:.5,train:.4,live:.25,inc:90,wh:.5,d:'Lord of the downs. The whole county pays you rent.'}];
+  {n:'Kingsfold Castle',ic:'🏰',cost:15000,stalls:6,feed:.5,train:.4,live:.25,inc:90,wh:.5,d:'Lord of the Crowns. The whole county pays you rent.'}];
 function est(){if(G.estate==null)G.estate=0;return ESTATE[G.estate]}
 function stallCap(){return 6+est().stalls}
 function liveCapPct(){return est().live}
@@ -2480,7 +2557,7 @@ snapPhoto=function(){const ox=cam.x,oy=cam.y;try{const R=rankNow().filter(h=>!h.
   race.photoImg=c.toDataURL('image/png')}catch(e){console.warn('photo',e)}cam.x=ox;cam.y=oy;try{renderAt(ox,oy)}catch(e){}};
 // make sure the TV camera is on the post for any close finish, whichever camera mode you're in
 const _director11=director;director=function(dt){const R=rankNow().filter(h=>!h.fallen),L=R[0],S2=R[1];
-  if(race&&race.state==='run'&&L&&S2&&!L.finished&&race.D-L.dist<1.6&&L.dist-S2.dist<.35&&race.dir&&!['post'].includes(race.dir.shot))cutTo('post');return _director11(dt)};
+  if(race&&race.state==='run'&&L&&S2&&!L.finished&&race.D-L.dist<1.6&&L.dist-S2.dist<.35&&race.dir&&!['post'].includes(race.dir.shot)&&(now-(race.dir.t0??now))>=MINCUT)cutTo('post');return _director11(dt)};
 // a crisp painted finish line across the track (the old chequer smeared into blobs at this angle)
 function drawFinishLine(){if(!T||!T.C||(race&&race.sport))return;const{C,NM}=T,i=0,a=scr(C[i][0]+NM[i][0]*(-HALFW),C[i][1]+NM[i][1]*(-HALFW)),b=scr(C[i][0]+NM[i][0]*HALFW,C[i][1]+NM[i][1]*HALFW);
   for(const[dy,c]of[[0,'rgba(246,242,230,.92)'],[1,'rgba(246,242,230,.92)'],[2,'rgba(40,30,20,.25)']])pxl(fx,a[0],a[1]+dy,b[0],b[1]+dy,c)}
@@ -2493,6 +2570,20 @@ function paddockNotes(rc){if(rc.paddock)return rc.paddock;const r=mulberry32(rc.
   const w=q[q.length-1];if(w.s<.88)notes.push('<b class="r">'+w.e.h.name+'</b> '+bad[(r()*4)|0]);
   return rc.paddock=notes.length?notes.join('; ')+'.':'Nothing stands out in the paddock today.'}
 const _renderCard22=renderCard;renderCard=function(){_renderCard22.apply(this,arguments);if(!card||card.sport&&card.sport!=='race'||!card.pIn)return;const t=$('card').querySelector('.tip');if(t&&!$('card').querySelector('.paddock'))t.insertAdjacentHTML('afterend','<div class="tip paddock"><b>In the paddock:</b> '+paddockNotes(card)+'</div>')};
+
+// ===================== hooves you can feel: a subtle gallop rumble when the race camera is in close =====================
+// the closer the shot and the nearer the galloping horses are to the middle of the screen, the firmer the beat
+const SHOT_CLOSE={tight:1,final2:1,mine:1,rail:.85,pack:.8,post:.7,final:.6,ahead:.6,track:.45,manual:.55,gate:.25,after:0};
+let hoofBeat=0;
+function hoofRumble(dt){if(!race||race.sport||race.state!=='run'||document.hidden||!race.dir)return;if(typeof SND!=='undefined'&&SND.vib===false)return;
+  hoofBeat-=dt;if(hoofBeat>0)return;
+  const sf=SHOT_CLOSE[race.dir.shot]??.5,kz=clamp((K-(race.baseK||K))/Math.max(1,(race.camK||K)-(race.baseK||K)),0,1.3);
+  let n=0,sp=0;for(const h of horses){if(h.fallen||h.finished)continue;const s=scr(h.x,h.y),dx=(s[0]-AW/2)/(AW*.5),dy=(s[1]-AH/2)/(AH*.5),r=Math.hypot(dx,dy);if(r<.9){const w=1-r/.9*.6;n+=w;sp+=w*(h.v||0)}}
+  const near=Math.min(1,n/1.3),spd=n>0?clamp((sp/n)/6.2,0,1):0,I=sf*near*spd*Math.min(1,kz);
+  // a galloping beat, a touch irregular like a real field of horses
+  hoofBeat=.33+Math.random()*.07-(I*.04);
+  if(I<.22)return;const on=Math.round(9+17*I);buzz(Math.random()<.5?[on]:[on,45,Math.round(on*.6)],on,I*.6,I*.4)}
+const _directorH=director;director=function(dt){const D=_directorH.apply(this,arguments);try{hoofRumble(dt)}catch(e){}return D};
 
 // ===================== more life in the air and on the ground =====================
 function groundDust(){if(WX&&WX.snowG>.25)return['#f2f5f8','#dfe6ee'];if(T&&T.th&&T.th.desert)return['#dcc48c','#c8ac70'];if(WX&&WX.rain>.3)return['#6a5a3e','#584a32'];return['#a8986a','#c2b282']}
@@ -2601,7 +2692,7 @@ const _setSizesS=setSizes;setSizes=function(){_setSizesS.apply(this,arguments);i
 const spSm=x=>{x=clamp(x,0,1);return x*x*(3-2*x)};
 function splitActive(){return !!(race&&race.sport==='joust'&&card&&card.sport==='joust'&&SP&&SP.a&&SP.b&&race.state!=='done')}
 // how merged the two halves should be right now: apart while they wait and charge, one picture once both fit in a close shot
-function splitTarget(){if(!splitActive())return 1;if(SP.phase==='ready')return 0;if(SP.phase!=='charge'||SP.hit)return 1;
+function splitTarget(){if(!splitActive())return 1;if(SP.phase==='ready')return 0;if(SP.phase!=='charge'&&SP.phase!=='turn')return 1;if(SP.phase==='charge'&&Math.abs(SP.a.sx-SP.b.sx)<3.4)return 1;// whole for the clash itself// apart as they wait, together for the clash, apart again as they ride back to their ends
   const a=scr(SP.a.x,SP.a.y),b=scr(SP.b.x,SP.b.y),sep=Math.max(Math.abs(a[0]-b[0])+28,Math.abs(a[1]-b[1])*1.9+40),zfit=AW*.86/sep;
   return spSm((zfit-SPL.ZS*.42)/(SPL.ZS*.58))}
 // keep the close zoom while the screen is split, so the merged shot matches the halves exactly
@@ -2611,22 +2702,25 @@ function riderSilk(R){const i=SP.riders.indexOf(R),C=card.comp&&card.comp[i];ret
 // a half-camera: puts its knight at a spot in his half, riding into open space toward the middle
 // each half is the shared shot slid along the line of the lists, so the barrier and fences run straight on across the divider
 function listDir(){const P=SP.tilt;if(!P||P.length<2)return null;const a=scr(P[0][0],P[0][1]),b=scr(P[P.length-1][0],P[P.length-1][1]);let x=b[0]-a[0],y=b[1]-a[1];const l=Math.hypot(x,y)||1;x/=l;y/=l;if(x<0){x=-x;y=-y}return Math.abs(x)>.3?[x,y]:null}
-function paneCam(R,side,z){const p=scr(R.x,R.y),cl=SP.phase==='charge'?spSm((10.5-Math.abs(SP.a.sx-SP.b.sx))/7.5):0,dX=AW/2+side*AW*lerp(.33,.16,cl),cX=AW/2+(dX-AW/2)/z,ox=Math.round(cam.x),oy=Math.round(cam.y),u=listDir();
+function paneCam(R,side,z){const p=scr(R.x,R.y),cl=spSm((10.5-Math.abs(SP.a.sx-SP.b.sx))/7.5),dX=AW/2+side*AW*lerp(.33,.16,cl),cX=AW/2+(dX-AW/2)/z,ox=Math.round(cam.x),oy=Math.round(cam.y),u=listDir();
   if(u){const s=(p[0]-cX)/u[0];return{x:ox+s*u[0],y:oy+s*u[1]}}
   const dY=AH*.45;return{x:ox+p[0]-cX,y:oy+p[1]-11-(AH/2+(dY-AH/2)/z)}}
 let splLastT=0;
 function splitPost(){const t=performance.now()/1000,dt=Math.min(.1,t-(splLastT||t));splLastT=t;
-  const mt=splitTarget();if(mt===0&&SP&&SP.phase==='ready'&&SPL.m>0){SPL.m=0;SP.zc=SP.zt=SPL.ZS;setZoomCSS(SPL.ZS)}// a clean cut to the split as they line up
-  SPL.m+=(mt-SPL.m)*(1-Math.exp(-dt*(mt>SPL.m?3.5:2.6)));if(mt>=1&&SPL.m>.995)SPL.m=1;if(mt<=0&&SPL.m<.005)SPL.m=0;
+  const mt=splitTarget(),lock=SP&&SP.phase==="charge"&&SP.a&&Math.abs(SP.a.sx-SP.b.sx)<3.4;if(mt===0&&SP&&SP.phase==='ready'&&SPL.m>.05){SPL.m=0;SPL.pc=null;SP.zc=SP.zt=SPL.ZS;setZoomCSS(SPL.ZS)}// a clean cut to the split as they line up
+  SPL.m+=(mt-SPL.m)*(1-Math.exp(-dt*(mt>SPL.m?(lock?6:3.5):2.6)));if(lock&&Math.abs(SP.a.sx-SP.b.sx)<.9)SPL.m=1;
+  if(SP&&SP.phase==='between'&&SPL.m<1){SPL.m=1}// the bout is decided: a clean cut to the whole picture
+  if(mt>=1&&SPL.m>.995)SPL.m=1;if(mt<=0&&SPL.m<.005)SPL.m=0;
+  // whoever is on the left of the screen gets the left half; they swap sides as they pass, which happens while the picture is whole
+  if(splitActive()&&(SPL.m>.99||!SPL.L)){const ax=isoX(SP.a.x,SP.a.y),bx=isoX(SP.b.x,SP.b.y);SPL.L=ax<=bx?SP.a:SP.b;SPL.R=SPL.L===SP.a?SP.b:SP.a;SPL.pc=null}
   const show=!!(splitActive()&&SPL.m<.995&&splg);
   if(show!==SPL.on){SPL.on=show;splc.style.display=show?'block':'none';$('splitN').style.display=show?'block':'none'}
   if(!show)return;
   // which knight is on the left of the screen this pass (they never cross before the halves have merged)
-  const ax=isoX(SP.a.x,SP.a.y),bx=isoX(SP.b.x,SP.b.y);if(SP.phase==='ready'||!SPL.L){SPL.L=ax<=bx?SP.a:SP.b;SPL.R=SPL.L===SP.a?SP.b:SP.a}
-  const m=spSm(SPL.m),z=lerp(SPL.ZP,Math.max(1,SP.zc||1),m),ox=cam.x,oy=cam.y,sw=AW/z,sh=AH/z,sx0=AW/2-sw/2,sy0=AH/2-sh/2;
+    const m=spSm(SPL.m),z=lerp(SPL.ZP,Math.max(1,SP.zc||1),m),ox=cam.x,oy=cam.y,sw=AW/z,sh=AH/z,sx0=AW/2-sw/2,sy0=AH/2-sh/2;
   splg.setTransform(1,0,0,1,0,0);
   // both halves get the same vertical nudge, so the knights ride at eye level and the lists still line up
-  const PL=paneCam(SPL.L,-1,z),PR=paneCam(SPL.R,1,z),yk=(R,P)=>scr(R.x,R.y)[1]-(P.y-Math.round(oy)),cY=AH/2+(AH*.47-AH/2)/z+9,dy=(yk(SPL.L,PL)+yk(SPL.R,PR))/2-cY;PL.y+=dy;PR.y+=dy;
+  const PL0=paneCam(SPL.L,-1,z),PR0=paneCam(SPL.R,1,z),kk=1-Math.exp(-dt*9);if(!SPL.pc)SPL.pc=[{...PL0},{...PR0}];for(const[i,P]of[[0,PL0],[1,PR0]]){SPL.pc[i].x+=(P.x-SPL.pc[i].x)*kk;SPL.pc[i].y+=(P.y-SPL.pc[i].y)*kk}const PL={...SPL.pc[0]},PR={...SPL.pc[1]},yk=(R,P)=>scr(R.x,R.y)[1]-(P.y-Math.round(oy)),cY=AH/2+(AH*.47-AH/2)/z+9,dy=(yk(SPL.L,PL)+yk(SPL.R,PR))/2-cY;PL.y+=dy;PR.y+=dy;
   const shk=SP.shake||0,jx=(Math.random()-.5)*shk,jy=(Math.random()-.5)*shk;
   try{for(const[R,side,P]of[[SPL.L,-1,PL],[SPL.R,1,PR]]){const cx=lerp(P.x+jx,ox,m),cy=lerp(P.y+jy,oy,m);cam.x=cx;cam.y=cy;renderAt(cx,cy);
       const half=side<0?0:1;for(const c of[glc,fxc])splg.drawImage(c,sx0+half*sw/2,sy0,sw/2,sh,half*AW/2,0,AW/2,AH)}}
@@ -2645,6 +2739,9 @@ const _frame0S=frame0;frame0=function(t){_frame0S.apply(this,arguments);try{spli
 const _nextRaceS=nextRace;nextRace=function(){SPL.m=1;SPL.L=SPL.R=null;if(SPL.on){SPL.on=false;splc.style.display='none';$('splitN').style.display='none'}return _nextRaceS.apply(this,arguments)};
 // the shared joust shot is centred on the knights themselves, the same height the split halves hold them at
 const _sportCamS=sportCam;sportCam=function(){const c=_sportCamS.apply(this,arguments);if(card&&card.sport==='joust'&&c)c.y-=AH*.04+8;return c};
+// the Bets button always sits just above the commentary box, however many lines it's showing
+(function(){const c=$('comm'),r=$('rc');if(!c||!r)return;const fit=()=>{if(c.style.display==='none'||!c.offsetHeight){r.style.bottom='';return}r.style.bottom='calc('+(c.offsetHeight+16)+'px + env(safe-area-inset-bottom))'};
+  try{new ResizeObserver(fit).observe(c)}catch(e){}setInterval(fit,400)})();
 
 // ===================== live betting for every sport =====================
 // Prices come from re-running each sport's own model from the current state (never from the scripted result),
@@ -2671,7 +2768,7 @@ function sportLiveProbs(){const rc=card,r=mulberry32((now*1000)|0),N0=900;
     return A.map((a,i)=>({L:{m:'sw',a:i},n:a.name,p:w[i]/N0})).filter(x=>x.p>.002)}
   return[]}
 function sportSuspended(){if(!race||race.state!=='run')return true;const rc=card;
-  if(rc.sport==='polo')return!PL||['shot','celebrate'].includes(PL.phase)||(PL.ev[PL.ei]&&PL.ev[PL.ei].k>=PHASES-2);
+  if(rc.sport==='polo')return!PL||['shot','celebrate','foul','penset','pentake'].includes(PL.phase)||(PL.ev[PL.ei]&&PL.ev[PL.ei].k>=PHASES-2);
   if(rc.sport==='joust')return!SP||(SP.phase==='charge'&&!SP.hit&&Math.abs(SP.a.sx-SP.b.sx)<4)||SP.bout>2;
   if(rc.sport==='archery')return!SP||SP.k>=rc.comp.length-1&&SP.shot>=3;return true}
 let liveCache={t:-9,list:[]};
@@ -2964,7 +3061,7 @@ function startRace(){if(card.sport&&card.sport!=='race')return startSport();clos
     return{e,H:e.h,no:e.no,x,y,th:Math.atan2(T.TG[i0][1],T.TG[i0][0]),v:0,i:i0,dist:0,lane:k,lat,tl:k,dn:e.dn,urge:0,spent:0,gait:r()*4,lt:r()*.4,finished:false,fallen:false,ft:0,ph:r()*9,vx:0,vy:0,f:1,jz:0}});
   race={rc,D,i0,t:-4.2,state:'post',said:{},comm:[],lastC:-9,order:[],finishers:[],fallers:[],leader:null,prevRank:{},doneT:0,hurdles:[],jumped:0,interf:[],rlive:[]};
   if(r()<.4)race.pig={at:D*(.25+r()*.4),on:false,done:false};
-  $('live').style.display='none';$('vig').classList.remove('tight');race.baseK=K;camMode='tv';$('camB').textContent='TV cam';parts=[];bits=[];ripples=[];drops=[];splats=[];buildObjs();addStalls();if(rc.hurdle)placeHurdles();
+  $('live').style.display='none';$('vig').classList.remove('tight');race.baseK=K;race.camK=Math.max(K+2,Math.round(K*2.2));camMode='tv';$('camB').textContent='TV cam';parts=[];bits=[];ripples=[];drops=[];splats=[];buildObjs();addStalls();if(rc.hurdle)placeHurdles();
   const f=T.C[i0];cam.x=isoX(f[0],f[1])-AW/2;cam.y=isoY(f[0],f[1])-AH/2-hz(f[0],f[1]);
   $('card').style.display='none';$('results').style.display='none';$('hud').style.display='flex';$('comm').style.display='block';$('rName').textContent=rc.name;
   race.userSpeed=speedX!==1;$('rc').style.display='flex';weather(rc);planRaceWeather(rc);say('They\'re going behind the stalls at '+th.name+'. '+GOING[rc.g]+' ground, '+furs(rc.fur)+'.',true);audioStart();bugle()}
@@ -3366,9 +3463,10 @@ addEventListener('pointerdown',()=>{if(!muted){audioStart();if(AC&&AC.state==='s
 function bgAudio(){if(!AC)return;if(document.hidden){AC.suspend().catch(()=>{})}else if(!muted){AC.resume().catch(()=>{})}}
 document.addEventListener('visibilitychange',bgAudio);addEventListener('pagehide',()=>{if(AC)AC.suspend().catch(()=>{})});addEventListener('blur',()=>{if(AC&&document.hidden)AC.suspend().catch(()=>{})});
 // ----- sound settings: four sliders, saved between visits
-let SND={music:.8,sfx:.9,amb:.8,wx:.8};try{Object.assign(SND,JSON.parse(localStorage.getItem('kingsfold-sound')||'{}'))}catch(e){}
+let SND={music:.8,sfx:.9,amb:.8,wx:.8,vib:true};try{Object.assign(SND,JSON.parse(localStorage.getItem('kingsfold-sound')||'{}'))}catch(e){}
 function applySound(){if(!AC)return;const t=AC.currentTime;for(const k in CAT){if(CAT[k])CAT[k].gain.setTargetAtTime(Math.pow(SND[k]??.8,1.6),t,.05)}}
 function setSnd(k,v){SND[k]=v/100;try{localStorage.setItem('kingsfold-sound',JSON.stringify(SND))}catch(e){}applySound();if(k==='sfx'&&v>0)blip(880,.05);if(k==='amb'&&v>0&&typeof chirp==='function')chirp(true)}
+function setVib(on){SND.vib=!!on;try{localStorage.setItem('kingsfold-sound',JSON.stringify(SND))}catch(e){}if(on)buzz([60],60,.8,.8);openSound()}
 // the engine's hoof rumble is an effect; the crowd murmur is ambience
 const _audioStart16=audioStart;audioStart=function(){const had=!!AC;_audioStart16.apply(this,arguments);if(AC&&eng&&!eng._routed){try{bus();eng.hoof.disconnect();eng.hoof.connect(CAT.sfx);eng.crowd.disconnect();eng.crowd.connect(CAT.amb);eng._routed=1}catch(e){}}};
 // ----- nature: birdsong by day, crickets at dusk, nothing in the rain
@@ -3383,8 +3481,8 @@ setInterval(()=>{if(!AC||muted||document.hidden||(SND.amb||0)<.01)return;const w
 // ----- the sound panel
 function openSound(){let el=$('soundP');if(!el){el=document.createElement('div');el.id='soundP';el.className='ov';document.body.appendChild(el)}
   const row=(k,n,d)=>'<div class="sndR"><span><b>'+n+'</b><small>'+d+'</small></span><input type="range" min="0" max="100" value="'+Math.round((SND[k]??.8)*100)+'" oninput="setSnd(\''+k+'\',+this.value);this.nextSibling.textContent=this.value"><i>'+Math.round((SND[k]??.8)*100)+'</i></div>';
-  el.innerHTML='<div class="panel cp sndP"><div class="cTop"><span class="bl brand">Sound</span><button class="x" onclick="$(\'soundP\').style.display=\'none\'">✕</button></div>'+
-    row('music','Music','The lute and recorder between events')+row('sfx','Effects','Hooves, mallets, lances, bells, coins')+row('amb','Ambience','The crowd, birdsong, crickets at dusk')+row('wx','Weather','Rain, wind and thunder')+
+  el.innerHTML='<div class="panel cp sndP"><div class="cTop"><span class="bl brand">Sound &amp; vibration</span><button class="x" onclick="$(\'soundP\').style.display=\'none\'">✕</button></div>'+
+    row('music','Music','The lute and recorder between events')+row('sfx','Effects','Hooves, mallets, lances, bells, coins')+row('amb','Ambience','The crowd, birdsong, crickets at dusk')+row('wx','Weather','Rain, wind and thunder')+'<div class="sndR"><span><b>Vibration</b><small>Hooves, lance hits, goals</small></span><button class="vibT'+(SND.vib!==false?' on':'')+'" onclick="setVib('+(SND.vib===false)+')">'+(SND.vib!==false?'On':'Off')+'</button></div>'+
     '<div class="rB"><button onclick="setMute(!muted);openSound()">'+(muted?'Turn sound on':'Mute everything')+'</button></div></div>';el.style.display='flex';audioStart()}
 // the ♪ button opens the panel instead of just muting
 (function(){const b=$('muteB');if(b)b.onclick=openSound})();
