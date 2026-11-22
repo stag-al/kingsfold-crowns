@@ -19,7 +19,7 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#13202a;font-family:"Pixelify Sans",monospace;color:#e8d39a;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   canvas.view{position:absolute;left:0;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.lendB{margin:10px 0 8px;padding:9px 10px;border:1px solid #6a5030;border-radius:6px;background:rgba(40,28,16,.6);font-size:13px;line-height:1.4}.lendB b{color:#e8c45a}.lendR{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0 4px}.lendR select{flex:1 1 40%;min-width:0;background:#1c140c;color:#efd9a0;border:1px solid #6a5030;border-radius:4px;padding:6px 4px;font-family:inherit;font-size:13px}.lendN{font-size:11.5px;color:#a89a80;margin:4px 0}.lendB .chip{margin-top:4px}.washC .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
+  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}.lendB{margin:10px 0 8px;padding:9px 10px;border:1px solid #6a5030;border-radius:6px;background:rgba(40,28,16,.6);font-size:13px;line-height:1.4}.lendB b{color:#e8c45a}.lendR{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0 4px}.lendR select{flex:1 1 40%;min-width:0;background:#1c140c;color:#efd9a0;border:1px solid #6a5030;border-radius:4px;padding:6px 4px;font-family:inherit;font-size:13px}.lendN{font-size:11.5px;color:#a89a80;margin:4px 0}.lendB .chip{margin-top:4px}.washC .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.yTog{display:flex;gap:6px;margin:4px 0 8px}.yTog button{flex:1;padding:7px 6px;border-radius:5px;border:1px solid #6a5030;background:#22180e;color:#a89a80;font-size:13px}.yTog button.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.lendR .chip.on,.pasAct .chip.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}.row.mine{box-shadow:inset 3px 0 0 #e8c45a}.vibT{min-width:64px;padding:6px 12px;border-radius:6px;border:2px solid #6a5030;background:#2a1e14;color:#a89a80;font-size:14px}.vibT.on{background:#5a4418;border-color:#e8c45a;color:#ffe9b0}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:11px;max-width:44%;overflow:hidden;text-overflow:ellipsis;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
   #vig{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(8,10,14,.38) 100%)}
   .panel{background:rgba(24,18,12,.92);border:2px solid #8a6a32;box-shadow:inset 0 0 0 2px #2e2216;border-radius:4px}
   .bl{font-family:"Jacquarda Bastarda 9",serif;font-weight:normal}
@@ -1528,7 +1528,7 @@ const SPORTOK={sw:(L,s)=>s.w===L.a,semi:(L,s)=>s.sf.includes(L.a),unh:(L,s)=>(s.
 const SPORTLAB={sw:(L,rc)=>rc.field[L.a].h.name+(rc.sport==='joust'?' wins the tourney':' wins'),semi:(L,rc)=>rc.field[L.a].h.name+' reaches the final',unh:L=>L.side?'A knight is unhorsed':'Nobody unhorsed',brk:L=>(L.side?'Over ':'Under ')+L.line+' lances broken',f3:L=>L.side?'Final goes 3+ passes':'Final over in under 3 passes',
   ah:(L,rc)=>rc.field[L.a].h.name+' outscores '+rc.field[L.b].h.name,atop:L=>'Winning score '+(L.side?'over ':'under ')+L.line,abull:L=>(L.side?'Over ':'Under ')+L.line+' bullseyes',aperf:L=>L.side?'Someone shoots a perfect five':'No perfect five'};
 function median(a){const b=[...a].sort((x,y)=>x-y);return b[b.length>>1]}
-function makeSport(kind,force){if(kind==='polo')return makePolo(force);ensureTourney();ensureRivals();const r=mulberry32((Math.random()*1e9)|0);G.raceNo++;const SE=seasonOf(G.raceNo);
+function makeSport(kind,force){if(kind==='polo')return makePolo(force);if(kind==='show')return makeShow(force);ensureTourney();ensureRivals();const r=mulberry32((Math.random()*1e9)|0);G.raceNo++;const SE=seasonOf(G.raceNo);
   const course=force||(kind==='joust'?'royal':['meadow','harvest','coast','fen'][G.raceNo%4]);
   const rc={sport:kind,no:G.raceNo,day:G.day,course,fur:0,laps:0,g:2,hilly:0,bets:[],cup:false,hurdle:false,jumps:0};
   rc.tod=wpick(r,['morning','midday','afternoon','evening'],[2,2,2,2.5]);rc.time=TOD[rc.tod].times[(r()*3)|0];rc.wx=pickWeather(rc,r);
@@ -1552,7 +1552,7 @@ function rivalPicksSport(rc,r){return G.rivals.map(RV=>{const D=rivDef(RV.id);if
 function sportTabs(){const cur=card.sport||'race';return'<div class="sportT">'+Object.entries(SPORTS).map(([k,S])=>'<button class="'+(cur===k?'on':'')+'" onclick="switchSport(\''+k+'\')">'+S.ic+' '+S.n+'</button>').join('')+'</div>'}
 function switchSport(k){if((card.sport||'race')===k)return;for(const b of card.bets){G.purse+=b.cost;G.stats.bets--;G.stats.staked-=b.cost}if(card.field&&card.field.some&&card.field.some(e=>e.h&&e.h.mine))G.purse+=20;G.raceNo--;G.sport=k;
   card=k==='race'?makeRace():makeSport(k);BS={sel:[],stakes:{},sgpStake:10,open:false};cardTab='win';save();showCard()}
-function renderSportCard(){if(card.sport==='polo')return renderPoloCard();const rc=card,th=THEMES[rc.course],SE=seasonOf(rc.no),J=rc.sport==='joust',sc=$('card').scrollTop;
+function renderSportCard(){if(card.sport==='polo')return renderPoloCard();if(card.sport==='show')return renderShowCard();const rc=card,th=THEMES[rc.course],SE=seasonOf(rc.no),J=rc.sport==='joust',sc=$('card').scrollTop;
   let h='<div class="panel cp"><div class="cTop"><span class="bl brand">Kingsfold Crowns</span><span class="purse">'+coin()+'<b>'+G.purse+'</b> crowns<small>'+titleOf(G.peak)+'</small></span></div>';
   h+='<div class="career"><span>'+SE.ic+' '+SE.n+', year '+yearOf(rc.no)+'</span><button class="chip" onclick="openMap()">Map</button><button class="chip" onclick="openHist()">Ledger</button><button class="chip" onclick="openEstate()">Estate</button><button class="chip" onclick="openStable()">'+(ownHorse()?'Stable':'Buy a horse')+'</button></div>'+sportTabs();
   h+='<div class="rTitle bl">'+rc.name+'</div><div class="rMeta">Event '+rc.no+' · '+th.name+' · '+rc.time+' ('+TOD[rc.tod].name.toLowerCase()+')</div><div class="wxL">'+WEATHERS[rc.wx].n+' · wind '+(rc.wind>1.1?'strong':rc.wind>.6?'fresh':'light')+' from the '+(rc.windDir>0?'west':'east')+'</div>';
@@ -1576,7 +1576,7 @@ function renderSportCard(){if(card.sport==='polo')return renderPoloCard();const 
 let SP=null;// live sport state
 function sportGeo(){const{C,NM,TG,S,ds}=T,st=T.stands[0],sdS=st?Math.sign((st.x-C[0][0])*NM[0][0]+(st.y-C[0][1])*NM[0][1])||1:1;const at=(s,lat)=>{const i=((Math.round(s/ds)%S)+S)%S;return[C[i][0]+NM[i][0]*lat,C[i][1]+NM[i][1]*lat,i]};return{at,sdS,dir:Math.atan2(TG[0][1],TG[0][0])}}
 function mkRider(C,kind){return{H:{coat:C.coat,silk:C.silk},x:0,y:0,vx:0,vy:0,v:0,gait:Math.random()*4,ph:Math.random()*9,f:1,i:0,lat:0,noLabel:true,knight:kind==='k',archer:kind==='a',capar:kind==='k',lance:0}}
-function startSport(){if(card.sport==='polo')return startPolo();closeSlip();$('slipBar').style.display='none';$('betslip').style.display='none';const rc=card;generate(rc.course);insg=Math.sign(T.K.reduce((a,b)=>a+b,0))||1;
+function startSport(){if(card.sport==='polo')return startPolo();if(card.sport==='show')return startShow();closeSlip();$('slipBar').style.display='none';$('betslip').style.display='none';const rc=card;generate(rc.course);insg=Math.sign(T.K.reduce((a,b)=>a+b,0))||1;
   const th=T.th,st0=sunFor(rc);gl.useProgram(prog);gl.uniform3f(U.uSun,...st0.u);gl.uniform4f(U.uSunW,...st0.w);gl.uniform1f(U.uAut,Math.max(th.aut,seasonOf(rc.no).aut));gl.uniform1f(U.uTurf,th.turf);weather(rc);gl.uniform1f(U.uSnow,WX.snowG);
   horses=[];parts=[];bits=[];ripples=[];drops=[];splats=[];buildObjs();race={rc,sport:rc.sport,t:-2.5,state:'post',said:{},comm:[],lastC:-9,finishers:[],fallers:[],hurdles:[],interf:[],rlive:[],D:1,doneT:0,cheer:0,dir:{shot:'sport'}};
   const G0=sportGeo();SP={G:G0,phase:'intro',t:0,log:[]};
@@ -1596,7 +1596,7 @@ function moveRider(R,dt,target){const G0=SP.G;R.v+=clamp(target-R.v,-6*dt,4.5*dt
 function sportSim(dt){race.t+=dt;SP.t+=dt;race.cheer=Math.max(0,race.cheer-dt);const rc=race.rc;
   if(race.state==='post'){if(race.t>=0){race.state='run';blip(220,.25,'square',.06)}return}
   if(race.state==='done'){race.doneT+=dt;if(race.doneT>2.4&&!race.shown){race.shown=1;sportSettle()}return}
-  if(rc.sport==='polo')poloSim(dt);else if(rc.sport==='joust')joustSim(dt);else archSim(dt);
+  if(rc.sport==='polo')poloSim(dt);else if(rc.sport==='show')showSim(dt);else if(rc.sport==='joust')joustSim(dt);else archSim(dt);
   for(const d of SP.down||[]){d.t+=dt}}
 function joustSim(dt){const B=card.result.bouts[SP.bout];
   if(SP.phase==='ready'){if(SP.t>1.2){SP.phase='charge';SP.t=0;SP.hit=false;if(SP.pass===0)say('They lower their lances… CHARGE!')}return}
@@ -1646,10 +1646,10 @@ function drawTarget(t){const[sx,sy]=scr(t.x,t.y),cx=sx,cy=sy-10;fx.fillStyle='#4
   const ring=[['#efe9da',6],['#2a2420',5],['#3a6ab8',4],['#c83a2a',3],['#e8c45a',1.6]];for(const[c,r]of ring)disc(fx,cx,cy,Math.round(r),c);
   for(const a of t.arrows){const x=Math.round(cx+a.dx*14),y=Math.round(cy+a.dy*14);fx.fillStyle='#3a2616';fx.fillRect(x,y,1,1);fx.fillRect(x+1,y-1,1,1);fx.fillStyle=a.c;fx.fillRect(x+2,y-2,1,1)}
   for(const p of SP.pops)if(p.x===t.x&&p.y===t.y){drawNum(p.sc,cx,cy-14-Math.round(p.t*6),p.sc===10?'#e8c45a':p.sc?'#2a1e12':'#8a2e24',p.sc===10?'#1a120a':'#fff')}}
-function drawSportFX(){if(card.sport==='polo')return drawPoloFX();if(!SP)return;for(const a of SP.arrows||[]){const q=clamp(a.t/a.dur,0,1),A=scr(a.fx,a.fy),B=scr(a.tg.x,a.tg.y),tx=B[0]+a.dx*14,ty=B[1]-10+a.dy*14,x=lerp(A[0],tx,q),y=lerp(A[1]-14,ty,q)-Math.sin(q*Math.PI)*6;pxl(fx,x-3,y+1,x,y,'#3a2616');fx.fillStyle='#f0ece2';fx.fillRect(Math.round(x)-3,Math.round(y)+1,1,1)}
+function drawSportFX(){if(card.sport==='polo')return drawPoloFX();if(card.sport==='show')return drawShowFX();if(!SP)return;for(const a of SP.arrows||[]){const q=clamp(a.t/a.dur,0,1),A=scr(a.fx,a.fy),B=scr(a.tg.x,a.tg.y),tx=B[0]+a.dx*14,ty=B[1]-10+a.dy*14,x=lerp(A[0],tx,q),y=lerp(A[1]-14,ty,q)-Math.sin(q*Math.PI)*6;pxl(fx,x-3,y+1,x,y,'#3a2616');fx.fillStyle='#f0ece2';fx.fillRect(Math.round(x)-3,Math.round(y)+1,1,1)}
   for(const d of SP.down||[]){const q=Math.min(1,d.t*2.5),x=d.x+d.vx*q*.6,y=d.y+d.vy*q*.6,[sx,sy]=scr(x,y),z=Math.round(Math.sin(q*Math.PI)*12);fx.fillStyle='rgba(10,16,6,.35)';fx.fillRect(sx-4,sy,9,1);
     fx.fillStyle='#8a8f98';fx.fillRect(sx-3,sy-3-z,6,2);fx.fillStyle='#a8adb6';fx.fillRect(sx+3,sy-4-z,2,2);fx.fillStyle=d.silk[0];fx.fillRect(sx-4,sy-5-z,3,3);if(d.t>1.5&&Math.floor(now*3)%2){fx.fillStyle='#8a8f98';fx.fillRect(sx+5,sy-6,1,2)}}}
-function sportObjs(){if(card&&card.sport==='polo')return poloObjs();if(!SP)return[];const out=[];for(const R of SP.riders){if(card.sport==='joust'&&R!==SP.a&&R!==SP.b)continue;if(card.sport==='archery'&&R!==SP.riders[SP.k])continue;out.push({kind:'horse',h:R,key:R.x+R.y})}return out}
+function sportObjs(){if(card&&card.sport==='polo')return poloObjs();if(card&&card.sport==='show')return showObjs();if(!SP)return[];const out=[];for(const R of SP.riders){if(card.sport==='joust'&&R!==SP.a&&R!==SP.b)continue;if(card.sport==='archery'&&R!==SP.riders[SP.k])continue;out.push({kind:'horse',h:R,key:R.x+R.y})}return out}
 // knights: caparison, armour, shield and lance; archers: tunic and a drawn bow
 function drawCapar(r,b,h){const[c1,c2]=h.H.silk;for(let x=-4;x<=4;x++){const c=(Math.floor((x+4)/2)%2)?c1:c2;r(x,-7-b,1,4,c)}r(-4,-4-b,9,1,shade(c1,.8));r(-5,-6-b,1,3,c1);r(5,-8-b,1,3,c2)}
 function drawKnightR(r,b,h,run){const[s1,s2]=h.H.silk,ar='#8a8f98',hi='#b8bec8';r(-1,-12-b,3,4,ar);r(-1,-12-b,1,4,hi);r(-1,-15-b,3,3,'#a8adb6');r(1,-14-b,1,1,'#1a1a1e');r(0,-17-b,1,2,s1);r(-1,-18-b,1,1,s2);
@@ -1658,10 +1658,10 @@ function drawKnightR(r,b,h,run){const[s1,s2]=h.H.silk,ar='#8a8f98',hi='#b8bec8';
 function drawArcherR(r,b,h,run){const[s1,s2,cap]=h.H.silk;r(-1,-11-b,2,3,s1);r(1,-10-b,1,1,s2);r(-1,-13-b,2,2,'#d9a07a');r(-1,-14-b,2,1,cap);r(-2,-13-b,1,1,cap);
   const draw=Math.floor(now*4+h.ph)%3===0;r(2,-14-b,1,1,'#5a3a22');r(3,-13-b,1,4,'#5a3a22');r(2,-9-b,1,1,'#5a3a22');if(draw){r(1,-12-b,1,1,'#e8e4dc');r(1,-11-b,1,1,'#e8e4dc')}r(-2,-10-b,1,3,'#7a5434')}
 function crack(){if(!AC||muted)return;const t=AC.currentTime,nb=AC.createBuffer(1,AC.sampleRate*.25,AC.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/1500);const s=AC.createBufferSource();s.buffer=nb;const f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=900;const g=AC.createGain();g.gain.value=.35;s.connect(f);f.connect(g);g.connect(catOut('sfx'));s.start(t)}
-function sportCam(){if(card.sport==='polo')return poloCam();const G0=SP.G;let p;if(card.sport==='joust'){p=SP.a&&SP.b?[(SP.a.x+SP.b.x)/2,(SP.a.y+SP.b.y)/2]:G0.at(0,0)}else{const R=SP.riders[Math.min(SP.k,SP.riders.length-1)];p=[R.x*.6+G0.at(1,0)[0]*.4,R.y*.6+G0.at(1,0)[1]*.4]}
+function sportCam(){if(card.sport==='polo')return poloCam();if(card.sport==='show')return showCam();const G0=SP.G;let p;if(card.sport==='joust'){p=SP.a&&SP.b?[(SP.a.x+SP.b.x)/2,(SP.a.y+SP.b.y)/2]:G0.at(0,0)}else{const R=SP.riders[Math.min(SP.k,SP.riders.length-1)];p=[R.x*.6+G0.at(1,0)[0]*.4,R.y*.6+G0.at(1,0)[1]*.4]}
   return{x:isoX(p[0],p[1])-AW/2,y:isoY(p[0],p[1])-AH/2-hz(p[0],p[1])+AH*.05}}
 // ----- settling the tourney
-function sportSettle(){if(race.rc.sport==='polo')return poloSettle();const rc=race.rc,res=rc.result;race.res=res;const SB=settleBets(rc),lines=SB.lines,ret=SB.ret,stake=rc.bets.reduce((a,b)=>a+b.cost,0);G.purse+=ret;G.stats.returned+=ret;if(ret>0){G.stats.won+=lines.filter(l=>l.w>0).length;G.stats.best=Math.max(G.stats.best,ret-stake)}
+function sportSettle(){if(race.rc.sport==='polo')return poloSettle();if(race.rc.sport==='show')return showSettle();const rc=race.rc,res=rc.result;race.res=res;const SB=settleBets(rc),lines=SB.lines,ret=SB.ret,stake=rc.bets.reduce((a,b)=>a+b.cost,0);G.purse+=ret;G.stats.returned+=ret;if(ret>0){G.stats.won+=lines.filter(l=>l.w>0).length;G.stats.best=Math.max(G.stats.best,ret-stake)}
   const RVS=[];for(const p of rc.rivs){const RV=G.rivals.find(x=>x.id===p.id);RV.purse-=p.s;const w=p.no-1===res.w?Math.floor(p.s*p.dec):0;RV.purse+=w;RV.peak=Math.max(RV.peak,RV.purse);if(w)RV.wins++;RVS.push({D:rivDef(p.id),name:rc.field[p.no-1].h.name,w,s:p.s})}
   logBets(rc,lines);const oldT=titleOf(G.peak);G.peak=Math.max(G.peak,G.purse);const newT=titleOf(G.peak);
   // the record books
@@ -2896,7 +2896,7 @@ function yardFind(){const L=9,Wd=7;let best=null,bs=-1e9;
     if(!ok)continue;h0/=n;let v=0;for(let y=cy;y<cy+Wd;y++)for(let x=cx;x<cx+L;x++)v=Math.max(v,Math.abs(hgt[idx(x,y)]-h0));if(v>[.05,.08,.14][lv])continue;
     const s=-v*120-Math.hypot(cx+L/2-N/2,cy+Wd/2-N/2)*1.2;if(s>bs){bs=s;best={x0:cx,y0:cy,x1:cx+L,y1:cy+Wd}}}
   return best||{x0:N/2-4,y0:N/2-3,x1:N/2+5,y1:N/2+4}}
-function yardOpen(){if(race)return;const A=yardFind(),M=mineAll(),r=mulberry32(99);
+function yardOpen(){if(race)return;const SHW=typeof YKIND!=='undefined'&&YKIND==='show',A=SHW?yardFindShow():yardFind(),M=SHW?G.showH:mineAll(),r=mulberry32(99);
   // clear the paddock of trees and clutter, then fence it, add a barn and hay
   objs=objs.filter(o=>{const x=o.x+(o.kind==='tree'||o.kind==='prop'||o.kind==='house'?.5:0),y=o.y+(o.kind==='tree'||o.kind==='prop'||o.kind==='house'?.5:0);return!(x>A.x0-1.5&&x<A.x1+1.5&&y>A.y0-2.5&&y<A.y1+1.5)});
   const posts=[],add=(x,y)=>posts.push({kind:'post',x,y,key:x+y});
@@ -2944,7 +2944,7 @@ function yardStep(dt){const A=YARD.A,r=Math.random;
   for(const H0 of PAS.hay)H0.t-=dt;PAS.hay=PAS.hay.filter(x=>x.t>0);
   for(const e of PAS.fx){e.t-=dt;if(e.fly){e.ph+=dt*9;e.x+=Math.cos(e.ph)*.5*dt;e.y+=Math.sin(e.ph*1.3)*.5*dt}else{e.z+=e.vz*dt}}PAS.fx=PAS.fx.filter(e=>e.t>0)}
 // care actions, shown in the world
-careAct=function(id,k){const h=G.roster.find(x=>x.id===id);if(!h)return;careInit(h);const used=h.care||(h.care={});if(used[k]===G.raceNo)return;const P=PAS&&PAS.horses.find(p=>p.h===h);
+careAct=function(id,k){const h=findAnyH(id);if(!h)return;careInit(h);const used=h.care||(h.care={});if(used[k]===G.raceNo)return;const P=PAS&&PAS.horses.find(p=>p.h===h);
   if(k==='feed'){const c=Math.round((FEEDS[h.feed]||FEEDS.oats).cost*.6);if(G.purse<c)return;G.purse-=c;h.cond=Math.min(100,h.cond+7);h.mood=Math.min(100,h.mood+5);if(P){P.act={k:'eat',t:3.2};PAS.hay.push({x:P.x+.4,y:P.y+.2,t:6})}blip(392,.12)}
   if(k==='brush'){h.clean=Math.min(100,h.clean+30);h.mood=Math.min(100,h.mood+4);if(P)P.act={k:'brush',t:2.6};knock(1400,.03)}
   if(k==='bathe'){if(G.purse<5)return;G.purse-=5;h.clean=100;h.mood=Math.max(0,h.mood-2);if(P)P.act={k:'bathe',t:3};if(AC)noiseHit(AC.currentTime,.4,1800,1,.04)}
@@ -3007,11 +3007,11 @@ function lendHtml(rc){const M=lendable();lendValid();if(!M.length&&!rc.mount)ret
   const busy=G.lend&&G.lend.no!==rc.no?G.lend.hid:null;
   s+='<div class="lendR"><select id="lendH">'+M.filter(h=>h.id!==busy).map(h=>'<option value="'+h.id+'">'+h.name+' ('+(h.sex==='m'?'♂':'♀')+', rated '+h.or+')</option>').join('')+'</select><span>to</span><select id="lendR">'+riderList(rc).map(o=>'<option value="'+o.v+'">'+o.n+'</option>').join('')+'</select><button class="chip" onclick="lendHorse()">Lend</button></div>';
   s+='<div class="lendN">A better, well-kept horse gives the rider a real edge, so the odds change. Bets already on this event are refunded.'+(busy?' One horse is already lent out elsewhere.':'')+'</div></div>';return s}
-function injectLend(){const rc=card;if(!rc||!rc.sport||rc.sport==='race'||rc.ran)return;const el=$('card'),go=el&&el.querySelector('.go');if(!go||el.querySelector('.lendB'))return;go.insertAdjacentHTML('beforebegin',lendHtml(rc))}
+function injectLend(){const rc=card;if(!rc||!rc.sport||rc.sport==='race'||rc.sport==='show'||rc.ran)return;const el=$('card'),go=el&&el.querySelector('.go');if(!go||el.querySelector('.lendB'))return;go.insertAdjacentHTML('beforebegin',lendHtml(rc))}
 const _rsc=renderSportCard;renderSportCard=function(){const r=_rsc.apply(this,arguments);injectLend();return r};
 const _rpc=renderPoloCard;renderPoloCard=function(){const r=_rpc.apply(this,arguments);injectLend();return r};
 // on the day: the rider sits on your horse; everyone else's mounts get a sex too (destriers mostly stallions, polo ponies mostly mares)
-function giveMounts(){if(!SP)return;const rc=card;if(rc.sport==='polo'&&PL){for(const R of PL.riders){R.H.sex=hash2(R.team*4+R.j,rc.no,5)<.8?'f':'m';if(rc.mount&&R.team===rc.mount.t&&R.j===rc.mount.j){const h=G.roster.find(x=>x.id===rc.mount.hid);if(h){R.H.coat=h.coat;R.H.sex=h.sex;R.mine=1}}}return}
+function giveMounts(){if(!SP)return;const rc=card;if(rc.sport==='show')return;if(rc.sport==='polo'&&PL){for(const R of PL.riders){R.H.sex=hash2(R.team*4+R.j,rc.no,5)<.8?'f':'m';if(rc.mount&&R.team===rc.mount.t&&R.j===rc.mount.j){const h=G.roster.find(x=>x.id===rc.mount.hid);if(h){R.H.coat=h.coat;R.H.sex=h.sex;R.mine=1}}}return}
   (SP.riders||[]).forEach((R,k)=>{const C=rc.comp[k];R.H.sex=hash2(C.id,rc.sport==='joust'?7:9,3)<(rc.sport==='joust'?.85:.5)?'m':'f';if(rc.mount&&k===rc.mount.k){const h=G.roster.find(x=>x.id===rc.mount.hid);if(h){R.H.coat=h.coat;R.H.sex=h.sex;R.mine=1}}})}
 const _startSportM=startSport;startSport=function(){const r=_startSportM.apply(this,arguments);try{giveMounts()}catch(e){}return r};
 // after the event: prize money for the owner, a tired, muddy horse, a line in its record
@@ -3025,14 +3025,14 @@ const _sportSettleM=sportSettle;sportSettle=function(){const rc=race.rc,res=rc.r
     G.purse+=prize;G.lend=null;line='<div class="prize">Your '+(h?h.name:'horse')+' carried '+rc.mount.rider+', who '+how+(prize?'. Your share: <b>+'+prize+'</b> crowns!':'.')+'</div>'}
   const r=_sportSettleM.apply(this,arguments);if(line){const el=$('results'),a=el&&(el.querySelector('.purse2')||el.querySelector('.rB'));if(a)a.insertAdjacentHTML('beforebegin',line)}return r};
 // ---------- treats ----------
-const _careActC=careAct;careAct=function(id,k){if(k!=='treat')return _careActC(id,k);const h=G.roster.find(x=>x.id===id);if(!h)return;careInit(h);const used=h.care||(h.care={});
+const _careActC=careAct;careAct=function(id,k){if(k!=='treat')return _careActC(id,k);const h=findAnyH(id);if(!h)return;careInit(h);const used=h.care||(h.care={});
   if((used.treat||0)>=G.raceNo*10+2)return;if(G.purse<2)return;G.purse-=2;used.treat=Math.max(used.treat||0,G.raceNo*10)+1;h.mood=Math.min(100,h.mood+9);h.cond=Math.min(100,h.cond+1);
   const P=PAS&&PAS.horses.find(p=>p.h===h);if(P){P.act={k:'treat',t:2.6,what:['apple','carrot','sugar'][(Math.random()*3)|0]};P.st='graze';P.v=0}save();pasInfo();const pu=$('stable').querySelector('.purse b');if(pu)pu.textContent=G.purse};
 // ---------- the wash: soap him all over, then hose him off ----------
 let WASH=null;
 function horseMask(male){const m=[],U=male?1:0,add=(x0,x1,y0,y1)=>{for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)m.push([x,y])};
   add(-4,4,-7-U,-5);add(4,5,-9-U,-7-U);add(5,7,-13-U,-12-U);add(8,8,-12-U,-12-U);add(-5,-5,-7-U,-5-U);for(const x of[3,2,-3,-2])add(x,x,-4,-1);return m}
-function washStart(id){const h=G.roster.find(x=>x.id===id),P=PAS&&PAS.horses.find(p=>p.h===h);if(!h||!P)return;careInit(h);const used=h.care||(h.care={});if(used.bathe===G.raceNo)return;if(G.purse<5)return;G.purse-=5;
+function washStart(id){const h=findAnyH(id),P=PAS&&PAS.horses.find(p=>p.h===h);if(!h||!P)return;careInit(h);const used=h.care||(h.care={});if(used.bathe===G.raceNo)return;if(G.purse<5)return;G.purse-=5;
   P.act={k:'wash',t:1e9};P.st='graze';P.v=0;P.walk=false;P.vx=.01;P.vy=-.01;P.f=1;
   const dirt=clamp((100-h.clean)/100,0,1);WASH={P,h,tool:'soap',down:false,mask:horseMask(h.sex==='m').map(([x,y])=>({x,y,d:clamp(dirt*(.4+Math.random()*.9),0,1),s:0,w:0})),bub:[],spray:[],px:0,py:0,done:0,sndT:0};
   pasInfo();save()}
@@ -3097,6 +3097,222 @@ const _pasInfoC=pasInfo;pasInfo=function(){const el=$('pasInfo');if(!el)return;
   if(h.events&&h.events.length){const e=h.events[h.events.length-1];act.insertAdjacentHTML('afterend','<div class="kvn">Last outing: carried '+e.rider+' ('+({joust:'jousting',archery:'archery',polo:'polo'})[e.sport]+'), who '+e.how+'.</div>')}};
 // yard horses carry their sex so stallions are drawn a touch bigger
 const _yardOpenC=yardOpen;yardOpen=function(){const r=_yardOpenC.apply(this,arguments);if(PAS)for(const P of PAS.horses)P.H.sex=P.h.sex;if(YARD)YARD.z=2.1;return r};
+
+// ===================== the horse show: show horses, their own pasture, breeding, a rotating market and a judged show =====================
+// Show horses are a separate string from your racing and event horses. They're judged in three classes: conformation
+// (how they're made), movement (how they trot out in-hand) and presence & turnout (bearing, plus how well kept they are,
+// so washing and grooming matter). You can bet on the show, enter your own horses for prize money and ribbons, breed
+// them up from your best mares and stallions, and buy from a market that changes every few events.
+SPORTS.show={n:'Horse Show',ic:'🎀'};
+const SBREEDS=[{n:'Destrier',c:.66,m:.52,p:.7},{n:'Courser',c:.56,m:.7,p:.56},{n:'Palfrey',c:.6,m:.64,p:.62},{n:'Jennet',c:.58,m:.72,p:.6},{n:'Barb',c:.64,m:.66,p:.68},{n:'Rouncey',c:.48,m:.5,p:.5}];
+const SHOWNAMES=['The Kingsfold Horse Show','The Royal Show','The Midsummer Fair Show','The Michaelmas Show','The Show of the Silver Bridle'];
+function showFind(id){const G0=G;return(G0.showH||[]).find(h=>h.id===id)||(G0.showNPC||[]).find(h=>h.id===id)||null}
+function findAnyH(id){return G.roster.find(x=>x.id===id)||showFind(id)}
+function mkShowHorse(r,opt){opt=opt||{};const B=SBREEDS[opt.breed??((r()*SBREEDS.length)|0)],q=opt.q??(r()*.5-.15),t=()=>clamp(q+gauss(r)*.09,-.4,.4);
+  const id=9000+((G.showSeq=(G.showSeq||0)+1));
+  return{id,name:NA[(r()*NA.length)|0]+' '+NB[(r()*NB.length)|0],breed:B.n,sex:opt.sex||(r()<.5?'m':'f'),age:opt.age??(3+((r()*6)|0)),coat:(r()*COATS.length)|0,
+    conf:clamp(B.c+t(),.08,.99),move:clamp(B.m+t(),.08,.99),pres:clamp(B.p+t(),.08,.99),temp:clamp(.55+gauss(r)*.2,.1,.98),clean:80,mood:70,cond:75,fit:70,ribbons:[],wins:0,mine:!!opt.mine}}
+function ensureShow(){if(!G.showH)G.showH=[];if(!G.showNPC){const r=mulberry32(5151+(G.roster[0]?G.roster[0].id:7));G.showNPC=[];for(let k=0;k<14;k++)G.showNPC.push(mkShowHorse(r,{q:r()*.55-.1}))}
+  for(const h of G.showH.concat(G.showNPC))careInit(h)}
+const showRating=H=>Math.round(50+(H.conf*.35+H.move*.4+H.pres*.25)*50);
+function showSilk(H){if(H.mine)return G.silk||['#e8c45a','#3a7a3a','#e8c45a',0];const c=SILKC[H.id%12],d=SILKC[(H.id*7+3)%12];return[c,d===c?SILKC[(H.id+5)%12]:d,c,H.id%4]}
+function turnoutOf(H,r){return H.mine?clamp(H.clean/100*.6+H.mood/100*.4,0,1):clamp(.72+gauss(r)*.1,.35,.98)}
+// ----- the judging
+function showRound(E,turn,r){let plays=0;const sc=E.map((H,k)=>{const mat=H.age<3?.93:1;let c=(5+4.2*H.conf+gauss(r)*.5)*mat,m=(5+4.2*H.move+gauss(r)*.6)*mat,p=4.5+3*H.pres+1.4*turn[k]+gauss(r)*.5;
+    const play=r()<(1-H.temp)*.16;if(play){m-=1.6+r()*1.4;plays++}c=clamp(c,1,10);m=clamp(m,1,10);p=clamp(p,1,10);return{c:+c.toFixed(1),m:+m.toFixed(1),p:+p.toFixed(1),tot:+((c*.35+m*.4+p*.25)*10).toFixed(1),play}});
+  const o=[...sc.keys()].sort((a,b)=>sc[b].tot-sc[a].tot||(r()-.5));return{w:o[0],o,sc,plays,top:sc[o[0]].tot}}
+Object.assign(HOLD,{stop3:1.1,splay:1.07});
+Object.assign(SPORTOK,{stop3:(L,s)=>s.o.slice(0,3).includes(L.a),splay:(L,s)=>(s.plays>0)===!!L.side});
+Object.assign(SPORTLAB,{stop3:(L,rc)=>rc.field[L.a].h.name+' to be placed (top 3)',splay:L=>L.side?'A horse plays up':'Nobody plays up'});
+function showPrice(L,rc){if(L.m==='stop3'){const p=rc.simS.filter(s=>s.o.slice(0,3).includes(L.a)).length/rc.simS.length;return qDec(Math.min(30,1/(Math.max(.03,p)*HOLD.stop3)))}
+  if(L.m==='splay'){const p=rc.simS.filter(s=>(s.plays>0)===!!L.side).length/rc.simS.length;return qDec(Math.min(30,1/(Math.max(.03,p)*HOLD.splay)))}return null}
+if(typeof selDec==='function'){const _selDecS=selDec;selDec=function(L){if(card&&card.sport==='show'&&(L.m==='stop3'||L.m==='splay')){const d=showPrice(L,card);if(d)return d}return _selDecS(L)}}
+// ----- building a show card
+function showEntrants(r,mine){const pool=G.showNPC.filter(h=>h.age>=2&&!mine.includes(h)).sort(()=>r()-.5);return mine.concat(pool).slice(0,6)}
+function figureShow(rc,r){const E=rc.comp,rr=mulberry32((r()*1e9)|0),sims=[];rc.turn=E.map(H=>turnoutOf(H,r));for(let k=0;k<3000;k++)sims.push(showRound(E,rc.turn,rr));rc.result=showRound(E,rc.turn,r);rc.simI=sims;rc.simS=sims;
+  rc.field=E.map((H,k)=>{const p=sims.filter(s=>s.w===k).length/sims.length,dec=qDec(Math.min(60,1/(Math.max(.012,p)*HOLD.sw)));return{no:k+1,p,h:{name:H.name,or:showRating(H),silk:showSilk(H)},dec,odds:toLadder(dec),openOdds:toLadder(dec)}});
+  rc.favIdx=rc.field.reduce((b,e,k)=>e.p>rc.field[b].p?k:b,0);rc.pInfo=rc.field.map(e=>e.p);rc.rivs=rivalPicksSport(rc,r)}
+function makeShow(force){ensureShow();ensureRivals();const r=mulberry32((Math.random()*1e9)|0);G.raceNo++;
+  const course=force||['meadow','royal','harvest','coast','fen'][G.raceNo%5],rc={sport:'show',no:G.raceNo,day:G.day,course,fur:0,laps:0,g:2,hilly:0,bets:[],cup:false,hurdle:false,jumps:0};
+  rc.tod=wpick(r,['morning','midday','afternoon','evening'],[2,3,2,1]);rc.time=TOD[rc.tod].times[(r()*3)|0];rc.wx=pickWeather(rc,r);rc.wind=(WEATHERS[rc.wx].wind||.4);rc.windDir=1;
+  rc.name=SHOWNAMES[(r()*SHOWNAMES.length)|0];rc.mt=1;const mine=G.showH.filter(h=>h.showIn&&h.age>=2&&!h.preg).slice(0,2);rc.comp=showEntrants(r,mine);figureShow(rc,r);rc.tip={pos:true,no:1,txt:''};return rc}
+function showEnter(id){const rc=card;if(!rc||rc.sport!=='show'||rc.ran||race)return;const H=G.showH.find(h=>h.id===id);if(!H)return;refundCard(rc);const r=mulberry32((Math.random()*1e9)|0);
+  const i=rc.comp.findIndex(x=>x.id===id);if(i>=0){rc.comp.splice(i,1);const add=G.showNPC.filter(h=>h.age>=2&&!rc.comp.some(c=>c.id===h.id));rc.comp.push(add[(r()*add.length)|0])}
+  else{if(rc.comp.filter(c=>c.mine).length>=2)return;const k=rc.comp.map((c,j)=>c.mine?-1:j).filter(j=>j>=0).pop();rc.comp.splice(k,1);rc.comp.unshift(H)}
+  figureShow(rc,r);save();renderCard()}
+// ----- the show card
+function renderShowCard(){const rc=card,th=THEMES[rc.course],SE=seasonOf(rc.no),sc=$('card').scrollTop;ensureShow();
+  let h='<div class="panel cp"><div class="cTop"><span class="bl brand">Kingsfold Crowns</span><span class="purse">'+coin()+'<b>'+G.purse+'</b> crowns<small>'+titleOf(G.peak)+'</small></span></div>';
+  h+='<div class="career"><span>'+SE.ic+' '+SE.n+', year '+yearOf(rc.no)+'</span><button class="chip" onclick="openMap()">Map</button><button class="chip" onclick="openHist()">Ledger</button><button class="chip" onclick="openEstate()">Estate</button><button class="chip" onclick="YKIND=\'show\';stableTab=\'pasture\';openStable()">Show yard</button></div>'+sportTabs();
+  h+='<div class="rTitle bl">'+rc.name+'</div><div class="rMeta">Event '+rc.no+' · '+th.name+' · '+rc.time+' ('+TOD[rc.tod].name.toLowerCase()+')</div><div class="wxL">'+WEATHERS[rc.wx].n+'</div>';
+  h+='<div class="facts"><span><i>Entries</i>'+rc.comp.length+'</span><span><i>Conformation</i>35%</span><span><i>Movement</i>40%</span><span><i>Presence &amp; turnout</i>25%</span></div>';
+  h+=ringHtml(rc)+'<div class="pace"><b>The judging:</b> each horse is stood up for the judge, then trotted out and back. A clean, happy horse shows better, and a nervy one may play up in front of the crowd.</div>';
+  const tabs=[['win','Champion'],['h2h','To be placed'],['spec','Specials']];if(!tabs.some(t=>t[0]===cardTab))cardTab='win';
+  h+='<div class="tabs">'+tabs.map(([k,n])=>'<button class="'+(cardTab===k?'on':'')+'" onclick="cardTab=\''+k+'\';renderCard()">'+n+'</button>').join('')+'</div>';
+  if(cardTab!=='spec'){for(const e of rc.field){const H=rc.comp[e.no-1],L=cardTab==='win'?{m:'sw',a:e.no-1}:{m:'stop3',a:e.no-1};
+      const st='Conformation '+stars(60+H.conf*40)+' Movement '+stars(60+H.move*40)+'<br>Presence '+stars(60+H.pres*40)+(H.temp<.4?' · <i>nervy</i>':H.temp>.8?' · <i>unflappable</i>':'');
+      h+='<div class="row'+(H.mine?' mine':'')+'"><div class="rinfo"><span class="no"><b>'+e.no+'</b></span><i class="silk" style="'+silkCss(e.h.silk)+'"></i><span class="nm"><b>'+H.name+(H.mine?' <em class="mk">YOURS</em>':'')+'</b><small>'+H.age+'yo '+H.breed+' '+(H.sex==='m'?'stallion':'mare')+' · '+COATS[H.coat][0]+' · ribbons '+(H.ribbons.slice(-6).map(x=>x===1?'🥇':x===2?'🥈':x===3?'🥉':'·').join('')||'–')+'</small><small class="fm">'+st+'</small></span></div><span class="obw">'+oddBtn(L)+'</span></div>'}}
+  else{const grp=(t,arr)=>'<div class="spG"><div class="spT">'+t+'</div><div class="spB">'+arr.map(([L,txt])=>oddBtn(L,txt)).join('')+'</div></div>';h+=grp('Will a horse play up in the ring?',[[{m:'splay',side:1},'Yes'],[{m:'splay',side:0},'No']])}
+  // your show horses
+  const el=G.showH.filter(x=>x.age>=2&&!x.preg);if(el.length){h+='<div class="lendB"><b>🎀 Enter your show horses</b><div class="lendN">Up to two. Prize money for the top three: 150, 60 and 30 crowns. Bets already on this show are refunded when the entries change.</div><div class="lendR">'+el.map(x=>{const inn=rc.comp.some(c=>c.id===x.id);return'<button class="chip'+(inn?' on':'')+'" onclick="showEnter('+x.id+')">'+(inn?'✓ ':'')+x.name+'<small>'+(inn?'entered':'clean '+Math.round(x.clean)+'%')+'</small></button>'}).join('')+'</div></div>'}
+  else h+='<div class="lendB"><b>🎀 Show horses</b><div class="lendN">You have no show horses yet. Buy one in the Show yard market, then come back and enter it.</div></div>';
+  const bets=rc.bets;h+='<div class="betsum">'+(bets.length?'<b>Your bets</b>'+bets.map((b,k)=>'<span>'+betTag(b)+b.cost+' · '+b.label+' <i>'+amer(b.dec)+'</i> <a onclick="cancelBet('+k+')">✕</a></span>').join(''):'Tap any price to add it to your bet slip.')+'</div>';
+  h+='<button class="go" onclick="startRace()">'+(bets.length?'Lock it in. Into the ring!':'Just watch this one')+'</button></div>';$('card').innerHTML=h;$('card').scrollTop=sc}
+// ----- staging the show in the world: a fenced ring, the judge, horses led in-hand by their grooms
+let SH=null;
+function showRing(F){const cx=(F.x0+F.x1)/2,cy=(F.y0+F.y1)/2;return{x0:cx-3.9,x1:cx+3.9,y0:cy-2.7,y1:cy+2.7,cx,cy}}
+function ringPt(R,s){const w=R.x1-R.x0-1.8,hh=R.y1-R.y0-1.8,P=2*(w+hh);s=((s%P)+P)%P;const x0=R.x0+.9,y0=R.y0+.9;
+  if(s<w)return[x0+s,y0];s-=w;if(s<hh)return[x0+w,y0+s];s-=hh;if(s<w)return[x0+w-s,y0+hh];s-=w;return[x0,y0+hh-s]}
+function startShow(){closeSlip();$('slipBar').style.display='none';$('betslip').style.display='none';const rc=card;generate(rc.course);insg=1;const th=T.th,st0=sunFor(rc);gl.useProgram(prog);gl.uniform3f(U.uSun,...st0.u);gl.uniform4f(U.uSunW,...st0.w);gl.uniform1f(U.uAut,Math.max(th.aut,seasonOf(rc.no).aut));gl.uniform1f(U.uTurf,th.turf);weather(rc);gl.uniform1f(U.uSnow,WX.snowG);
+  horses=[];parts=[];bits=[];ripples=[];drops=[];splats=[];buildObjs();const F=findPitch(),R=showRing(F);
+  objs=objs.filter(o=>{const big=o.kind==='tree'||o.kind==='prop'||o.kind==='house'||o.kind==='stand',x=big?o.x+.5:o.x,y=big?o.y+.5:o.y;return!(x>R.x0-1.4&&x<R.x1+1.4&&y>R.y0-2&&y<R.y1+1.4)});
+  // the ring fence, with a gate on the near side
+  const posts=[],add=(x,y)=>posts.push({kind:'post',x,y,key:x+y});for(let x=R.x0;x<=R.x1+.01;x+=1.15){add(x,R.y0);add(x,R.y1)}for(let y=R.y0+1.07;y<R.y1-.1;y+=1.07){add(R.x0,y);add(R.x1,y)}
+  const ring=[...posts.filter(p=>p.y===R.y0).sort((a,b)=>a.x-b.x),...posts.filter(p=>p.x===R.x1&&p.y!==R.y0&&p.y!==R.y1).sort((a,b)=>a.y-b.y),...posts.filter(p=>p.y===R.y1).sort((a,b)=>b.x-a.x),...posts.filter(p=>p.x===R.x0&&p.y!==R.y0&&p.y!==R.y1).sort((a,b)=>b.y-a.y)];
+  ring.forEach((p,k)=>{if(!(p.y===R.y1&&Math.abs(p.x-R.cx)<.7))p.nx=ring[(k+1)%ring.length]});objs.push(...ring);
+  for(let x=R.x0+.3;x<R.x1-.2;x+=.36)objs.push({kind:'crowd',x,y:R.y0-.75-(Math.random()*.25),seed:(x*17|0),i:0,key:x+R.y0-.75});
+  for(let y=R.y0+.4;y<R.y1-.3;y+=.4)objs.push({kind:'crowd',x:R.x1+.75+Math.random()*.2,y,seed:(y*23|0),i:0,key:R.x1+.75+y});
+  objs.push({kind:'sport',x:R.cx,y:R.y0-.35,key:R.cx+R.y0-.35,draw:()=>drawJudgeBox(R.cx,R.y0-.35)});
+  race={rc,sport:'show',t:-1.5,state:'post',said:{},comm:[],lastC:-9,finishers:[],fallers:[],hurdles:[],interf:[],rlive:[],D:1,doneT:0,cheer:0,dir:{shot:'sport'}};
+  const P0=2*((R.x1-R.x0-1.8)+(R.y1-R.y0-1.8));
+  const E=rc.comp.map((H,k)=>{const s=-k*P0/rc.comp.length,[x,y]=ringPt(R,s);return{H:{coat:H.coat,silk:showSilk(H),sex:H.sex},src:H,k,x,y,vx:.01,vy:0,v:0,gait:Math.random()*4,ph:Math.random()*9,f:1,i:0,lat:99,unhorsed:true,noLabel:true,walk:false,s,play:0,jz:0,rib:0,showH:1}});
+  SH={R,P0,E,phase:'parade',t:0,k:-1,judge:{x:R.cx,y:R.y0+.6,vx:0,vy:0,walk:false},sub:'',revealed:[],place:[]};SP={G:null,riders:E};
+  race.baseK=K;K=Math.round(K*3);setSizes();const c=showCam();cam.x=c.x;cam.y=c.y;
+  $('card').style.display='none';$('results').style.display='none';$('hud').style.display='flex';$('miniW').style.display='none';$('comm').style.display='block';$('rc').style.display='none';$('rName').textContent=rc.name;
+  say('Welcome to '+rc.name+' at '+th.name+'. '+E.length+' horses in the ring.');audioStart();bugle();showHud()}
+function drawJudgeBox(x,y){const[sx,sy]=scr(x,y);fx.fillStyle='rgba(10,16,6,.3)';fx.fillRect(sx-9,sy+1,19,2);fx.fillStyle='#5a3a22';fx.fillRect(sx-9,sy-7,18,7);fx.fillStyle='#7a5434';fx.fillRect(sx-9,sy-7,18,1);fx.fillStyle='#e8dcc0';fx.fillRect(sx-8,sy-6,16,1);
+  fx.fillStyle='#2f56a8';fx.fillRect(sx-10,sy-11,20,2);fx.fillStyle='#e8c45a';for(let k=-9;k<10;k+=3)fx.fillRect(sx+k,sy-9,1,1)}
+// walking the horses about
+function lead(E,tx,ty,sp,dt){const dx=tx-E.x,dy=ty-E.y,d=Math.hypot(dx,dy);if(d<.06){E.v=Math.max(0,E.v-dt*6);E.walk=false;return true}
+  const v=Math.min(sp,d*3);E.vx=dx/d*v;E.vy=dy/d*v;E.x+=E.vx*dt;E.y+=E.vy*dt;E.v=v>1.6?Math.max(v,3.2):v;E.walk=true;E.gait+=dt*(v>1.6?3:2);return false}
+function faceIn(E){E.vx=.012;E.vy=.02;E.f=1}
+function lineSpot(k,n){const R=SH.R;return[R.x0+1.3+k*(R.x1-R.x0-2.6)/Math.max(1,n-1),R.y0+1.25]}
+function showSim(dt){const S=SH;if(!S)return;S.t+=dt;const R=S.R,E=S.E,n=E.length,res=card.result;for(const e of E){e.jz=Math.max(0,(e.jz||0)-dt*20)}
+  if(S.phase==='parade'){const sp=S.t<6?1.15:2.5;for(const e of E){e.s+=sp*dt;const[x,y]=ringPt(R,e.s);e.vx=(x-e.x)/dt;e.vy=(y-e.y)/dt;e.x=x;e.y=y;e.v=sp>2?3.3:1.2;e.walk=true;e.gait+=dt*(sp>2?3:2)}
+    if(S.t>5.9&&!S.said1){S.said1=1;say('And now trot on, please.')}if(S.t>11.5){S.phase='line';S.t=0;say('The horses come into line for the judge.')}return}
+  if(S.phase==='line'){let all=true;E.forEach((e,k)=>{const[x,y]=lineSpot(k,n);if(!lead(e,x,y,1.4,dt))all=false;else faceIn(e)});if(all&&S.t>1){S.phase='show';S.t=0;S.k=0;S.sub='out'}return}
+  if(S.phase==='show'){const e=E[S.k],c=[R.cx,R.cy-.1],J=S.judge,sc=res.sc[S.k];
+    for(const o of E)if(o!==e){const[x,y]=lineSpot(o.k,n);if(lead(o,x,y,1.2,dt))faceIn(o)}
+    if(S.sub==='out'){lead(J,R.cx-1.2,R.cy-.6,1,dt);if(lead(e,c[0],c[1],1.3,dt)){S.sub='stand';S.t=0;if(Math.random()<.7)say(e.src.name+' is stood up for the judge.')}}
+    else if(S.sub==='stand'){faceIn(e);const a=S.t*2.2;lead(J,e.x+Math.cos(a)*.75,e.y+Math.sin(a)*.5,1.4,dt);if(S.t>2.3){S.sub='away';S.t=0;if(sc.play)S.playAt=.6+Math.random()*.8}}
+    else if(S.sub==='away'){if(lead(e,R.x1-1.4,c[1],2.6,dt)){S.sub='back';S.t=0}}
+    else if(S.sub==='back'){if(lead(e,c[0]-.3,c[1],2.6,dt)){S.sub='score';S.t=0;S.revealed.push(S.k);showHud();
+        say('Judges for '+e.src.name+': conformation '+sc.c+', movement '+sc.m+', presence '+sc.p+'. Total '+sc.tot+'.');race.cheer=Math.max(race.cheer,sc.tot>85?1.2:.5);crowd(sc.tot>85?.8:.4)}}
+    else if(S.sub==='score'){faceIn(e);if(S.t>1.1){S.sub='home';S.t=0}}
+    else if(S.sub==='home'){const[x,y]=lineSpot(e.k,n);if(lead(e,x,y,1.4,dt)){faceIn(e);S.k++;S.sub='out';S.t=0;if(S.k>=n){S.phase='place';S.t=0;S.k=-1;say('The judge has made her decision...');crowd(.4)}}}
+    // playing up in front of the crowd: a buck or two
+    if(sc.play&&(S.sub==='away'||S.sub==='back')&&!e.played&&S.playAt!=null&&S.t>S.playAt){e.played=1;e.jz=9;setTimeout(()=>{if(e)e.jz=7},250);say(pick([e.src.name+' plays up! A buck and a squeal in front of the crowd.',e.src.name+' takes exception to something and leaps about!',e.src.name+' gets silly on the trot-up.']));crowd(.6);race.cheer=1}
+    return}
+  if(S.phase==='place'){// called forward from third to first, then the champion's lap of honour
+    const ord=res.o,call=[2,1,0].filter(p=>p<ord.length);const step=Math.floor(S.t/1.6);
+    for(let q=0;q<call.length&&q<=step;q++){const p=call[q],e=E[ord[p]];if(!e.rib){e.rib=p+1;say((p===0?'The champion: ':p===1?'Second: ':'Third: ')+e.src.name+'!'+(p===0?' A rosette and the silver bridle.':''));if(p===0){race.cheer=2;crowd(1);jingle()}else{race.cheer=1;crowd(.6)}}}
+    E.forEach(e=>{if(e.rib){const[x,y]=[R.cx+(e.rib===1?0:e.rib===2?-1.1:1.1),R.cy+.6];if(lead(e,x,y,1.4,dt))faceIn(e)}else{const[x,y]=lineSpot(e.k,n);if(lead(e,x,y,1.2,dt))faceIn(e)}});
+    lead(S.judge,R.cx,R.cy+1.6,1,dt);if(S.t>call.length*1.6+1.6){S.phase='lap';S.t=0;const W=E[ord[0]];W.s=0;let best=1e9;for(let s=0;s<S.P0;s+=.1){const[x,y]=ringPt(R,s),d=Math.hypot(x-W.x,y-W.y);if(d<best){best=d;W.s=s}}}return}
+  if(S.phase==='lap'){const W=E[res.o[0]];if(S.t<.6){const[x,y]=ringPt(R,W.s);lead(W,x,y,2.6,dt)}else{W.s+=2.6*dt;const[x,y]=ringPt(R,W.s);W.vx=(x-W.x)/dt;W.vy=(y-W.y)/dt;W.x=x;W.y=y;W.v=3.3;W.walk=true;W.gait+=dt*3}
+    if(S.t>6.5&&race.state!=='done'){race.state='done';race.doneT=0;say(W.src.name+' is the champion of '+card.name+'!')}}}
+function showHud(){const S=SH;if(!S)return;const rc=card,res=rc.result;$('toGo').textContent=race&&race.state==='done'?'Judging over':S.phase==='parade'?'In the ring':S.phase==='line'?'Lining up':S.phase==='show'?'Judging '+Math.min(S.k+1,S.E.length)+' of '+S.E.length:'The placings';
+  const rows=S.revealed.map(k=>({k,t:res.sc[k].tot})).sort((a,b)=>b.t-a.t).slice(0,6);
+  $('order').innerHTML=rows.map((x,i)=>'<div><span class="sw" style="background:'+showSilk(rc.comp[x.k])[0]+'"></span>'+(i+1)+'. '+rc.comp[x.k].name.split(' ')[0]+' <b>'+x.t+'</b></div>').join('')||'<div><small>Scores appear as each horse is judged.</small></div>';$('order').classList.add('fin')}
+function showObjs(){if(!SH)return[];const o=[];for(const e of SH.E){o.push({kind:'horse',h:e,key:e.x+e.y});o.push({kind:'sport',key:e.x+e.y+.02,draw:()=>drawGroom(e)})}o.push({kind:'sport',key:SH.judge.x+SH.judge.y,draw:()=>{const J=SH.judge;fig(J.x,J.y,J.walk,'judge')}});return o}
+// the groom leading each horse, a plaited mane with a ribbon, and the rosettes once they're placed
+function drawGroom(e){const f=e.f||1,[sx,sy]=scr(e.x,e.y),U=e.H.sex==='m'?1:0;fx.fillStyle=e.H.silk[0];fx.fillRect(sx+(f>0?3:-4),sy-11-U,1,1);fx.fillStyle=e.H.silk[1];fx.fillRect(sx+(f>0?2:-3),sy-10-U,1,1);
+  const gx=e.x+(f>0?.32:-.32)*.7,gy=e.y+.28;fig(gx,gy,e.walk,'groom',e.H.silk[0]);
+  if(e.rib){const c=e.rib===1?'#e8c45a':e.rib===2?'#d8dce4':'#c87a3a',x=sx+(f>0?6:-7),y=sy-13-U;fx.fillStyle=c;fx.fillRect(x,y,2,2);fx.fillStyle='#b8322a';fx.fillRect(x,y+2,1,2)}}
+if(typeof fig==='function'){const _figS=fig;fig=function(x,y,walk,kind,silk,pose){if(kind!=='groom'&&kind!=='judge')return _figS(x,y,walk,kind,silk,pose);
+  const[sx,sy]=scr(x,y),R=(a,b,w,h,c)=>{fx.fillStyle=c;fx.fillRect(sx+a,sy+b,w,h)},f=walk?Math.floor(now*6)%2:0;fx.fillStyle='rgba(10,16,6,.3)';fx.fillRect(sx-2,sy,5,1);
+  if(kind==='judge'){R(-1-f,-3,1,3,'#2a2a30');R(1+f,-3,1,3,'#2a2a30');R(-1,-8,3,5,'#6a2a4a');R(-1,-10,3,2,'#e0b090');R(-2,-11,5,1,'#2a2a30');R(-1,-12,3,1,'#2a2a30');R(2,-7,1,2,'#f4f2ea');return}
+  R(-1-f,-3,1,3,'#3a2a1c');R(1+f,-3,1,3,'#3a2a1c');R(-1,-7,3,4,silk||'#5a7a3a');R(-1,-9,3,2,'#d9a07a');R(-1,-10,3,1,'#4a3020')}}
+function showCam(){const S=SH;let p;if(!S)return{x:cam.x,y:cam.y};const R=S.R;
+  if(S.phase==='show'&&S.k>=0&&S.k<S.E.length){const e=S.E[S.k];p=[lerp(R.cx,e.x,.75),lerp(R.cy,e.y,.75)]}
+  else if(S.phase==='lap'){const W=S.E[card.result.o[0]];p=[lerp(R.cx,W.x,.6),lerp(R.cy,W.y,.6)]}
+  else if(S.phase==='place'){p=[R.cx,R.cy+.3]}
+  else{let x=0,y=0;for(const e of S.E){x+=e.x;y+=e.y}p=[lerp(R.cx,x/S.E.length,.5),lerp(R.cy,y/S.E.length,.5)]}
+  return{x:isoX(p[0],p[1])-AW/2,y:isoY(p[0],p[1])-AH/2-hz(p[0],p[1])+AH*.03}}
+function drawShowFX(){}
+// ----- the results, prizes and ribbons
+function showSettle(){const rc=race.rc,res=rc.result;race.res=res;const SB=settleBets(rc),lines=SB.lines,ret=SB.ret,stake=rc.bets.reduce((a,b)=>a+b.cost,0);G.purse+=ret;G.stats.returned+=ret;if(ret>0){G.stats.won+=lines.filter(l=>l.w>0).length;G.stats.best=Math.max(G.stats.best,ret-stake)}
+  const RVS=[];for(const p of rc.rivs){const RV=G.rivals.find(x=>x.id===p.id);RV.purse-=p.s;const w=p.no-1===res.w?Math.floor(p.s*p.dec):0;RV.purse+=w;RV.peak=Math.max(RV.peak,RV.purse);if(w)RV.wins++;RVS.push({D:rivDef(p.id),name:rc.field[p.no-1].h.name,w,s:p.s})}
+  logBets(rc,lines);let prize=0,pl='';
+  res.o.forEach((k,j)=>{const H=showFind(rc.comp[k].id);if(!H)return;H.ribbons.push(j+1);if(H.ribbons.length>12)H.ribbons.shift();if(j===0)H.wins++;
+    if(H.mine){const p=[150,60,30][j]||0;prize+=p;H.clean=Math.max(0,H.clean-12);H.mood=clamp(H.mood+(j<3?6:-2),0,100);pl+='<div class="prize">Your '+H.name+' placed '+ord(j+1)+(p?' and wins <b>'+p+'</b> crowns!':'.')+'</div>'}});
+  G.purse+=prize;const oldT=titleOf(G.peak);G.peak=Math.max(G.peak,G.purse);const newT=titleOf(G.peak);
+  let h='<div class="panel rp"><div class="rH bl">'+rc.comp[res.w].name+'</div><div class="rS">'+rc.name+' · champion · '+THEMES[rc.course].name+'</div><table><tr><th></th><th>Horse</th><th>C</th><th>M</th><th>P</th><th>Total</th></tr>';
+  res.o.forEach((k,j)=>{const H=rc.comp[k],s=res.sc[k];h+='<tr><td>'+(j<3?['🥇','🥈','🥉'][j]:ord(j+1))+'</td><td><i class="silk sm" style="'+silkCss(showSilk(H))+'"></i>'+H.name+(s.play?' <small>played up</small>':'')+'<small>'+H.breed+' · '+amer(rc.field[k].dec)+'</small></td><td>'+s.c+'</td><td>'+s.m+'</td><td>'+s.p+'</td><td><b>'+s.tot+'</b></td></tr>'});
+  h+='</table>'+pl;if(lines.length)h+=betLinesHtml(lines,rc)+'<div class="net '+(ret-stake>=0?'up':'down')+'">'+(ret-stake>=0?'You\'re up '+(ret-stake):'Down '+(stake-ret))+' on the day.</div>';else h+='<div class="net">No money on that one.</div>';
+  h+='<div class="purse2">'+coin()+'Purse: <b>'+G.purse+'</b> crowns</div><div class="rivals">'+RVS.map(o=>'<span><b style="color:'+o.D.c+'">'+o.D.name+'</b> '+o.name+' <i class="'+(o.w?'w':'l')+'">'+(o.w?'+'+(o.w-o.s):'−'+o.s)+'</i></span>').join('')+'</div>'+(newT!==oldT?'<div class="rank">You are now known as<br><b class="bl">'+newT+'</b></div>':'');
+  h+='<div class="rB"><button class="ok" onclick="nextRace()">Next event</button></div></div>';save();$('results').innerHTML=h;$('results').style.display='flex';$('miniW').style.display='';if(ret>stake&&stake>0)coins(Math.min(12,2+Math.floor((ret-stake)/10)))}
+const _nextRaceS2=nextRace;nextRace=function(){SH=null;return _nextRaceS2.apply(this,arguments)};
+// ===================== the show yard: a second paddock, its own market and breeding =====================
+let YKIND='event';
+function showMarket(){ensureShow();if(!G.showMkt||G.raceNo-G.showMkt.no>=4||!G.showMkt.offers.length){const r=mulberry32((G.raceNo*4111+7)|0),offers=[];
+    for(let k=0;k<4;k++){const tier=k===0?.32:k===3?-.12:r()*.32-.05,age=k===3?1:2+((r()*6)|0),H=mkShowHorse(r,{q:tier,age});H.price=Math.round((80+(showRating(H)-70)*14+(H.sex==='f'?40:0)-(age<2?40:0))/5)*5;H.price=Math.max(60,H.price);offers.push(H)}
+    G.showMkt={no:G.raceNo,offers}}return G.showMkt}
+function showBuy(i){const M=showMarket(),H=M.offers[i];if(!H||G.purse<H.price)return;if(G.showH.length>=stallCap())return;G.purse-=H.price;H.mine=true;delete H.price;careInit(H);G.showH.push(H);M.offers.splice(i,1);save();openStable()}
+function showSellVal(H){return Math.max(30,Math.round((60+(showRating(H)-70)*11+(H.sex==='f'?30:0)+H.wins*15)/5)*5)}
+function showSell(id){const i=G.showH.findIndex(h=>h.id===id);if(i<0)return;const H=G.showH[i];G.purse+=showSellVal(H);G.showH.splice(i,1);H.mine=false;H.showIn=false;G.showNPC.push(H);pasSel=null;save();openStable()}
+function showStuds(){return G.showNPC.filter(h=>h.sex==='m'&&h.age>=3).sort((a,b)=>showRating(b)-showRating(a)).slice(0,5).map(h=>({h,fee:Math.round((40+(showRating(h)-70)*6)/5)*5}))}
+let showMare=null;
+function showBreed(sireId,fee){const D=G.showH.find(h=>h.id===showMare);const S=findAnyH(sireId);if(!D||!S||G.purse<fee)return;G.purse-=fee;D.preg={due:G.raceNo+3,sire:S.id,sn:S.name,sc:S.conf,sm:S.move,sp:S.pres,st:S.temp,sb:S.breed,scoat:S.coat};save();openStable()}
+function showFoal(D){const P=D.preg,r=mulberry32((G.raceNo*31+D.id)|0),mix=(a,b)=>clamp((a+b)/2+gauss(r)*.07+(r()<.08?.12:0),.08,.99);
+  const F=mkShowHorse(r,{age:0,mine:true,breed:SBREEDS.findIndex(b=>b.n===(r()<.5?D.breed:P.sb))});Object.assign(F,{conf:mix(D.conf,P.sc),move:mix(D.move,P.sm),pres:mix(D.pres,P.sp),temp:clamp((D.temp+P.st)/2+gauss(r)*.1,.1,.98),coat:r()<.5?D.coat:P.scoat,dam:D.name,sire:P.sn});careInit(F);
+  if(F.breed===undefined)F.breed=D.breed;G.showH.push(F);D.preg=null;return F}
+// time passes for show horses too: care fades, foals arrive, everyone ages
+const _weekTickS=weekTick;weekTick=function(){const r=_weekTickS.apply(this,arguments);ensureShow();const news=[];
+  for(const H of G.showH){careInit(H);H.clean=Math.max(0,H.clean-11);H.mood=Math.max(0,H.mood-(H.clean<35?11:7));H.cond=clamp(H.cond+(G.purse>4?2:-6),10,100);
+    if(H.preg&&G.raceNo>=H.preg.due){const F=showFoal(H);news.push(H.name+' has foaled a show '+(F.sex==='m'?'colt':'filly')+': '+F.name+'!')}if(G.raceNo%24===0)H.age++}
+  for(const H of G.showNPC)if(G.raceNo%24===0)H.age++;if(G.raceNo%24===0){G.showNPC=G.showNPC.filter(h=>h.age<15);const rr=mulberry32(G.raceNo);while(G.showNPC.length<14)G.showNPC.push(mkShowHorse(rr,{q:rr()*.55-.1,age:3}))}
+  if(news.length)G.yardNews=(G.yardNews||[]).concat(news);return r};
+// ----- the show paddock sits next to the event one, on its own patch of grass
+function yardFindShow(){const A0=yardFind(),L=9,Wd=7;let best=null,bs=-1e9;
+  for(let cy=14;cy<N-14-Wd;cy++)for(let cx=14;cx<N-14-L;cx++){if(cx<A0.x1+3&&cx+L>A0.x0-3&&cy<A0.y1+3&&cy+Wd>A0.y0-3)continue;let ok=true,h0=0,n=0;
+    for(let y=cy-2;y<cy+Wd+2&&ok;y++)for(let x=cx-2;x<cx+L+2;x++){const i=idx(x,y);if(T.water[i]||T.far[i]<HALFW+2||(T.houses||[]).some(h=>Math.abs(h.x-x)<1.5&&Math.abs(h.y-y)<1.5)||(T.fields||[]).some(F=>x>F[0]-2&&x<F[2]+2&&y>F[1]-2&&y<F[3]+2)){ok=false;break}h0+=hgt[i];n++}
+    if(!ok)continue;h0/=n;let v=0;for(let y=cy;y<cy+Wd;y++)for(let x=cx;x<cx+L;x++)v=Math.max(v,Math.abs(hgt[idx(x,y)]-h0));if(v>.12)continue;
+    const s=-v*120-Math.abs(Math.hypot(cx-A0.x0,cy-A0.y0)-13)*2;if(s>bs){bs=s;best={x0:cx,y0:cy,x1:cx+L,y1:cy+Wd}}}
+  return best||{x0:A0.x0,y0:A0.y0+9,x1:A0.x1,y1:A0.y1+9}}
+const _yardOpenS=yardOpen;yardOpen=function(){if(YKIND!=='show')return _yardOpenS.apply(this,arguments);if(race)return;ensureShow();
+  _yardOpenS.apply(this,arguments);
+  if(PAS)for(const P of PAS.horses){P.H.sex=P.h.sex;P.H.silk=G.silk||P.H.silk;P.showH=1}if(YARD)YARD.show=1};
+// the show pasture's horses wear plaits and ribbons
+const _yardOverS=yardOver;yardOver=function(P){_yardOverS(P);if(P.showH){const f=P.f||1,[sx,sy]=scr(P.x,P.y),U=P.h.sex==='m'?1:0;fx.fillStyle='#b8322a';fx.fillRect(sx+(f>0?3:-4),sy-11-U,1,1);fx.fillStyle='#e8c45a';fx.fillRect(sx+(f>0?2:-3),sy-10-U,1,1)}};
+// the panel: a toggle between the two yards, and the show yard's own tabs
+let showTab='pasture';
+function yardSwitch(k){if(YKIND===k)return;if(WASH)washEnd(false);yardClose();YKIND=k;pasSel=null;stableTab='pasture';showTab='pasture';openStable()}
+function yardToggleHtml(){return'<div class="yTog"><button class="'+(YKIND!=='show'?'on':'')+'" onclick="yardSwitch(\'event\')">🐎 Event horses</button><button class="'+(YKIND==='show'?'on':'')+'" onclick="yardSwitch(\'show\')">🎀 Show horses</button></div>'}
+const _openStableS=openStable;openStable=function(){
+  if(YKIND!=='show'){_openStableS.apply(this,arguments);const p=$('stable').querySelector('.panel .cTop');if(p&&!$('stable').querySelector('.yTog'))p.insertAdjacentHTML('afterend',yardToggleHtml());return}
+  ensureShow();const M=G.showH,el=$('stable');
+  let h='<div class="panel cp yardP"><div class="cTop"><span class="bl brand">The Show Yard</span><span class="purse">'+coin()+'<b>'+G.purse+'</b></span><button class="x" onclick="closeStable()">✕</button></div>'+yardToggleHtml();
+  h+='<div class="tabs">'+[['pasture','Pasture ('+M.length+'/'+stallCap()+')'],['market','Market'],['breed','Breeding']].map(([k,n])=>'<button class="'+(showTab===k?'on':'')+'" onclick="showTab=\''+k+'\';openStable()">'+n+'</button>').join('')+'</div><div id="pasInfo"></div></div>';
+  el.innerHTML=h;el.style.display='flex';
+  if(showTab==='pasture'){el.classList.add('yardV');if(!YARD)yardOpen();if(!M.length)$('pasInfo').innerHTML='<div class="sNote">An empty show paddock. Buy a show horse in the Market, or breed one.</div>';else pasInfo();return}
+  yardClose();el.classList.remove('yardV');const box=$('pasInfo');
+  if(showTab==='market'){const S=showMarket();let s='<div class="sNote">New horses arrive every few events. Show horses are judged on conformation, movement and presence; turnout counts too, so keep them clean.</div>';
+    s+=S.offers.map((H,i)=>'<div class="offer"><b>'+H.name+' <em class="mk">'+H.age+'yo '+H.breed+' '+(H.sex==='m'?(H.age<3?'colt':'stallion'):(H.age<3?'filly':'mare'))+'</em></b><small>'+COATS[H.coat][0]+' · rated '+showRating(H)+(H.temp<.4?' · nervy':H.temp>.8?' · unflappable':'')+'</small><div class="shS"><span>Conformation '+stars(60+H.conf*40)+'</span><span>Movement '+stars(60+H.move*40)+'</span><span>Presence '+stars(60+H.pres*40)+'</span></div><button class="chip" '+(G.purse<H.price||M.length>=stallCap()?'disabled':'')+' onclick="showBuy('+i+')">Buy · '+H.price+' crowns</button></div>').join('')||'<div class="sNote">Sold out. More arrive soon.</div>';
+    box.innerHTML=s;return}
+  // breeding
+  const mares=M.filter(x=>x.sex==='f'&&x.age>=3&&!x.preg);let s='';
+  if(!mares.length)s='<div class="sNote">You need a show mare (female, three or older, not already in foal) to breed. Foals take the best (and sometimes the worst) of both parents, and are born three events later.</div>';
+  else{if(!mares.some(x=>x.id===showMare))showMare=mares[0].id;s+='<div class="sNote">Choose a mare, then a stallion. The foal is born three events later.</div><div class="lendR">'+mares.map(x=>'<button class="chip'+(x.id===showMare?' on':'')+'" onclick="showMare='+x.id+';openStable()">'+x.name+'<small>rated '+showRating(x)+'</small></button>').join('')+'</div>';
+    const own=M.filter(x=>x.sex==='m'&&x.age>=3).map(x=>({h:x,fee:0})),L=own.concat(showStuds());
+    s+=L.map(o=>'<div class="offer"><b>'+o.h.name+' <em class="mk">'+o.h.breed+(o.fee?' · stud':' · yours')+'</em></b><small>rated '+showRating(o.h)+' · '+o.h.wins+' championships</small><div class="shS"><span>Conformation '+stars(60+o.h.conf*40)+'</span><span>Movement '+stars(60+o.h.move*40)+'</span><span>Presence '+stars(60+o.h.pres*40)+'</span></div><button class="chip" '+(G.purse<o.fee?'disabled':'')+' onclick="showBreed('+o.h.id+','+o.fee+')">Breed'+(o.fee?' · '+o.fee+' crowns':'')+'</button></div>').join('')}
+  const preg=M.filter(x=>x.preg);if(preg.length)s+='<div class="sNote">In foal: '+preg.map(x=>x.name+' (to '+x.preg.sn+', due in '+Math.max(0,x.preg.due-G.raceNo)+')').join(', ')+'</div>';box.innerHTML=s};
+const _closeStableS=closeStable;closeStable=function(){const r=_closeStableS.apply(this,arguments);YKIND='event';return r};
+// the show horse's card in its pasture
+const _pasInfoS=pasInfo;pasInfo=function(){if(YKIND!=='show'||WASH)return _pasInfoS();const el=$('pasInfo');if(!el)return;const h=(G.showH||[]).find(x=>x.id===pasSel);
+  if(!h){el.innerHTML='<div class="sNote">Tap a horse in the show paddock to see it up close.</div>';return}careInit(h);const used=h.care||{},done=k=>used[k]===G.raceNo,tr=Math.max(0,(used.treat||0)-G.raceNo*10),fc=Math.round(FEEDS.oats.cost*.6);
+  const mood=h.mood>75?'content':h.mood>50?'settled':h.mood>30?'restless':'miserable',clean=h.clean>75?'gleaming':h.clean>50?'tidy':h.clean>30?'grubby':'filthy';
+  let s='<div class="pasCard"><div class="shH"><i class="silk" style="'+silkCss(G.silk||['#e8c45a','#3a7a3a','#e8c45a',0])+'"></i><div><b>'+h.name+'</b><small>'+(h.age<1?'Foal':h.age+'yo')+' '+h.breed+' '+(h.sex==='m'?(h.age<3?'colt':'stallion'):(h.age<3?'filly':'mare'))+' · '+COATS[h.coat][0]+' · rated '+showRating(h)+'</small><small class="st">Looks '+clean+' and '+mood+'.'+(h.preg?' In foal.':'')+'</small></div><button class="chip" onclick="showSell('+h.id+')">Sell · '+showSellVal(h)+'</button></div>';
+  s+='<div class="pasBars"><span>Condition'+pbar(h.cond,'#e8c45a')+'</span><span>Clean'+pbar(h.clean,'#8ac4e8')+'</span><span>Happy'+pbar(h.mood,'#e88aa8')+'</span><span>Ribbons '+(h.ribbons.slice(-8).map(x=>x===1?'🥇':x===2?'🥈':x===3?'🥉':'·').join('')||'none yet')+'</span></div>';
+  s+='<div class="shS"><span>Conformation '+stars(60+h.conf*40)+'</span><span>Movement '+stars(60+h.move*40)+'</span><span>Presence '+stars(60+h.pres*40)+'</span></div>';
+  s+='<div class="pasAct"><button class="chip" '+(done('feed')||G.purse<fc?'disabled':'')+' onclick="careAct('+h.id+',\'feed\')">🌾 Feed<small>'+(done('feed')?'fed':fc+' crowns')+'</small></button><button class="chip" '+(done('brush')?'disabled':'')+' onclick="careAct('+h.id+',\'brush\')">🖌 Brush<small>'+(done('brush')?'done':'free')+'</small></button><button class="chip" '+(used.bathe===G.raceNo||G.purse<5?'disabled':'')+' onclick="washStart('+h.id+')">🧽 Wash<small>'+(used.bathe===G.raceNo?'done':'5 crowns')+'</small></button><button class="chip" '+(tr>=2||G.purse<2?'disabled':'')+' onclick="careAct('+h.id+',\'treat\')">🍎 Treat<small>'+(tr>=2?'enough!':'2 crowns')+'</small></button><button class="chip" '+(done('pet')?'disabled':'')+' onclick="careAct('+h.id+',\'pet\')">✋ Pet<small>'+(done('pet')?'done':'free')+'</small></button></div>';
+  s+='<div class="pasAct"><button class="chip'+(h.showIn?' on':'')+'" onclick="showToggleIn('+h.id+')">'+(h.showIn?'✓ Entering shows':'Enter in shows')+'<small>'+(h.age<2?'too young':'auto-enter new shows')+'</small></button></div><div class="kvn">Turnout is a quarter of the marks: wash and groom before a show.</div></div>';el.innerHTML=s};
+function showToggleIn(id){const h=G.showH.find(x=>x.id===id);if(!h||h.age<2)return;h.showIn=!h.showIn;save();pasInfo()}
+// ----- live betting on the show: scores already given are fixed; the rest are still to be judged
+if(typeof sportLiveProbs==='function'){const _slpS=sportLiveProbs;sportLiveProbs=function(){const rc=card;if(!rc||rc.sport!=='show'||!SH)return _slpS.apply(this,arguments);
+  const r=mulberry32((now*1000)|0),N0=700,E=rc.comp,w=new Array(E.length).fill(0);
+  for(let i=0;i<N0;i++){const fr=showRound(E,rc.turn,r);let best=-1,bi=0;E.forEach((H,j)=>{const t=SH.revealed.includes(j)?rc.result.sc[j].tot:fr.sc[j].tot;if(t>best){best=t;bi=j}});w[bi]++}
+  return E.map((H,i)=>({L:{m:'sw',a:i},n:H.name,p:w[i]/N0})).filter(x=>x.p>.002)}}
+if(typeof sportSuspended==='function'){const _ssS=sportSuspended;sportSuspended=function(){if(card&&card.sport==='show'){if(!race||race.state!=='run'||!SH)return true;return['place','lap'].includes(SH.phase)||(SH.phase==='show'&&['back','score'].includes(SH.sub))||SH.revealed.length>=SH.E.length-1}return _ssS.apply(this,arguments)}}
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
