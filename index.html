@@ -2963,7 +2963,7 @@ const _openStable24=openStable;openStable=function(){if(stableTab!=='pasture'||c
   const el=$('stable');el.innerHTML=h;el.style.display='flex';el.classList.add('yardV');if(!YARD)yardOpen();
   if(!M.length)$('pasInfo').innerHTML='<div class="sNote">An empty paddock. Visit the Market to buy a racehorse, a yearling or a broodmare.</div>';else pasInfo()};
 const _closeStable24=closeStable;closeStable=function(){yardClose();$('stable').classList.remove('yardV');return _closeStable24()};
-$('stable').addEventListener('pointerdown',yardTap);
+$('stable').addEventListener('pointerdown',ev=>yardTap(ev));
 
 // ===================== your horses: treats, a proper wash, and lending them out to any sport =====================
 // ---------- lending a horse: a knight, an archer or a polo player rides it in their event ----------
@@ -3077,7 +3077,7 @@ const _yardStepC=yardStep;yardStep=function(dt){_yardStepC(dt);if(!PAS)return;
     if(a.k==='treat'&&a.t<1.5&&Math.random()<dt*5&&AC&&!muted)knock(900+Math.random()*300,.02);
     if(a.k==='shake'&&Math.random()<dt*30)PAS.fx.push({x:P.x+(Math.random()-.5)*.7,y:P.y+(Math.random()-.5)*.7,z:8+Math.random()*8,vz:6+Math.random()*10,c:Math.random()<.5?'#cfe8ff':'#ffffff',t:.5})}
   // the camera and zoom glide in close for the wash, and back out after
-  const zt=WASH?5.6:2.1;YARD.z=YARD.z||2.1;YARD.z+=(zt-YARD.z)*(1-Math.exp(-dt*3));setZoomCSS(YARD.z);$('stable').style.touchAction=WASH?'none':''};
+  const zt=WASH?2.4:(pasSel&&PAS.horses.some(P=>P.h.id===pasSel)?3.6:2.4);YARD.z=YARD.z||2.1;YARD.z+=(zt-YARD.z)*(1-Math.exp(-dt*3));setZoomCSS(YARD.z);$('stable').style.touchAction=WASH?'none':''};
 const _yardCamC=yardCam;yardCam=function(){if(!WASH||!YARD)return _yardCamC();const P=WASH.P,z=YARD.z||2.1;return{x:isoX(P.x,P.y)-AW/2+1,y:isoY(P.x,P.y)-hz(P.x,P.y)-7-(AH/2+(AH*.36-AH/2)/z)}};
 // taps pick horses only when not washing, and use the live zoom
 yardTap=function(ev){if(WASH||!YARD||ev.target!==$('stable'))return;const[ax,ay]=yardPt(ev);let best=null,bd=22;for(const P of PAS.horses){const[sx,sy]=scr(P.x,P.y),d=Math.hypot(sx-ax,sy-8-ay);if(d<bd){bd=d;best=P}}
@@ -3384,6 +3384,226 @@ if(typeof sportLiveProbs==='function'){const _slpS=sportLiveProbs;sportLiveProbs
   for(let i=0;i<N0;i++){const fr=showRound(E,rc.turn,r);let best=-1,bi=0;E.forEach((H,j)=>{const t=SH.revealed.includes(j)?rc.result.sc[j].tot:fr.sc[j].tot;if(t>best){best=t;bi=j}});w[bi]++}
   return E.map((H,i)=>({L:{m:'sw',a:i},n:H.name,p:w[i]/N0})).filter(x=>x.p>.002)}}
 if(typeof sportSuspended==='function'){const _ssS=sportSuspended;sportSuspended=function(){if(card&&card.sport==='show'){if(!race||race.state!=='run'||!SH)return true;return['place','lap'].includes(SH.phase)||(SH.phase==='show'&&['back','score'].includes(SH.sub))||SH.revealed.length>=SH.E.length-1}return _ssS.apply(this,arguments)}}
+
+// ===================== the wash, done properly: lather, bubbles, drips, an arcing hose, splashes, a puddle =====================
+// Everything here lives in the horse's own pixel space (offsets from his feet), so the camera can drift without the
+// suds sliding off him. Gravity pulls drips and droplets; the hose stream is a real arc and rinses where it lands.
+const WG=95;// gravity, canvas pixels per second squared
+function wkey(x,y){return x+','+y}
+function washPrep(W){if(W._map)return;W._map=new Map();for(const c of W.mask)W._map.set(wkey(c.x,c.y),c);const k=W.k||1;W.bub=[];W.spray=[];W.drips=[];W.drops=[];W.flecks=[];W.rip=[];W.pOff=k>1?40:16;W.pud=new Array(k>1?100:40).fill(0);W.spots=[];W.pops=[];W.lx=null;W.ly=null}
+const cellAt=(W,x,y)=>W._map.get(wkey(Math.floor(x),Math.floor(y)));
+// the brush and the hose, applied where they touch
+washAt=function(ax,ay,dt){const W=WASH;if(!W||W.phase==='tobarn')return;washPrep(W);const K=W.k||1,KK=K*K,[sx,sy]=wanc(W.P),lx=ax-sx,ly=ay-sy;
+  const sp=W.lx==null?0:Math.hypot(lx-W.lx,ly-W.ly)/Math.max(.008,dt);W.lx=lx;W.ly=ly;W.tx=lx;W.ty=ly;
+  if(W.tool==='soap'){const R=2.6*K;let touched=0;
+    for(const c of W.mask){const d=Math.hypot(c.x+.5-lx,c.y+.5-ly);if(d>R)continue;const k=1-d/R;touched++;c.s=Math.min(1.7,c.s+k*dt*7.5);c.d=Math.max(0,c.d-k*dt*.25);
+      if(Math.random()<k*dt*9/KK*1.6)W.bub.push({x:c.x+Math.random(),y:c.y+Math.random(),vx:(Math.random()-.5)*3*K,vy:(-3-Math.random()*5)*K*.7,r:Math.random()<.35?2:1,big:K>1&&Math.random()<.3,t:.8+Math.random()*1.2,ph:Math.random()*6})}
+    // a quick scrub flings flecks of lather
+    if(touched&&sp>45*K&&Math.random()<dt*Math.min(30,sp*.25/K)){const a=Math.atan2(ly-(W.ply??ly),lx-(W.plx??lx));for(let k=0;k<2;k++)W.flecks.push({x:lx,y:ly,vx:Math.cos(a)*sp*.12+(Math.random()-.5)*20*K,vy:(-10-Math.random()*25)*K,t:2})}
+    W.plx=lx;W.ply=ly;
+    W.sndT-=dt;if(W.sndT<=0&&AC&&!muted){W.sndT=.09+Math.random()*.05;noiseHit(AC.currentTime,.05,2600+Math.random()*1400,1,.016+Math.min(.02,sp*.0002))}
+    if(washSoap()>=.85&&!W.soapSaid){W.soapSaid=1;pasInfo()}return}
+  // the hose: a stream of water from the nozzle in your hand, arcing onto the spot you point at
+  const nx=lx-11*K,ny=ly+9*K;W.nz=[nx,ny];for(let k=0;k<(K>1?6:4);k++){const tx=lx+(Math.random()-.5)*1.6*K,ty=ly+(Math.random()-.5)*1.6*K,T=Math.hypot(tx-nx,ty-ny)/(85*K)+.06;
+    W.spray.push({x:nx,y:ny,vx:(tx-nx)/T,vy:(ty-ny)/T-.5*WG*K*T,t:1.2,T,age:0,big:Math.random()<.3})}
+  W.sndT-=dt;if(W.sndT<=0&&AC&&!muted){W.sndT=.06;noiseHit(AC.currentTime,.08,4800+Math.random()*900,1,.028)}};
+// the physics, every frame
+function washPhys(dt){const W=WASH;if(!W||W.phase==='tobarn')return;washPrep(W);const K=W.k||1,KK=K*K,g=WG*K;
+  // lather settles: thick suds slide down the coat in creamy drips; wet bellies and legs drip water
+  for(const c of W.mask){if(c.s>1.05&&Math.random()<dt*.5/KK*2){W.drips.push({x:c.x+.5,y:c.y+.5,vy:(2+Math.random()*3)*K,suds:1,on:1,t:6});c.s-=.15}
+    if(c.w>.35){const below=W._map.get(wkey(c.x,c.y+1));if(!below&&Math.random()<dt*c.w*1.6/K)W.drips.push({x:c.x+.5,y:c.y+.9,vy:0,suds:c.s>.25?1:0,on:0,t:3});c.w=Math.max(0,c.w-dt*(W.tool==='hose'&&W.down?0:.035))}}
+  for(const b of W.bub){b.t-=dt;b.ph+=dt*6;b.x+=(b.vx+Math.sin(b.ph)*2)*dt;b.y+=b.vy*dt;b.vy*=Math.exp(-dt*.6);if(b.t<=0)W.pops.push({x:b.x,y:b.y,t:.15})}
+  W.bub=W.bub.filter(b=>b.t>0);if(W.bub.length>260)W.bub.splice(0,W.bub.length-260);for(const p of W.pops)p.t-=dt;W.pops=W.pops.filter(p=>p.t>0);
+  // drips: crawl down the coat, then let go and fall
+  for(const d of W.drips){d.t-=dt;if(d.on){d.y+=d.vy*dt;const c=cellAt(W,d.x,d.y);if(c){if(d.suds)c.s=Math.max(c.s,.35);c.w=Math.max(c.w,.3)}else{d.on=0;d.vy=Math.max(d.vy,4)}}
+    else{d.vy+=g*dt;d.y+=d.vy*dt;if(d.y>=0){d.t=0;washGround(d.x,d.suds?.6:.35,d.suds)}}}
+  W.drips=W.drips.filter(d=>d.t>0);if(W.drips.length>160)W.drips.splice(0,W.drips.length-160);
+  // the stream: rinses where it lands, splashes off the coat, or hits the ground
+  for(const p of W.spray){p.t-=dt;p.age=(p.age||0)+dt;p.vy+=g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;const c=cellAt(W,p.x,p.y);
+    if(c&&p.age>(p.T||0)*.82){p.t=0;let hit=0;const RR=2.4*K;for(const q of W.mask){const dd=Math.hypot(q.x+.5-p.x,q.y+.5-p.y);if(dd>RR)continue;const k=1-dd/RR,was=q.s;q.s=Math.max(0,q.s-k*(K>1?.32:.2));q.d=Math.max(0,q.d-k*(.12+was*.2));q.w=Math.min(1,q.w+k*.22);if(was>.3&&Math.random()<k*.18/KK*2)W.drips.push({x:q.x+.5,y:q.y+.5,vy:(5+Math.random()*4)*K,suds:1,on:1,t:4});hit=1}
+      if(Math.random()<.55)for(let k=0;k<1+(Math.random()<.4);k++)W.drops.push({x:p.x,y:p.y,vx:-p.vx*.18+(Math.random()-.5)*26*K,vy:(-8-Math.random()*22)*K,t:1.5,c:c.s>.4?'#f4f8fb':'#cfe8ff'});continue}
+    if(p.y>=0&&p.t<1.15){p.t=0;washGround(p.x,.5,0);if(Math.random()<.5)W.drops.push({x:p.x,y:-.2,vx:(Math.random()-.5)*20*K,vy:(-6-Math.random()*12)*K,t:1,c:'#bfe0fa'})}}
+  W.spray=W.spray.filter(p=>p.t>0);
+  // droplets and flecks: ballistic, land in the puddle
+  for(const d of W.drops){d.t-=dt;d.vy+=g*dt;d.x+=d.vx*dt;d.y+=d.vy*dt;if(d.y>=0){d.t=0;washGround(d.x,.25,0)}}W.drops=W.drops.filter(d=>d.t>0);if(W.drops.length>260)W.drops.splice(0,W.drops.length-260);
+  for(const f of W.flecks){f.t-=dt;f.vy+=g*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;if(f.y>=0){f.t=0;W.spots.push({x:f.x,y:Math.random()*1.5*K,t:6+Math.random()*4})}}W.flecks=W.flecks.filter(f=>f.t>0);
+  for(const r of W.rip)r.t+=dt;W.rip=W.rip.filter(r=>r.t<.6);for(const s of W.spots)s.t-=dt;W.spots=W.spots.filter(s=>s.t>0);
+  for(let i=0;i<W.pud.length;i++)W.pud[i]=Math.max(0,W.pud[i]-dt*.012);
+  // progress on the card, and the finish once every sud is rinsed away
+  W.uiT=(W.uiT||0)-dt;if(W.down&&W.uiT<=0){W.uiT=.3;pasInfo()}
+  if(W.tool==='hose'&&!W.done&&washLeft()<.06){W.done=1;if(AC&&!muted){pluck(mf(76),.5,.05);pluck(mf(81),.6,.05,.12)}setTimeout(()=>{if(WASH===W)washEnd(true)},700)}}
+// something hits the ground: the puddle grows, a ripple spreads, suds float on it
+function washGround(x,amt,suds){const W=WASH;if(!W)return;const K=W.k||1,i=Math.round(x)+(W.pOff||16);for(let k=-2;k<=2;k++){const j=i+k;if(j>=0&&j<W.pud.length)W.pud[j]=Math.min(1,W.pud[j]+amt*.06*(1-Math.abs(k)/3))}
+  if(W.rip.length<40&&Math.random()<.5)W.rip.push({x,y:(.5+Math.random())*K,t:0});if(suds&&Math.random()<.5)W.spots.push({x:x+(Math.random()-.5)*2*K,y:Math.random()*1.5*K,t:4+Math.random()*4});
+  if(AC&&!muted&&Math.random()<.04)noiseHit(AC.currentTime,.03,3200+Math.random()*2000,1,.008)}
+// the puddle sits under the horse, drawn before him
+function drawPuddle(P){const W=WASH;if(!W||W.P!==P||!W.pud)return;const fx=wctx(),K=W.k||1,[sx,sy]=wanc(P);
+  for(let i=0;i<W.pud.length;i++){const a=W.pud[i];if(a<.03)continue;const x=sx+i-(W.pOff||16),h=(a>.5?3:a>.2?2:1)*(K>1?2:1);fx.globalAlpha=Math.min(.55,a*.7);fx.fillStyle='#4a6a7a';fx.fillRect(x,sy-1,1,h);fx.globalAlpha=Math.min(.5,a*.6);fx.fillStyle='#9cc4dc';fx.fillRect(x,sy-1,1,1)}
+  fx.globalAlpha=1;for(const r of W.rip){const R=(1+r.t*7)*K,al=(1-r.t/.6)*.6;fx.fillStyle='rgba(220,240,255,'+al.toFixed(2)+')';const x=Math.round(sx+r.x),y=Math.round(sy+r.y);fx.fillRect(x-Math.round(R),y,1,1);fx.fillRect(x+Math.round(R),y,1,1);fx.fillRect(x,y-Math.max(0,Math.round(R*.4)),1,1)}
+  for(const s of W.spots){fx.fillStyle='rgba(246,250,252,'+Math.min(.9,s.t/3).toFixed(2)+')';fx.fillRect(Math.round(sx+s.x),Math.round(sy+s.y),1,1)}}
+const _sportObjsW=sportObjs;sportObjs=function(){const o=_sportObjsW();if(WASH&&YARD&&!WASH.stall)o.push({kind:'sport',key:WASH.P.x+WASH.P.y-.03,draw:()=>drawPuddle(WASH.P)});return o};
+// the coat as you work: wet and darker, mud, a fluffy lather, glints; then every particle on top
+drawWash=function(P){const W=WASH;if(!W||W.P!==P||W.phase==='tobarn')return;if(W.stall&&!STALL_DRAW)return;washPrep(W);const fx=wctx(),K=W.k||1,[sx,sy]=wanc(P);
+  for(const c of W.mask){const x=sx+c.x,y=sy+c.y;
+    if(c.w>.05){fx.globalAlpha=c.w*.16;fx.fillStyle='#1a2a3a';fx.fillRect(x,y,1,1)}// water darkens the coat a shade
+    if(c.d>.05){fx.globalAlpha=Math.min(.85,c.d*.9);fx.fillStyle=(c.x+c.y)%3?'#5a4226':'#4a361e';fx.fillRect(x,y,1,1)}
+    if(c.s>.05){const v=Math.min(1,c.s);fx.globalAlpha=Math.min(1,v*1.15);const tw=(c.x*7+c.y*3+Math.floor(now*4))%7;fx.fillStyle=tw===0?'#d6e6f2':tw===1?'#ffffff':'#f2f6f9';fx.fillRect(x,y,1,1);
+      if(c.s>1.1){fx.globalAlpha=.85;fx.fillStyle='#ffffff';fx.fillRect(x+((c.x+c.y)%2?0:1)-(c.x%2),y-1,1,1)}}// thick lather heaps up
+    if(c.w>.4&&c.s<.2&&hash2(c.x*31+c.y,Math.floor(now*3+c.x*.37),11)<.012*c.w){fx.globalAlpha=.9;fx.fillStyle='#ffffff';fx.fillRect(x,y,1,1)}}// a glint of wet coat
+  fx.globalAlpha=1;
+  for(const d of W.drips){fx.fillStyle=d.suds?'#f6f9fb':'#a8d4f4';fx.fillRect(Math.round(sx+d.x),Math.round(sy+d.y),1,(d.on?1:2)*(K>1?2:1))}
+  // bubbles: little rainbow-sheened rings that wobble up and pop
+  for(const b of W.bub){const x=Math.round(sx+b.x),y=Math.round(sy+b.y),hue=['#cfefff','#ffd9f2','#e2ffd6','#fff3c8'][Math.floor(b.ph)%4];fx.globalAlpha=Math.min(1,b.t*1.5)*.9;
+    if(b.big){fx.fillStyle=hue;fx.fillRect(x-1,y-2,3,1);fx.fillRect(x-1,y+2,3,1);fx.fillRect(x-2,y-1,1,3);fx.fillRect(x+2,y-1,1,3);fx.fillStyle='#ffffff';fx.fillRect(x-1,y-1,1,1)}else if(b.r>1){fx.fillStyle=hue;fx.fillRect(x-1,y,1,1);fx.fillRect(x+1,y,1,1);fx.fillRect(x,y-1,1,1);fx.fillRect(x,y+1,1,1);fx.fillStyle='#ffffff';fx.fillRect(x,y-1,1,1)}else{fx.fillStyle=hue;fx.fillRect(x,y,1,1)}}
+  fx.globalAlpha=1;for(const p of W.pops){const x=Math.round(sx+p.x),y=Math.round(sy+p.y);fx.fillStyle='rgba(255,255,255,'+(p.t/.15).toFixed(2)+')';fx.fillRect(x-1,y,1,1);fx.fillRect(x+1,y,1,1);fx.fillRect(x,y-1,1,1);fx.fillRect(x,y+1,1,1)}
+  for(const f of W.flecks){fx.fillStyle='#f4f8fa';fx.fillRect(Math.round(sx+f.x),Math.round(sy+f.y),1,1)}
+  // the hose: a green pipe from the corner of the yard to the brass nozzle in your hand
+  if(W.tool==='hose'&&W.down&&W.nz){const mx=Math.round(sx+W.nz[0]),my=Math.round(sy+W.nz[1]),hx=Math.round(W.stall&&STALL?STALL.Wd*.06:AW*.12),hy=Math.round(W.stall&&STALL?STALL.Hd*.6:AH*1.02);fx.strokeStyle='#244a20';fx.lineWidth=2;fx.beginPath();fx.moveTo(hx,hy);fx.quadraticCurveTo(hx+8,my+14,mx-1,my+1);fx.stroke();fx.strokeStyle='#3a6a30';fx.lineWidth=1;fx.beginPath();fx.moveTo(hx,hy-1);fx.quadraticCurveTo(hx+8,my+13,mx-1,my);fx.stroke();fx.fillStyle='#c8a040';fx.fillRect(mx-1,my-1,3,2);fx.fillStyle='#8a6a28';fx.fillRect(mx-1,my,3,1)}
+  for(const p of W.spray){fx.fillStyle=p.big?'#e8f6ff':'#9ccaf0';fx.fillRect(Math.round(sx+p.x),Math.round(sy+p.y),1,1)}
+  for(const d of W.drops){fx.globalAlpha=Math.min(1,d.t*1.5);fx.fillStyle=d.c;fx.fillRect(Math.round(sx+d.x),Math.round(sy+d.y),1,1)}fx.globalAlpha=1;
+  // a sponge in your hand while you scrub
+  if(W.tool==='soap'&&W.down&&W.tx!=null){const x=Math.round(sx+W.tx),y=Math.round(sy+W.ty),q=K>1?2:1;fx.fillStyle='#d8b040';fx.fillRect(x-2*q,y-q,4*q,3*q);fx.fillStyle='#b88a28';fx.fillRect(x-q,y,q,q);fx.fillRect(x+q,y+q,q,q);fx.fillStyle='#f0d070';fx.fillRect(x-2*q,y-q,4*q,1);fx.fillStyle='#f8f8f8';fx.fillRect(x-2*q,y-2*q,2*q,q)}};
+// the shake when he's done: every wet patch flings droplets that arc down into the puddle
+const _washEndW=washEnd;washEnd=function(keep){const W=WASH;if(keep&&W&&!(W.k>1)){const P=W.P;W._shake={t:1.2};const D=[],[sx,sy]=scr(P.x,P.y);
+    for(const c of W.mask)if(c.w>.2||Math.random()<.3)for(let k=0;k<2;k++)D.push({x:P.x,y:P.y,lx:c.x,ly:c.y,vx:(Math.random()-.5)*50+(c.x>2?18:c.x<-2?-18:0),vy:-14-Math.random()*34,t:1.4});
+    SHAKE.push({P,D,pud:W.pud.slice(),spots:W.spots.slice(),t:0});if(AC&&!muted){noiseHit(AC.currentTime,.35,1400,1,.05);noiseHit(AC.currentTime+.15,.3,1800,1,.04)}}
+  return _washEndW.apply(this,arguments)};
+// the shake plays on after the wash card closes, and the puddle dries in the sun
+const SHAKE=[];
+function shakeStep(dt){for(const S of SHAKE){S.t+=dt;for(const d of S.D){d.t-=dt;d.vy+=WG*dt;d.lx+=d.vx*dt;d.ly+=d.vy*dt;if(d.ly>=0&&d.t>0){d.t=0;const i=Math.round(d.lx)+16;if(i>=0&&i<S.pud.length)S.pud[i]=Math.min(1,S.pud[i]+.05)}}S.D=S.D.filter(d=>d.t>0);for(let i=0;i<S.pud.length;i++)S.pud[i]=Math.max(0,S.pud[i]-dt*.05);for(const s of S.spots)s.t-=dt*1.6;S.spots=S.spots.filter(s=>s.t>0)}
+  for(let i=SHAKE.length-1;i>=0;i--)if(SHAKE[i].t>12)SHAKE.splice(i,1)}
+function drawShake(S){const[sx,sy]=scr(S.P.x,S.P.y);for(let i=0;i<S.pud.length;i++){const a=S.pud[i];if(a<.03)continue;fx.globalAlpha=Math.min(.5,a*.6);fx.fillStyle='#4a6a7a';fx.fillRect(sx+i-16,sy-1,1,a>.4?2:1)}fx.globalAlpha=1;
+  for(const s of S.spots){fx.fillStyle='rgba(246,250,252,'+Math.min(.8,s.t/3).toFixed(2)+')';fx.fillRect(Math.round(sx+s.x),Math.round(sy+s.y),1,1)}
+  for(const d of S.D){fx.fillStyle=Math.random()<.5?'#e8f6ff':'#9ccaf0';fx.fillRect(Math.round(sx+d.lx),Math.round(sy+d.ly),1,1)}}
+const _sportObjsW2=sportObjs;sportObjs=function(){const o=_sportObjsW2();if(YARD)for(const S of SHAKE)o.push({kind:'sport',key:S.P.x+S.P.y+.03,draw:()=>drawShake(S)});return o};
+// tie the physics into the yard's own clock
+const _yardStepW=yardStep;yardStep=function(dt){_yardStepW(dt);if(WASH)washPhys(dt);shakeStep(dt);
+  if(!PAS)return;for(const P of PAS.horses){const a=P.act;if(!a)continue;
+    // treats leave crumbs, hay scatters as he eats, brushing lifts loose hair and dust
+    if(a.k==='treat'&&a.t<1.5&&Math.random()<dt*7){const f=P.f||1;bits.push({x:P.x+f*.32,y:P.y+.05,z:6,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,vz:4+Math.random()*6,c:a.what==='apple'?(Math.random()<.5?'#c8302a':'#f0e0a0'):a.what==='carrot'?'#e8822a':'#f4f2ea',s:1,life:1.2,rest:.4})}
+    if(a.k==='eat'&&Math.random()<dt*5)bits.push({x:P.x+(P.f||1)*.3,y:P.y,z:3,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,vz:6+Math.random()*8,c:Math.random()<.5?'#d8b860':'#b8983e',s:1,life:1.4,rest:.6});
+    if(a.k==='brush'&&Math.random()<dt*10){puff(P.x+(Math.random()-.5)*.4,P.y+(Math.random()-.5)*.3,'#b8a888',.3,.4);bits.push({x:P.x+(Math.random()-.5)*.5,y:P.y,z:8+Math.random()*4,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,vz:2+Math.random()*3,c:COATS[P.h.coat][2],s:1,life:1.6,rest:.2})}}};
+// ===================== show jumping: rails that tumble, turf that flies =====================
+if(typeof drawFence==='function'){const _drawFenceW=drawFence;drawFence=function(f){const HU=SH&&SH.cls==='hunter',fall=f.down&&f.downT&&now-f.downT<.7&&!(f.type==='wall'&&!HU);if(!fall)return _drawFenceW(f);const col=HU?['#c8b898','#8a6a48']:f.col;
+  // while the rail is still falling, draw the fence with it up, then the pole dropping on top
+  const keep=f.down;f.down=0;_drawFenceW(f);f.down=keep;const t=now-f.downT,y0=11;let y=y0-.5*120*t*t;if(y<0){const tb=t-Math.sqrt(2*y0/120),vb=Math.sqrt(2*y0*120)*.3;y=Math.max(0,vb*tb-.5*120*tb*tb)}
+  const nxp=-Math.sin(f.a)*.62,nyp=Math.cos(f.a)*.62,dx=Math.cos(f.a),dy=Math.sin(f.a),off=.55*Math.min(1,t/.35),a=scr(f.x+dx*off+nxp,f.y+dy*off+nyp),b=scr(f.x+dx*off-nxp,f.y+dy*off-nyp),tilt=Math.max(0,1-t*2.5)*4;
+  const n=Math.max(1,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])));for(let k=0;k<=n;k++){const u=k/n,x=Math.round(lerp(a[0],b[0],u)),yy=Math.round(lerp(a[1],b[1],u)-y-tilt*u);fx.fillStyle=(Math.floor(k/3)%2)?(col[1]||'#8a6a48'):(col[0]||'#c8b898');fx.fillRect(x,yy,1,1)}}}
+if(typeof rideTick==='function'){const _rideTickW=rideTick;rideTick=function(dt){const c=SH&&SH.cur,e=c&&c.e,jt0=e?e.jt:null,downs=SH?SH.F.map(f=>f.down):[];_rideTickW(dt);if(!SH||!e)return;
+  SH.F.forEach((f,i)=>{if(f.down&&!downs[i]){f.downT=now;for(let k=0;k<6;k++)bits.push({x:f.x,y:f.y,z:8,vx:(Math.random()-.5)*1.2,vy:(Math.random()-.5)*1.2,vz:8+Math.random()*10,c:'#e8dcc0',s:1,life:.8,rest:.3})}});
+  const G0=typeof groundDust==='function'?groundDust():['#a89a70'];
+  if(jt0!=null&&jt0<.15&&e.jt!=null&&e.jt>=.15)for(let k=0;k<4;k++)puff(e.x,e.y,G0[0],.5,.6);// take-off
+  if(jt0!=null&&jt0<.9&&(e.jt==null||e.jt>=.9)){for(let k=0;k<6;k++)puff(e.x+(Math.random()-.5)*.3,e.y+(Math.random()-.5)*.3,G0[0],.7,.8);for(let k=0;k<5;k++)bits.push({x:e.x,y:e.y,z:1,vx:-(e.vx||0)*.15+(Math.random()-.5)*.8,vy:-(e.vy||0)*.15+(Math.random()-.5)*.8,vz:10+Math.random()*12,c:Math.random()<.5?'#4a6a2a':'#5a4226',s:1,life:1,rest:.4});if(AC&&!muted&&typeof thump==='function')thump(AC.currentTime,70,.12,.05)}// landing: turf flies
+  if(c.st==='stop'&&c.stT<dt*1.5)for(let k=0;k<8;k++)bits.push({x:e.x,y:e.y,z:1,vx:(e.vx||0)*.2+(Math.random()-.5)*.6,vy:(e.vy||0)*.2+(Math.random()-.5)*.6,vz:6+Math.random()*10,c:Math.random()<.5?'#4a6a2a':'#5a4226',s:1,life:1,rest:.4})}}
+
+let STALL_DRAW=false;
+// ===================== the wash stall: the horse trots to the barn, then we cut inside to a close-up =====================
+// A big, detailed pixel horse is built from simple shapes (barrel, quarters, shoulder, neck, head, legs, mane, tail),
+// then shaded and outlined in the horse's own coat. The soap and water physics play out over him at this scale.
+// the horse, drawn by hand row by row: [row, [first,last], ...] spans for the near side, the far legs, the tail
+const BH_NEAR={0:[[46,46]],1:[[45,46]],2:[[45,47]],3:[[44,48]],4:[[43,49]],5:[[42,50]],6:[[41,51]],7:[[40,52]],8:[[39,53]],9:[[38,54]],10:[[38,55]],
+  11:[[36,45],[47,56]],12:[[35,45],[48,57]],13:[[15,18],[33,45],[50,57]],14:[[13,21],[31,45],[52,56]],15:[[11,45],[53,55]],16:[[10,45]],17:[[9,45]],18:[[9,45]],19:[[9,46]],20:[[9,46]],21:[[9,46]],
+  22:[[9,45]],23:[[10,45]],24:[[10,44]],25:[[11,44]],26:[[12,43]],27:[[13,42]],28:[[14,21],[24,37],[38,42]],29:[[14,20],[38,42]],30:[[14,19],[39,42]],31:[[14,18],[39,41]],32:[[14,17],[39,41]],
+  33:[[14,17],[39,41]],34:[[14,17],[39,41]],35:[[15,17],[40,41]],36:[[15,16],[40,41]],37:[[15,16],[40,41]],38:[[15,16],[40,41]],39:[[15,16],[40,41]],40:[[15,16],[40,41]],41:[[15,17],[40,42]]};
+const BH_FAR={29:[[36,38],[21,22]],30:[[36,38],[20,22]],31:[[36,38],[19,21]],32:[[36,38],[19,21]],33:[[36,38],[19,21]],34:[[36,38],[19,21]],35:[[37,38],[19,20]],36:[[37,38],[19,20]],37:[[37,38],[19,20]],38:[[37,38],[19,20]],39:[[37,38],[19,20]],40:[[37,38],[19,20]],41:[[37,39],[19,21]]};
+const BH_TAIL={15:[7,9],16:[6,9],17:[5,8],18:[5,8],19:[4,7],20:[4,7],21:[4,7],22:[4,7],23:[4,7],24:[4,6],25:[4,6],26:[4,6],27:[4,6],28:[4,7],29:[4,7],30:[5,7],31:[5,7],32:[5,6],33:[5,6]};
+function bigHorseSprite(h){const male=h.sex==='m',key=h.id+':'+h.coat+':'+male;bigHorseSprite.c=bigHorseSprite.c||{};if(bigHorseSprite.c[key])return bigHorseSprite.c[key];
+  const W0=60,H0=44;let g=[];for(let y=0;y<H0;y++)g.push(new Array(W0).fill('.'));const put=(x,y,c)=>{if(y>=0&&y<g.length&&x>=0&&x<W0)g[y][x]=c};
+  for(const y in BH_FAR)for(const[a,b]of BH_FAR[y])for(let x=a;x<=b;x++)put(x,+y,+y>=33?'F':'f');
+  for(const[x0,x1]of[[37,40],[19,22]])for(const y of[42,43])for(let x=x0;x<=x1;x++)put(x,y,'K');
+  for(const y in BH_NEAR)for(const[a,b]of BH_NEAR[y])for(let x=a;x<=b;x++)put(x,+y,'b');
+  for(const[x0,x1]of[[40,43],[15,18]])for(const y of[42,43])for(let x=x0;x<=x1;x++)put(x,y,'k');
+  const isB=(x,y)=>y>=0&&y<H0&&x>=0&&x<W0&&g[y][x]==='b';
+  // light from the upper left, darker underneath and on the far edges, the shoulder and flank lines, a round to the quarters
+  const out=g.map(r=>r.slice());for(let y=0;y<H0;y++)for(let x=0;x<W0;x++){if(g[y][x]!=='b')continue;let c='b';
+    const front=x>=38&&y>=28;const hind=x<=21&&y>=28;
+    if(y>=25&&y<=28&&!front&&!hind)c='s';
+    if(Math.abs(x-(37+(y-15)*3/11))<.6&&y>=15&&y<=26)c='s';if(Math.abs(x-(22+(y-21)/6))<.6&&y>=21&&y<=27)c='s';
+    const dq=Math.hypot(x-17,y-19);if(dq>4&&dq<5.3&&y<19&&x<18)c='h';const ds=Math.hypot(x-39,y-19);if(ds>3.2&&ds<4.3&&y<19&&x<40&&x>35)c='h';
+    if(!isB(x+1,y)&&y>=11&&y<=33)c='s';if(!isB(x,y+1))c='d';if(!isB(x,y-1))c='h';if(!isB(x-1,y)&&(front||hind))c='h';
+    if((front||hind)&&y>=33)c=!isB(x-1,y)?'L':'l';
+    if(x>=53&&y>=11&&y<=15)c=!isB(x,y-1)?'s':'z';
+    out[y][x]=c}
+  g=out;
+  // mane along the crest with a few loose strands, a forelock, ears, eye and nostril
+  for(let y=4;y<=14;y++){const sp=(BH_NEAR[y]||[]).find(s=>s[1]>=40);if(!sp)continue;g[y][sp[0]]='m';g[y][sp[0]+1]=(y%3===0)?'M':'m';if(y>5&&y<12&&y%2)g[y][sp[0]+2]='m'}
+  put(46,4,'m');put(47,4,'M');put(47,5,'m');put(46,1,'d');put(45,2,'s');
+  put(47,7,'e');put(48,7,'e');put(48,6,'h');put(47,8,'s');put(56,12,'n');put(55,14,'d');put(54,14,'d');put(49,10,'h');put(50,10,'h');
+  if(male){put(26,29,'S');put(27,29,'S');put(26,30,'d')}
+  // a stallion stands a little bigger: one more row of leg and one more column of barrel
+  if(male){g.splice(37,0,g[37].slice());for(const r of g)r.splice(27,0,r[27])}
+  const W=g[0].length,Hh=g.length,ax=male?29:28,ay=Hh,co=COATS[h.coat],bc=co[1],dk=co[2];
+  const col={b:bc,h:shade(bc,1.2),s:shade(bc,.84),d:shade(bc,.68),z:shade(bc,.56),l:dk,L:shade(dk,1.4),f:shade(bc,.62),F:shade(dk,.78),m:dk,M:shade(dk,1.5),e:'#120c08',n:'#1a1210',k:'#3a2e26',K:'#2a201a',S:shade(bc,.6)};
+  const c=document.createElement('canvas');c.width=W;c.height=Hh;const x2=c.getContext('2d');
+  for(let y=0;y<Hh;y++)for(let x=0;x<W;x++){const ch=g[y][x];if(ch==='.')continue;x2.fillStyle=col[ch]||bc;x2.fillRect(x,y,1,1)}
+  const mask=[];for(let y=0;y<Hh;y++)for(let x=0;x<W;x++){const ch=g[y][x];if(ch!=='.'&&ch!=='k'&&ch!=='K')mask.push([x-ax,y-ay])}
+  for(const y in BH_TAIL){const[a,b]=BH_TAIL[y],yy=+y+(male&&+y>=37?1:0);for(let x=a;x<=b;x++)mask.push([x-ax,yy-ay])}
+  const eye=[47+(male&&47>=27?1:0)+.5-ax,7.5-ay];
+  return bigHorseSprite.c[key]={c,B:{W,H:Hh,ax,ay,sc:1,eye,male,tail:BH_TAIL,mane:col.m,maneH:col.M},mask}}
+// ----- the stall: plank walls, a beam, a window letting in a shaft of light, straw underfoot, a hay net, a bucket, a lantern
+let STALL=null;const stc=document.createElement('canvas');stc.id='stall';stc.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;display:none;image-rendering:pixelated;touch-action:none';
+document.body.insertBefore(stc,$('vig'));const stg=stc.getContext('2d');
+function stallBg(Wd,Hd){const c=document.createElement('canvas');c.width=Wd;c.height=Hd;const g=c.getContext('2d'),r=mulberry32(77),fl=Math.round(Hd*.47);
+  for(let x=0;x<Wd;x+=7){const t=r();g.fillStyle=t<.33?'#5a3e26':t<.66?'#4e3520':'#634428';g.fillRect(x,0,7,fl);g.fillStyle='#2e1e12';g.fillRect(x,0,1,fl);for(let y=0;y<fl;y+=3)if(r()<.18){g.fillStyle='rgba(0,0,0,.18)';g.fillRect(x+1+((r()*5)|0),y,2,1)}if(r()<.5){g.fillStyle='#8a8a8a';g.fillRect(x+3,14,1,1);g.fillRect(x+3,fl-12,1,1)}}
+  g.fillStyle='#3a2616';g.fillRect(0,0,Wd,9);g.fillStyle='#4a3020';g.fillRect(0,1,Wd,1);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,9,Wd,3);
+  g.fillStyle='#3a2616';g.fillRect(0,fl-10,Wd,10);g.fillStyle='#4e3520';g.fillRect(0,fl-10,Wd,1);
+  // the window
+  const wx=Math.round(Wd*.62),wy=20;g.fillStyle='#2e1e12';g.fillRect(wx-1,wy-1,24,20);g.fillStyle='#bcd8e8';g.fillRect(wx,wy,22,18);g.fillStyle='#e8f4fa';g.fillRect(wx,wy,22,6);g.fillStyle='#6a8a4a';g.fillRect(wx,wy+13,22,5);g.fillStyle='#2e1e12';g.fillRect(wx+10,wy,2,18);g.fillRect(wx,wy+8,22,2);
+  // the floor: straw over earth
+  for(let y=fl;y<Hd;y++)for(let x=0;x<Wd;x++){const n=r();g.fillStyle=n<.12?'#8a6a2a':n<.5?'#b8963e':n<.8?'#c8a64a':'#d8b85a';g.fillRect(x,y,1,1)}
+  for(let k=0;k<Wd*3;k++){const x=r()*Wd,y=fl+r()*(Hd-fl),L=2+r()*4,a=r()*Math.PI;g.fillStyle=r()<.5?'#e8c86a':'#9a7a30';for(let t=0;t<L;t++)g.fillRect(Math.round(x+Math.cos(a)*t),Math.round(y+Math.sin(a)*t*.5),1,1)}
+  g.fillStyle='rgba(0,0,0,.25)';g.fillRect(0,fl,Wd,2);
+  // hay net, bucket, horseshoe, bridle on its peg
+  const hx=10,hy=22;g.fillStyle='#d8b860';for(let y=0;y<16;y++)for(let x=-6+Math.abs(8-y)*.3;x<6-Math.abs(8-y)*.3;x++)g.fillRect(hx+Math.round(x),hy+y,1,1);g.fillStyle='#6a4a2a';for(let y=0;y<16;y+=3)g.fillRect(hx-6,hy+y,12,1);g.fillRect(hx,hy-6,1,6);
+  const bx=Wd-20,by=fl+6;g.fillStyle='#4a4a52';g.fillRect(bx,by,11,9);g.fillStyle='#6a6a74';g.fillRect(bx,by,11,2);g.fillStyle='#5a8ab0';g.fillRect(bx+1,by,9,1);g.fillStyle='#2a2a30';g.fillRect(bx-1,by+3,13,1);g.fillRect(bx-1,by+7,13,1);
+  g.fillStyle='#9a9aa2';const sx=Math.round(Wd*.42),sy=16;g.fillRect(sx,sy,1,5);g.fillRect(sx+5,sy,1,5);g.fillRect(sx+1,sy+5,4,1);
+  g.fillStyle='#3a2616';g.fillRect(Math.round(Wd*.3),14,2,2);g.fillStyle='#5a3a1c';g.fillRect(Math.round(Wd*.3)-2,16,6,1);g.fillRect(Math.round(Wd*.3)-3,17,1,9);g.fillRect(Math.round(Wd*.3)+3,17,1,9);g.fillStyle='#b8b8c0';g.fillRect(Math.round(Wd*.3),26,2,1);
+  return{c,fl,wx,wy}}
+function stallOpen(W){const Wd=Math.ceil(innerWidth/3),Hd=Math.ceil(innerHeight/3);stc.width=Wd;stc.height=Hd;stg.imageSmoothingEnabled=false;const S=bigHorseSprite(W.h),bg=stallBg(Wd,Hd);
+  STALL={Wd,Hd,bg,S,ax:Math.round(Wd*.46),ay:bg.fl+Math.round(Hd*.05),motes:[],t:0,blink:0,shk:0};
+  // the wash now happens on the big horse: a fresh coat map at this scale
+  const dirt=clamp((100-W.h.clean)/100,0,1);W.mask=S.mask.map(([x,y])=>({x,y,d:clamp(dirt*(.3+Math.random()*.9)*(y>-16?1.2:.8),0,1),s:0,w:0}));W._map=null;W.k=3;W.stall=1;W.pud=null;
+  cutFlash();stc.style.display='block';if(!STALL.raf)STALL.raf=requestAnimationFrame(stallLoop);pasInfo()}
+function stallClose(){if(!STALL)return;cancelAnimationFrame(STALL.raf);STALL=null;stc.style.display='none';cutFlash()}
+function cutFlash(){const f=$('cut');f.style.zIndex=4;f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
+function stallLoop(){if(!STALL)return;STALL.raf=requestAnimationFrame(stallLoop);const S=STALL,g=stg,t=performance.now()/1000,dt=Math.min(.05,t-(S.lt||t));S.lt=t;S.t+=dt;
+  g.drawImage(S.bg.c,0,0);
+  // a slanting shaft of light from the window, dust drifting in it
+  g.fillStyle='rgba(255,240,190,.10)';g.beginPath();g.moveTo(S.bg.wx,S.bg.wy+18);g.lineTo(S.bg.wx+22,S.bg.wy+18);g.lineTo(S.bg.wx-8,S.bg.fl+30);g.lineTo(S.bg.wx-34,S.bg.fl+30);g.fill();
+  if(S.motes.length<30&&Math.random()<dt*8)S.motes.push({x:S.bg.wx-20+Math.random()*34,y:S.bg.wy+20+Math.random()*60,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,t:3+Math.random()*3});
+  for(const m of S.motes){m.t-=dt;m.x+=m.vx*dt;m.y+=m.vy*dt;g.fillStyle='rgba(255,246,214,'+Math.min(.7,m.t*.3).toFixed(2)+')';g.fillRect(Math.round(m.x),Math.round(m.y),1,1)}S.motes=S.motes.filter(m=>m.t>0);
+  // a lantern swaying gently from the beam
+  const lx=Math.round(S.Wd*.18+Math.sin(S.t*.8)*1.2),ly=12;g.fillStyle='#2a2a2a';g.fillRect(lx,9,1,3);g.fillStyle='#3a3a40';g.fillRect(lx-2,ly,5,1);g.fillStyle='#f8d070';g.fillRect(lx-1,ly+1,3,4);g.fillStyle='#3a3a40';g.fillRect(lx-2,ly+5,5,1);
+  const gl=.12+.04*Math.sin(S.t*7)+.03*Math.sin(S.t*13);g.fillStyle='rgba(255,200,110,'+gl.toFixed(3)+')';g.beginPath();g.arc(lx,ly+3,14,0,7);g.fill();
+  // the horse, with a shadow, a swishing tail and the odd blink
+  const W=WASH,sh=S.S,x0=S.ax-sh.B.ax,y0=S.ay-sh.B.ay,shake=S.shk>0?Math.round(Math.sin(S.t*40)*1.5):0;g.fillStyle='rgba(20,12,6,.35)';g.fillRect(x0+12,S.ay-1,sh.B.W-20,2);g.fillRect(x0+16,S.ay+1,sh.B.W-28,1);
+  {const B=sh.B,sw=Math.sin(S.t*1.5)*1.4+(S.flick>0?Math.sin(S.t*30)*2:0);if(Math.random()<.004)S.flick=.5;S.flick=(S.flick||0)-1/60;for(const y in B.tail){const[a,b]=B.tail[y],k=(+y-15)/18,dx=Math.round(sw*k*k*2),yy=+y+(B.male&&+y>=37?1:0);for(let x=a;x<=b;x++){g.fillStyle=(x+ +y)%4===0?B.maneH:B.mane;g.fillRect(x0+shake+x+dx,y0+yy,1,1)}}}
+  g.drawImage(sh.c,x0+shake,y0);
+  S.blink-=dt;if(S.blink<-3.5-Math.random()*3)S.blink=.15;if(S.blink>0){const ex=Math.round(S.ax+sh.B.eye[0])+shake,ey=Math.round(S.ay+sh.B.eye[1]);g.fillStyle=shade(COATS[W?W.h.coat:0][1],.7);g.fillRect(ex-1,ey,2,1)}
+  if(S.shk>0)S.shk-=dt;
+  // everything wet and soapy, drawn into the stall
+  if(W&&W.stall){STALL_DRAW=true;try{drawPuddle(W.P);drawWash(W.P)}finally{STALL_DRAW=false}}
+  for(const D of S.spray||[]){D.t-=dt;D.vy+=160*dt;D.x+=D.vx*dt;D.y+=D.vy*dt;g.fillStyle=Math.random()<.5?'#e8f6ff':'#9ccaf0';g.fillRect(Math.round(D.x),Math.round(D.y),1,1)}if(S.spray)S.spray=S.spray.filter(D=>D.t>0&&D.y<S.ay+2)}
+// the wash helpers draw into the stall and take the stall as their frame when we're inside
+function wanc(P){return WASH&&WASH.stall&&STALL?[STALL.ax,STALL.ay]:scr(P.x,P.y)}
+function wctx(){return WASH&&WASH.stall&&STALL?stg:fx}
+const _yardPtS=yardPt;yardPt=function(ev){if(WASH&&WASH.stall&&STALL){const R=stc.getBoundingClientRect();return[(ev.clientX-R.left)/R.width*STALL.Wd,(ev.clientY-R.top)/R.height*STALL.Hd]}return _yardPtS(ev)};
+// pointer on the stall itself
+stc.addEventListener('pointerdown',ev=>{if(!WASH||!WASH.stall)return;WASH.down=true;const[x,y]=yardPt(ev);WASH.px=x;WASH.py=y;washLast=performance.now()/1000;washAt(x,y,.03);ev.preventDefault()});
+stc.addEventListener('pointermove',ev=>{if(!WASH||!WASH.down||!WASH.stall)return;const[x,y]=yardPt(ev),t=performance.now()/1000,dt=Math.min(.06,t-washLast);washLast=t;const n=Math.max(1,Math.ceil(Math.hypot(x-WASH.px,y-WASH.py)/2.5));for(let k=1;k<=n;k++)washAt(WASH.px+(x-WASH.px)*k/n,WASH.py+(y-WASH.py)*k/n,dt/n);WASH.px=x;WASH.py=y;ev.preventDefault()});
+// ----- the walk to the barn: the horse trots to the corner by the barn door, then we cut inside
+const _washStartS=washStart;washStart=function(id){_washStartS(id);if(!WASH||!YARD)return;const W=WASH,A=YARD.A;W.phase='tobarn';W.P.act={k:'tobarn',t:1e9};W.tgt=[A.x0+.7,A.y0+.8];pasInfo()};
+const _yardStepS=yardStep;yardStep=function(dt){_yardStepS(dt);const W=WASH;if(!W||W.phase!=='tobarn')return;const P=W.P,dx=W.tgt[0]-P.x,dy=W.tgt[1]-P.y,d=Math.hypot(dx,dy);
+  if(d<.12||W.tt>6){W.phase='wash';P.act={k:'wash',t:1e9};P.v=0;P.walk=false;stallOpen(W);return}W.tt=(W.tt||0)+dt;const sp=Math.min(3,d*2+1);P.vx=dx/d*sp;P.vy=dy/d*sp;P.x+=P.vx*dt;P.y+=P.vy*dt;P.v=sp>2?3.4:1.2;P.walk=true;P.gait+=dt*(sp>2?3:2);
+  if(Math.random()<dt*8)puff(P.x,P.y,'#a8986a',.3,.4)};
+// leaving: a good shake in the stall, then back out to the paddock
+const _washEndS=washEnd;washEnd=function(keep){const W=WASH;if(W&&W.stall&&STALL){if(keep){STALL.shk=1.1;STALL.spray=[];for(let k=0;k<160;k++){const c=W.mask[(Math.random()*W.mask.length)|0];STALL.spray.push({x:STALL.ax+c.x,y:STALL.ay+c.y,vx:(Math.random()-.5)*120+(c.x>0?30:-30),vy:-30-Math.random()*70,t:1.6})}if(AC&&!muted){noiseHit(AC.currentTime,.4,1400,1,.05);noiseHit(AC.currentTime+.2,.35,1800,1,.04)}
+      W.stall=0;const P=W.P;_washEndS.call(this,true);setTimeout(()=>{stallClose();if(P)P.act={k:'shake',t:1}},1500);return}
+    W.stall=0;_washEndS.call(this,false);stallClose();return}
+  return _washEndS.apply(this,arguments)};
+const _yardCloseS=yardClose;yardClose=function(){stallClose();return _yardCloseS.apply(this,arguments)};
+// the yard camera glides to whichever horse you've picked, and comes in close
+const _yardCamS=yardCam;yardCam=function(){if(!WASH&&YARD&&PAS&&pasSel){const P=PAS.horses.find(P=>P.h.id===pasSel);if(P){const z=YARD.z||2.4;return{x:isoX(P.x,P.y)-AW/2,y:isoY(P.x,P.y)-hz(P.x,P.y)-8-(AH/2+(AH*.32-AH/2)/z)}}}return _yardCamS()};
 
 // ===================== Kingsfold Crowns: the betting game =====================
 const GOING=['Firm','Good to Firm','Good','Good to Soft','Soft','Heavy'];
@@ -3719,7 +3939,8 @@ function drawHorse(h,sh){if(sh)return;const[sx,gy]=scr(h.x,h.y),co=COATS[h.H.coa
   r(-4,-7-bU,9,3+U,bc);r(-3,-7-bU,7,1,shade(bc,1.15));r(-3,-5-bU+U,6,1,shade(bc,.85));if(U&&typeof WASH!=='undefined'&&WASH&&WASH.P===h)r(-1,-4-b,2,1,shade(bc,.68));// the sheath: only seen up close, at the wash
   const hy=F.hd===2?-2:F.hd;// head carriage: up when standing, low and long at a gallop
   r(4,-9-bU+(hy>0?1:0),2,3,bc);r(5,-11-bU+hy+(hy===-2?0:1),3,2,bc);r(8,-10-bU+hy+(hy===-2?0:1),1,1,shade(bc,.8));r(5,-12-bU+hy+(hy===-2?0:1),1,1,shade(bc,.9));r(7,-11-bU+hy+(hy===-2?0:1),1,1,'#120c08');
-  r(4,-10-bU+(hy>0?1:0),1,2,dk);
+  {const Y0=-11-bU+hy+(hy===-2?0:1);r(5,Y0-1,1,1,shade(bc,.72));r(4,-6-bU,1,2,shade(bc,.84));r(-3,-7-bU,2,1,shade(bc,1.32));r(-4,-6-bU,1,1,shade(bc,1.1))}// an ear, chest shading, a rounder quarter
+  r(4,-10-bU+(hy>0?1:0),1,2,dk);if(hy===-2){r(4,-11-bU,2,2,bc);r(5,-12-bU,1,1,bc);r(4,-12-bU,1,2,dk)}// head up: the neck reaches all the way to the poll
   const tw=Math.floor(h.gait*2)%2;if(run||h.jt!=null){r(-6,-8-bU+tw,2,1,dk);r(-7,-7-bU+tw,1,1,dk);r(-5,-7-bU,1,1,dk)}else{r(-5,-7-bU,1,3,dk);r(-6,-5-bU+Math.round(Math.sin(now*3+h.ph)),1,1,dk)}
   leg(F.L[0],dk===bc?shade(bc,.9):dk);leg(F.L[2],dk===bc?shade(bc,.9):dk);
   if(h.capar)drawCapar(r,bU,h);
