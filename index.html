@@ -19,7 +19,7 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#13202a;font-family:"Pixelify Sans",monospace;color:#e8d39a;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   canvas.view{position:absolute;left:0;top:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-  #gl{z-index:0}#fx{z-index:1}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
+  #gl{z-index:0}#fx{z-index:1}#split{z-index:1;pointer-events:none;display:none}#splitN{position:absolute;inset:0;z-index:2;pointer-events:none;display:none}#splitN span{position:absolute;top:55%;transform:translateX(-50%);font-size:12px;color:#f3e2b0;background:rgba(20,14,8,.78);padding:2px 7px 3px;border-radius:3px;border-bottom:3px solid #e8c45a;white-space:nowrap;text-shadow:1px 1px 0 #000;letter-spacing:.3px}#splitN span:first-child{left:25%}#splitN span:last-child{left:75%}#sky{z-index:2;pointer-events:none}#fg{z-index:2;pointer-events:none}
   #vig{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(8,10,14,.38) 100%)}
   .panel{background:rgba(24,18,12,.92);border:2px solid #8a6a32;box-shadow:inset 0 0 0 2px #2e2216;border-radius:4px}
   .bl{font-family:"Jacquarda Bastarda 9",serif;font-weight:normal}
@@ -179,6 +179,7 @@
 <div id="splash" style="position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(ellipse at 50% 45%,#2a1e12 0%,#1a120a 55%,#0d0905 100%)"></div>
 <canvas id="gl" class="view"></canvas>
 <canvas id="fx" class="view"></canvas>
+<canvas id="split" class="view"></canvas><div id="splitN"><span></span><span></span></div>
 <canvas id="sky" class="view"></canvas>
 <canvas id="fg" class="view"></canvas>
 <div id="vig"></div><div id="cut"></div>
@@ -2580,6 +2581,59 @@ function drawTiltSeg(k){const P=SP.tilt;if(!P||k<1||k>=P.length)return;const a=s
   if(k%4===0&&k>=4){const f=Math.floor(now*8+k)%3,c=['#b8322a','#2f56a8','#e8c45a'][(k/4|0)%3];fx.fillStyle='#3a2616';fx.fillRect(a[0],a[1]-16,1,6);fx.fillStyle=c;fx.fillRect(a[0]+1,a[1]-16,3+(f===1?1:0),1);fx.fillRect(a[0]+1,a[1]-15,2+(f===2?1:0),1);fx.fillRect(a[0]+1,a[1]-14,1,1)}}
 const _startSport26=startSport;startSport=function(){_startSport26.apply(this,arguments);if(card.sport!=='joust'||!SP||!SP.tilt)return;
   objs=objs.filter(o=>o.draw!==drawTilt);const P=SP.tilt;for(let k=1;k<P.length;k++){const mx=(P[k-1][0]+P[k][0])/2,my=(P[k-1][1]+P[k][1])/2;objs.push({kind:'sport',x:mx,y:my,key:mx+my,draw:()=>drawTiltSeg(k)})}};
+
+// ===================== split-screen joust: each knight in his own close-up, the halves slide together for the clash =====================
+// left half follows the left knight, right half the right knight; as they close, both half-cameras glide onto the shared
+// shot so the two halves line up into one picture, the divider melts away, and the lances meet in the middle of the screen
+const SPL={m:1,on:false,ZS:2.4,ZP:3.4,L:null,R:null,names:''};
+const splc=document.getElementById('split'),splg=splc?splc.getContext('2d'):null;
+const _setSizesS=setSizes;setSizes=function(){_setSizesS.apply(this,arguments);if(splc){splc.width=AW;splc.height=AH;splc.style.width=(AW*K/dpr)+'px';splc.style.height=(AH*K/dpr)+'px';splg.imageSmoothingEnabled=false}};
+const spSm=x=>{x=clamp(x,0,1);return x*x*(3-2*x)};
+function splitActive(){return !!(race&&race.sport==='joust'&&card&&card.sport==='joust'&&SP&&SP.a&&SP.b&&race.state!=='done')}
+// how merged the two halves should be right now: apart while they wait and charge, one picture once both fit in a close shot
+function splitTarget(){if(!splitActive())return 1;if(SP.phase==='ready')return 0;if(SP.phase!=='charge'||SP.hit)return 1;
+  const a=scr(SP.a.x,SP.a.y),b=scr(SP.b.x,SP.b.y),sep=Math.max(Math.abs(a[0]-b[0])+28,Math.abs(a[1]-b[1])*1.9+40),zfit=AW*.86/sep;
+  return spSm((zfit-SPL.ZS*.5)/(SPL.ZS*.5))}
+// keep the close zoom while the screen is split, so the merged shot matches the halves exactly
+const _joustZoomS=joustZoom;joustZoom=function(){_joustZoomS.apply(this,arguments);if(SP&&splitActive()&&SPL.m<.995)SP.zt=SPL.ZS};
+function riderName(R){const i=SP.riders.indexOf(R),C=card.comp&&card.comp[i];return C?C.name:''}
+function riderSilk(R){const i=SP.riders.indexOf(R),C=card.comp&&card.comp[i];return C&&C.silk?C.silk[0]:'#e8c45a'}
+// a half-camera: puts its knight at a spot in his half, riding into open space toward the middle
+// each half is the shared shot slid along the line of the lists, so the barrier and fences run straight on across the divider
+function listDir(){const P=SP.tilt;if(!P||P.length<2)return null;const a=scr(P[0][0],P[0][1]),b=scr(P[P.length-1][0],P[P.length-1][1]);let x=b[0]-a[0],y=b[1]-a[1];const l=Math.hypot(x,y)||1;x/=l;y/=l;if(x<0){x=-x;y=-y}return Math.abs(x)>.3?[x,y]:null}
+function paneCam(R,side,z){const p=scr(R.x,R.y),dX=side<0?AW*.24:AW*.76,cX=AW/2+(dX-AW/2)/z,ox=Math.round(cam.x),oy=Math.round(cam.y),u=listDir();
+  if(u){const s=(p[0]-cX)/u[0];return{x:ox+s*u[0],y:oy+s*u[1]}}
+  const dY=AH*.45;return{x:ox+p[0]-cX,y:oy+p[1]-11-(AH/2+(dY-AH/2)/z)}}
+let splLastT=0;
+function splitPost(){const t=performance.now()/1000,dt=Math.min(.1,t-(splLastT||t));splLastT=t;
+  const mt=splitTarget();SPL.m+=(mt-SPL.m)*(1-Math.exp(-dt*(mt>SPL.m?9:3.2)));if(mt>=1&&SPL.m>.995)SPL.m=1;if(mt<=0&&SPL.m<.005)SPL.m=0;
+  const show=!!(splitActive()&&SPL.m<.995&&splg);
+  if(show!==SPL.on){SPL.on=show;splc.style.display=show?'block':'none';$('splitN').style.display=show?'block':'none'}
+  if(!show)return;
+  // which knight is on the left of the screen this pass (they never cross before the halves have merged)
+  const ax=isoX(SP.a.x,SP.a.y),bx=isoX(SP.b.x,SP.b.y);if(SP.phase==='ready'||!SPL.L){SPL.L=ax<=bx?SP.a:SP.b;SPL.R=SPL.L===SP.a?SP.b:SP.a}
+  const m=spSm(SPL.m),z=lerp(SPL.ZP,Math.max(1,SP.zc||1),m),ox=cam.x,oy=cam.y,sw=AW/z,sh=AH/z,sx0=AW/2-sw/2,sy0=AH/2-sh/2;
+  splg.setTransform(1,0,0,1,0,0);
+  // both halves get the same vertical nudge, so the knights ride at eye level and the lists still line up
+  const PL=paneCam(SPL.L,-1,z),PR=paneCam(SPL.R,1,z),yk=(R,P)=>scr(R.x,R.y)[1]-(P.y-Math.round(oy)),cY=AH/2+(AH*.47-AH/2)/z+9,dy=(yk(SPL.L,PL)+yk(SPL.R,PR))/2-cY;PL.y+=dy;PR.y+=dy;
+  const shk=SP.shake||0,jx=(Math.random()-.5)*shk,jy=(Math.random()-.5)*shk;
+  try{for(const[R,side,P]of[[SPL.L,-1,PL],[SPL.R,1,PR]]){const cx=lerp(P.x+jx,ox,m),cy=lerp(P.y+jy,oy,m);cam.x=cx;cam.y=cy;renderAt(cx,cy);
+      const half=side<0?0:1;for(const c of[glc,fxc])splg.drawImage(c,sx0+half*sw/2,sy0,sw/2,sh,half*AW/2,0,AW/2,AH)}}
+  finally{cam.x=ox;cam.y=oy}
+  // the divider: a carved, gilded post that narrows and fades as the halves come together
+  const k=1-m,w=Math.max(0,Math.round(5*k)),x=Math.round(AW/2-w/2);if(w>0){splg.globalAlpha=Math.min(1,k*1.6);
+    splg.fillStyle='#1c120a';splg.fillRect(x,0,w,AH);if(w>=3){splg.fillStyle='#e8c45a';splg.fillRect(x,0,1,AH);splg.fillRect(x+w-1,0,1,AH);splg.fillStyle='#8a6a2a';for(let y=(Math.floor(now*40)%12);y<AH;y+=12)splg.fillRect(x+1,y,w-2,2)}
+    // a little shield on the post, halfway down, in both knights' colours
+    const cy=Math.round(AH*.47),sx=Math.round(AW/2);splg.fillStyle='#1c120a';splg.fillRect(sx-6,cy-7,12,14);splg.fillStyle='#e8c45a';splg.fillRect(sx-5,cy-6,10,11);
+    splg.fillStyle=riderSilk(SPL.L);splg.fillRect(sx-4,cy-5,4,9);splg.fillStyle=riderSilk(SPL.R);splg.fillRect(sx,cy-5,4,9);splg.fillStyle='#e8c45a';splg.fillRect(sx-3,cy+4,6,1);splg.fillRect(sx-1,cy+5,2,1);
+    splg.globalAlpha=1}
+  // name plates under each knight
+  const nm=riderName(SPL.L)+'|'+riderName(SPL.R);if(nm!==SPL.names){SPL.names=nm;const s=$('splitN').children;s[0].textContent=riderName(SPL.L);s[1].textContent=riderName(SPL.R);s[0].style.borderBottomColor=riderSilk(SPL.L);s[1].style.borderBottomColor=riderSilk(SPL.R)}
+  const N=$('splitN');N.style.opacity=Math.max(0,1-m*1.8).toFixed(2);N.children[0].style.left=(25-m*8)+'%';N.children[1].style.left=(75+m*8)+'%'}
+const _frame0S=frame0;frame0=function(t){_frame0S.apply(this,arguments);try{splitPost()}catch(e){console.warn('split',e);SPL.on=false;if(splc)splc.style.display='none'}};
+const _nextRaceS=nextRace;nextRace=function(){SPL.m=1;SPL.L=SPL.R=null;if(SPL.on){SPL.on=false;splc.style.display='none';$('splitN').style.display='none'}return _nextRaceS.apply(this,arguments)};
+// the shared joust shot is centred on the knights themselves, the same height the split halves hold them at
+const _sportCamS=sportCam;sportCam=function(){const c=_sportCamS.apply(this,arguments);if(card&&card.sport==='joust'&&c)c.y-=AH*.04+8;return c};
 
 // ===================== live betting for every sport =====================
 // Prices come from re-running each sport's own model from the current state (never from the scripted result),
