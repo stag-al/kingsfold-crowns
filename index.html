@@ -2089,7 +2089,8 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
     ax=want[0]-meet[0],ay=want[1]-meet[1],al=Math.hypot(ax,ay)||1,app=[meet[0]-ax/al*.38,meet[1]-ay/al*.38];
   const close=dist(S.x,S.y,meet[0],meet[1])<1.4;
   // ride THROUGH the ball: aim past it along the line of the hit, so the strike comes at full gallop
-  const thru=[meet[0]+ax/al*1.8,meet[1]+ay/al*1.8];steer(S,dt,close?thru[0]:app[0],close?thru[1]:app[1],(S.lame?3.4:5.5)+(PL.tt>2?.5:0));
+  // straight at the ball and through it, whatever the angle: the stroke (forehand, backhand, neck shot) follows from how he arrives
+  const hd=S.hd??Math.atan2(meet[1]-S.y,meet[0]-S.x),thru=[meet[0]+Math.cos(hd)*1.2,meet[1]+Math.sin(hd)*1.2];steer(S,dt,close?thru[0]:meet[0],close?thru[1]:meet[1],(S.lame?3.4:5.5)+(PL.tt>2?.5:0));
   if(step.k==='steal'&&S.v>0)S.swing=Math.max(S.swing,.3);
   // planning cue: the man on the ball weighs his option
   if(step.to&&thinking){PL.look={x0:S.x,y0:S.y,x1:step.to.x,y1:step.to.y,t:now}}
@@ -2143,7 +2144,7 @@ drawPoloFX=function(){if(!PL)return;const B0=PL.ball,C=PL.carrier,team=C?card.te
   fx.fillStyle='#1a120a';fx.fillRect(bx-2,by-4-z,4,4);fx.fillStyle=bc;fx.fillRect(bx-1,by-4-z,2,1);fx.fillRect(bx-2,by-3-z,4,2);fx.fillRect(bx-1,by-1-z,2,1);fx.fillStyle='#ffffff';fx.fillRect(bx-1,by-3-z,1,1);
   if(PL.flash>0){fx.fillStyle='rgba(255,236,180,'+(PL.flash*.15).toFixed(3)+')';fx.fillRect(0,0,AW,AH)}};
 // who's on the ball, in the scoreboard
-const _poloHud5=poloHud;poloHud=function(){_poloHud5();const C=PL&&PL.carrier;if(C&&race&&race.state==='run'){const T0=card.teams[C.team];$('toGo').insertAdjacentHTML('beforeend','<div class="onball"><span style="color:'+T0.c1+'">▼</span> On the ball: <b>'+C.p.name+'</b> <small>'+T0.short+'</small></div>')}};
+const _poloHud5=poloHud,_poloHud5Base=poloHud;poloHud=function(){_poloHud5();const C=PL&&PL.carrier;if(C&&race&&race.state==='run'){const T0=card.teams[C.team];$('toGo').insertAdjacentHTML('beforeend','<div class="onball"><span style="color:'+T0.c1+'">▼</span> On the ball: <b>'+C.p.name+'</b> <small>'+T0.short+'</small></div>')}};
 // a calm camera: follow where the ball is going, not the rider jerking after it
 poloCam=function(){const B0=PL.ball,st=ballStop(B0),t=performance.now()/1000,dt=Math.min(.1,t-(PL.camT||t));PL.camT=t;
   const tx=lerp(B0.x,st[0],.35),ty=lerp(B0.y,st[1],.35);if(PL.cx==null){PL.cx=tx;PL.cy=ty}const k=1-Math.exp(-dt*2.2);PL.cx+=(tx-PL.cx)*k;PL.cy+=(ty-PL.cy)*k;
@@ -2219,6 +2220,35 @@ function penOrRun(dt){const P=PL.pen,B0=PL.ball,F=PL.F;
 const _drawPoloR6=drawPoloR;drawPoloR=function(r,b,h,run){if(!h.ump)return _drawPoloR6(r,b,h,run);
   r(-1,-12-b,3,4,'#f4f2ea');r(-1,-11-b,3,1,'#1c1c1c');r(-1,-9-b,3,1,'#1c1c1c');r(-1,-15-b,3,2,'#1c1c1c');r(-1,-13-b,3,1,'#d9a07a');r(1,-13-b,1,1,'#c08a68');r(2,-12-b,1,1,'#c8c8c8');
   if(PL&&(PL.phase==='kickoff'||PL.phase==='throw')&&h.ump===1){const up=PL.phase==='throw'&&PL.t<.25;r(2,(up?-15:-10)-b,1,up?3:2,'#d9a07a')}};
+
+// ===================== polo: nobody owns the ball =====================
+// Whoever gets to it hits it. A teammate close to the ball takes the touch; if the man due to make the next pass is far
+// off, the nearest teammate plays it to him. Opponents who get close hook at the mallet and knock it off its line.
+// No markers over anyone's head: the scoreboard just says who hit it last. The match model still decides every goal.
+const _hitBall7=hitBall;hitBall=function(R,tx,ty,kind,loft){const r=_hitBall7.apply(this,arguments);if(PL&&R&&R.p)PL.lastHit=R;return r};
+const _poloSim7=poloSim;poloSim=function(dt){if(PL&&PL.phase==='chase'&&PL.plan&&race.state==='run'){const B0=PL.ball,e=nextEvent(),step=PL.plan[PL.pi];
+    if(e&&step&&step.R){const S=step.R,dS=dist(S.x,S.y,B0.x,B0.y),att=PL.riders.filter(R=>R.team===e.t&&R!==S);
+      // a free touch goes to whoever is right there
+      if(step.free){const T=att.find(R=>dist(R.x,R.y,B0.x,B0.y)<.8&&dist(R.x,R.y,B0.x,B0.y)<dS-.2);if(T){step.R=T;PL.carrier=T;PL.tt=Math.max(PL.tt,.5);if(step.k==='pass'&&step.to===T){step.k='tap';step.to=null}}}
+      // the man due to play the set pass is miles away: the nearest teammate plays it to him
+      else if(step.k==='pass'&&dS>3.2&&!step.relay){const T=att.filter(R=>R.j!==3||dist(R.x,R.y,B0.x,B0.y)<1.5).sort((a,b)=>dist(a.x,a.y,B0.x,B0.y)-dist(b.x,b.y,B0.x,B0.y))[0];
+        if(T&&dist(T.x,T.y,B0.x,B0.y)<1.4){step.relay=1;PL.plan.splice(PL.pi,0,{R:T,k:'pass',to:S,free:1,relay:1});PL.carrier=T;PL.tt=0}}}
+    // opponents close to the ball hook at the mallet: legal, and it knocks the ball off its line
+    PL.hookT=(PL.hookT||0)-dt;if(PL.hookT<=0&&e){const S=step&&step.R;for(const R of PL.riders){if(R.team===e.t||R===S)continue;const d=dist(R.x,R.y,B0.x,B0.y);
+        if(d<.65&&Math.random()<dt*6){R.swing=1;PL.hookT=1.3;const sp=Math.hypot(B0.vx,B0.vy);B0.vx=B0.vx*.55+(Math.random()-.5)*1.6;B0.vy=B0.vy*.55+(Math.random()-.5)*1.6;if(typeof crack2==='function'&&sp>.5)blip(320,.04,'square',.04);
+          if(Math.random()<.3&&race.t-race.lastC>1.6)sayP(pick([R.p.name+' hooks the mallet!',R.p.name+' gets a stick in and knocks it loose.',R.p.name+' reaches in and spoils the shot.']));break}}}}
+  return _poloSim7(dt)};
+// just the ball: no ring, no arrow, no hint of who it "belongs" to
+drawPoloFX=function(){if(!PL)return;const B0=PL.ball;
+  const[bx,by]=scr(B0.x,B0.y),z=Math.round(B0.z),sp=Math.hypot(B0.vx,B0.vy),bc=poloBallCol();
+  if(sp>3){for(let k=1;k<=4;k++){const t=k*.025;const p=scr(B0.x-B0.vx*t,B0.y-B0.vy*t);fx.globalAlpha=.45-k*.09;fx.fillStyle=bc;fx.fillRect(Math.round(p[0])-1,Math.round(p[1])-2-z,2,2)}fx.globalAlpha=1}
+  fx.fillStyle='rgba(10,16,6,.45)';fx.fillRect(bx-2,by,5,1);fx.fillRect(bx-1,by+1,3,1);
+  fx.fillStyle='#1a120a';fx.fillRect(bx-2,by-4-z,4,4);fx.fillStyle=bc;fx.fillRect(bx-1,by-4-z,2,1);fx.fillRect(bx-2,by-3-z,4,2);fx.fillRect(bx-1,by-1-z,2,1);fx.fillStyle='#ffffff';fx.fillRect(bx-1,by-3-z,1,1);
+  if(PL.flash>0){fx.fillStyle='rgba(255,236,180,'+(PL.flash*.15).toFixed(3)+')';fx.fillRect(0,0,AW,AH)}};
+// the scoreboard: who hit it last, nothing about who it's for
+poloHud=function(){_poloHud5Base();const H=PL&&PL.lastHit;if(H&&race&&race.state==='run'){const T0=card.teams[H.team];$('toGo').insertAdjacentHTML('beforeend','<div class="onball">Last hit: <b style="color:'+T0.c1+'">'+H.p.name+'</b> <small>'+T0.short+'</small></div>')}};
+// after a goal the ball pulls up just past the line, not off into the trees (and the camera stays on the ground)
+const _poloSim7b=poloSim;poloSim=function(dt){const r=_poloSim7b(dt);if(PL&&PL.phase==='celebrate'){const B0=PL.ball,F=PL.F,k=Math.exp(-dt*6);B0.vx*=k;B0.vy*=k;B0.x=clamp(B0.x,F.x0-1.1,F.x1+1.1);B0.y=clamp(B0.y,F.y0-.3,F.y1+.3)}return r};
 
 // ===================== jousting you can see: couched lances that really strike, close camera, hit-stop =====================
 const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
