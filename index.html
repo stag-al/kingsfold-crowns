@@ -2105,7 +2105,8 @@ poloSim=function(dt){const B0=PL.ball,F=PL.F;PL.t+=dt;PL.flash=Math.max(0,PL.fla
     if(msg&&Math.random()<.45&&race.t-race.lastC>1.4)sayP(msg);
     S.followT=.9;S.followH=Math.atan2(PL.ball.vy,PL.ball.vx);PL.pi++;PL.tt=0;const nx=PL.plan[PL.pi];if(nx){PL.carrier=nx.R;poloHud();if(nx.R!==S&&PL.dest&&PL.dest.R!==nx.R)PL.dest=null}}};
 // the ball sits on the ground beside the hooves: the marker follows the man about to strike
-function goalRumble(){try{if(navigator.vibrate)navigator.vibrate([260,70,260,70,520]);else{let t=0;for(let k=0;k<14;k++){setTimeout(hapTick,t);t+=1100/14}}}catch(e){}}
+// a goal: a low rumble that rolls away to nothing over two seconds
+function goalRumble(){buzz(envPat(2000,.62,.04,65,0),2000,.7,.05)}
 // ----- a proper polo ground: clear of crops, roads, buildings and water, then mown
 findPitch=function(){
   // try strictest first: plain grass, clear of crops, roads, buildings, water, flat. Relax step by step if a course has nowhere like that.
@@ -2218,7 +2219,16 @@ const _drawPost2=drawPost;drawPost=function(){if(race&&race.sport)return;_drawPo
 let hapEl=null;function hapTick(){try{if(!hapEl){const l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');l.appendChild(i);l.style.cssText='position:fixed;left:-99px;top:0;opacity:0;pointer-events:none';document.body.appendChild(l);hapEl=l}hapEl.click()}catch(e){}}
 function rumble(o){const P=o===3?[700,60,450,60,230]:o===2?[500,70,350,70,300,70,140]:[380,90,260,90,220,90,160,90,210];
   if(navigator.vibrate){try{navigator.vibrate(P)}catch(e){}}else{let t=0;const n=o===3?22:o===2?16:12;for(let k=0;k<n;k++){setTimeout(hapTick,t);t+=1500/n}}}
-const _impact3=impact;impact=function(po){_impact3(po);const big=Math.max(po[0],po[1]);if(big>=1)rumble(big)};
+// a vibration envelope: the motor is pulsed on and off, so a short 'on' share in each beat feels softer, a long one harder
+function envPat(dur,i0,i1,per,lead){const P=[];if(lead){P.push(lead,30)}let t=0;while(t<dur){const f=t/dur,I=clamp(i0+(i1-i0)*f,0,1),on=Math.max(10,Math.round(per*I));P.push(on,Math.max(8,per-on));t+=per}return P}
+function hapEnv(dur,i0,i1){let t=0;const n=Math.max(3,Math.round(dur/90));for(let k=0;k<n;k++){const f=k/n,I=i0+(i1-i0)*f;if(Math.random()<I+.15)setTimeout(hapTick,t);t+=dur/n}}
+function buzz(P,dur,i0,i1){try{if(navigator.vibrate)navigator.vibrate(P);else hapEnv(dur,i0,i1)}catch(e){}}
+// the harder the hit, the harder and longer the phone shakes
+function joustRumble(po){const[a,b]=po,big=Math.max(a,b),both=Math.min(a,b);if(big<=0)return;
+  if(big===3)return buzz(envPat(1500,.95,.12,70,260).concat([120,40,160]),1700,1,.15);// unhorsed: a heavy slam, a long shudder, then he hits the ground
+  if(big===2)return both===2?buzz(envPat(1000,.9,.12,60,140),1100,.95,.15):buzz(envPat(650,.8,.1,55,90),700,.85,.1);// shattered lances
+  return both===1?buzz(envPat(300,.7,.15,50,45),320,.7,.2):buzz(envPat(180,.55,.15,45,30),200,.6,.2)}// a lance on the shield: a sharp knock
+const _impact3=impact;impact=function(po){_impact3(po);joustRumble(po)};
 
 // smooth zoom: scale the world canvases around the screen centre (pixel art stays crisp)
 let zLastT=0;function setZoomCSS(z){for(const id of['gl','fx']){const el=$(id);if(el){el.style.transformOrigin='50% 50%';el.style.transform=z>1.001?'scale('+z.toFixed(4)+')':''}}}
@@ -2585,7 +2595,7 @@ const _startSport26=startSport;startSport=function(){_startSport26.apply(this,ar
 // ===================== split-screen joust: each knight in his own close-up, the halves slide together for the clash =====================
 // left half follows the left knight, right half the right knight; as they close, both half-cameras glide onto the shared
 // shot so the two halves line up into one picture, the divider melts away, and the lances meet in the middle of the screen
-const SPL={m:1,on:false,ZS:2.4,ZP:3.4,L:null,R:null,names:''};
+const SPL={m:1,on:false,ZS:2.5,ZP:2.5,L:null,R:null,names:''};
 const splc=document.getElementById('split'),splg=splc?splc.getContext('2d'):null;
 const _setSizesS=setSizes;setSizes=function(){_setSizesS.apply(this,arguments);if(splc){splc.width=AW;splc.height=AH;splc.style.width=(AW*K/dpr)+'px';splc.style.height=(AH*K/dpr)+'px';splg.imageSmoothingEnabled=false}};
 const spSm=x=>{x=clamp(x,0,1);return x*x*(3-2*x)};
@@ -2593,7 +2603,7 @@ function splitActive(){return !!(race&&race.sport==='joust'&&card&&card.sport===
 // how merged the two halves should be right now: apart while they wait and charge, one picture once both fit in a close shot
 function splitTarget(){if(!splitActive())return 1;if(SP.phase==='ready')return 0;if(SP.phase!=='charge'||SP.hit)return 1;
   const a=scr(SP.a.x,SP.a.y),b=scr(SP.b.x,SP.b.y),sep=Math.max(Math.abs(a[0]-b[0])+28,Math.abs(a[1]-b[1])*1.9+40),zfit=AW*.86/sep;
-  return spSm((zfit-SPL.ZS*.5)/(SPL.ZS*.5))}
+  return spSm((zfit-SPL.ZS*.42)/(SPL.ZS*.58))}
 // keep the close zoom while the screen is split, so the merged shot matches the halves exactly
 const _joustZoomS=joustZoom;joustZoom=function(){_joustZoomS.apply(this,arguments);if(SP&&splitActive()&&SPL.m<.995)SP.zt=SPL.ZS};
 function riderName(R){const i=SP.riders.indexOf(R),C=card.comp&&card.comp[i];return C?C.name:''}
@@ -2601,12 +2611,13 @@ function riderSilk(R){const i=SP.riders.indexOf(R),C=card.comp&&card.comp[i];ret
 // a half-camera: puts its knight at a spot in his half, riding into open space toward the middle
 // each half is the shared shot slid along the line of the lists, so the barrier and fences run straight on across the divider
 function listDir(){const P=SP.tilt;if(!P||P.length<2)return null;const a=scr(P[0][0],P[0][1]),b=scr(P[P.length-1][0],P[P.length-1][1]);let x=b[0]-a[0],y=b[1]-a[1];const l=Math.hypot(x,y)||1;x/=l;y/=l;if(x<0){x=-x;y=-y}return Math.abs(x)>.3?[x,y]:null}
-function paneCam(R,side,z){const p=scr(R.x,R.y),dX=side<0?AW*.24:AW*.76,cX=AW/2+(dX-AW/2)/z,ox=Math.round(cam.x),oy=Math.round(cam.y),u=listDir();
+function paneCam(R,side,z){const p=scr(R.x,R.y),cl=SP.phase==='charge'?spSm((10.5-Math.abs(SP.a.sx-SP.b.sx))/7.5):0,dX=AW/2+side*AW*lerp(.33,.16,cl),cX=AW/2+(dX-AW/2)/z,ox=Math.round(cam.x),oy=Math.round(cam.y),u=listDir();
   if(u){const s=(p[0]-cX)/u[0];return{x:ox+s*u[0],y:oy+s*u[1]}}
   const dY=AH*.45;return{x:ox+p[0]-cX,y:oy+p[1]-11-(AH/2+(dY-AH/2)/z)}}
 let splLastT=0;
 function splitPost(){const t=performance.now()/1000,dt=Math.min(.1,t-(splLastT||t));splLastT=t;
-  const mt=splitTarget();SPL.m+=(mt-SPL.m)*(1-Math.exp(-dt*(mt>SPL.m?9:3.2)));if(mt>=1&&SPL.m>.995)SPL.m=1;if(mt<=0&&SPL.m<.005)SPL.m=0;
+  const mt=splitTarget();if(mt===0&&SP&&SP.phase==='ready'&&SPL.m>0){SPL.m=0;SP.zc=SP.zt=SPL.ZS;setZoomCSS(SPL.ZS)}// a clean cut to the split as they line up
+  SPL.m+=(mt-SPL.m)*(1-Math.exp(-dt*(mt>SPL.m?3.5:2.6)));if(mt>=1&&SPL.m>.995)SPL.m=1;if(mt<=0&&SPL.m<.005)SPL.m=0;
   const show=!!(splitActive()&&SPL.m<.995&&splg);
   if(show!==SPL.on){SPL.on=show;splc.style.display=show?'block':'none';$('splitN').style.display=show?'block':'none'}
   if(!show)return;
